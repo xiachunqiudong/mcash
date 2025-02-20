@@ -1,2 +1,7 @@
 *.log
+*.conf
+*.rc
+*.fsdb
+*.key
+/simulation/sim/verdiLog
 /simulation/sim/build
