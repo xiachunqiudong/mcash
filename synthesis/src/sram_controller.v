@@ -1,4 +1,6 @@
 module sram_controller(
+  input  wire          clk_i,
+  input  wire          rst_i,
   // isu >> sc
   input  wire          isu_sc_valid_i,
   output wire          isu_sc_ready_o,
@@ -9,7 +11,8 @@ module sram_controller(
   input  wire [2:0]    isu_sc_xbar_rob_num_i,
   input  wire [1:0]    isu_sc_cacheline_dirty_offset0_i,
   input  wire [1:0]    isu_sc_cacheline_dirty_offset1_i,
-  input  wire [255:0]  isu_sc_linefill_data_i,
+  input  wire [127:0]  isu_sc_linefill_data_offset0_i,
+  input  wire [127:0]  isu_sc_linefill_data_offset1_i,
   // sc >> xbar
   output wire          sc_xbar_valid_o,
   input  wire          sc_xbar_ready_i,
@@ -29,7 +32,7 @@ module sram_controller(
   output wire [1:0]    rc_wbuf_req_channel_id_o,
   output wire [7:0]    rc_wbuf_req_wbuffer_id_o,
   // Wbuf >> sc
-  input wire           rc_wbuf_rtn_valid_i,
+  input  wire          rc_wbuf_rtn_valid_i,
   output wire          rc_wbuf_rtn_ready_o,
   output wire [127:0]  rc_wbuf_rtn_data_i
 );
@@ -40,16 +43,26 @@ module sram_controller(
   wire       isu_op_is_read_linefill;
   wire       isu_op_is_write_back;
 
+  wire       isu_sc_offset;
+
   wire [1:0] isu_sc_select_offset_state;
   wire [1:0] isu_sc_unselect_offset_state;
-
   wire       select_offset_empty;
   wire       select_offset_dirty;
   wire       select_offset_sync;
-
   wire       unselect_offset_empty;
   wire       unselect_offset_dirty;
   wire       unselect_offset_sync;
+
+  wire [127:0] isu_sc_offset_linefill_data;
+
+  wire         sc_data_ram_en;
+  wire         sc_data_ram_wen;
+  wire [6:0]   sc_data_ram_addr;
+  wire [127:0] sc_data_ram_wdata;
+  wire [127:0] sc_data_ram_rdata;
+
+  wire         isu_sc_req_done;
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // ISU opcode
@@ -91,34 +104,57 @@ module sram_controller(
   assign unselect_offset_dirty = isu_sc_unselect_offset_state[1:0] == 2'b01;
   assign unselect_offset_sync  = isu_sc_unselect_offset_state[1:0] == 2'b10;
 
+//=========================================================
+//                    SC Ctrl flow
+//=========================================================
 
-  wire sc_data_ram_cen;
-  wire sc_data_ram_wen;
+  assign isu_sc_req_done = isu_op_is_read_linefill & (sc_xbar_valid_o & sc_xbar_ready_i);
 
-  assign sc_data_ram_cen = isu_sc_valid_i;
+  assign isu_sc_ready_o = isu_sc_req_done;
 
-  assign sc_data_ram_wen = sc_data_ram_cen
+// linefill and read
+  assign sc_xbar_valid_o = isu_sc_valid_i
+                         & (   isu_op_is_read
+                             | isu_op_is_read_linefill
+                           );
+
+  assign sc_xbar_channel_id_o[1:0] = isu_sc_channel_id_i[1:0];
+
+  assign sc_xbar_rob_num_o[2:0] = isu_sc_xbar_rob_num_i[2:0];
+
+//=========================================================
+//                      Data Ram
+// WIDTH: 128
+// DEPTH: 128
+//=========================================================
+  assign sc_data_ram_en = isu_sc_valid_i;
+
+  assign sc_data_ram_wen = isu_sc_valid_i
                          & (
                               isu_op_is_read_linefill
                              | isu_op_is_write
                          );
 
-
-//=========================================================
-//                      Data Ram
-// WIDTH:
-// DEPTH:
-//=========================================================
-
-  
+  assign isu_sc_offset_linefill_data[127:0] = isu_sc_offset
+                                            ? isu_sc_linefill_data_offset1_i[127:0]
+                                            : isu_sc_linefill_data_offset0_i[127:0];
 
 
+  assign sc_data_ram_addr[6:0] = isu_sc_set_way_offset_i[6:0];
 
+  assign sc_data_ram_wdata[127:0] = {128{isu_op_is_read_linefill}} & isu_sc_offset_linefill_data[127:0]
+                                  | {128{isu_op_is_write}}         & rc_wbuf_rtn_data_i[127:0];
 
-
-
-
-
-
+  ram_sp #(
+    .AW(7),
+    .DW(128)
+  ) u_data_ram (
+    .CLK(clk_i                   ),
+    .ME (sc_data_ram_en          ),
+    .WE (sc_data_ram_wen         ),
+    .ADR(sc_data_ram_addr[6:0]   ),
+    .D  (sc_data_ram_wdata[127:0]),
+    .Q  (sc_data_ram_rdata[127:0])
+  );
 
 endmodule

@@ -14,3 +14,9 @@ vcs:
 	$(FILE_LIST) \
 	-top $(TOP)
 
+sim:
+	./build/simv
+
+vd:
+	verdi -elab ./build/simv.daidir/kdb \
+	-ssf tb.fsdb &

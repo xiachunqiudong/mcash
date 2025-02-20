@@ -12,6 +12,12 @@ module top;
     #5 clk = ~clk;
   end
 
+  mcash_top
+  u_mcash_top(
+    .clk_i(clk),
+    .rst_i()
+  );
+
   initial begin
     $fsdbDumpfile("tb.fsdb");
     $fsdbDumpvars(0, top);
