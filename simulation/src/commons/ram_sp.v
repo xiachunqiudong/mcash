@@ -13,7 +13,7 @@ module ram_sp # (
 );
 
   // Memory Array
-  reg [DW-1:0] mem [(1<<DW)-1:0];
+  reg [DW-1:0] mem [(1<<AW)-1:0];
 
   // WRITE
   always @(posedge CLK) begin
