@@ -23,7 +23,7 @@ module bank_isu (
   assign isu_sc_valid_o = 1'b1;
 
   assign isu_sc_channel_id_o[1:0] = 2'b00;
-  assign isu_sc_opcode_o[2:0] = 3'd2;
+  assign isu_sc_opcode_o[2:0] = 3'd0; // write
 
   assign isu_sc_wbuffer_id_o[7:0] = 8'd0;
   assign isu_sc_xbar_rob_num_o[2:0] = 'd0;

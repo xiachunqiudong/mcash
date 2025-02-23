@@ -92,6 +92,23 @@ module bank_top(
     .rc_wbuf_rtn_data_i              (rc_wbuf_rtn_data[127:0]            )
   );
 
+//---------------------------------------------------------------------------------
+//                              Write Buffer
+//---------------------------------------------------------------------------------
+  bank_wbuffer
+  u_bank_wbuffer(
+    .clk_i                   (clk_i                      ),
+    .rst_i                   (rst_i                      ),
+    .rc_wbuf_req_valid_i     (rc_wbuf_req_valid          ),
+    .rc_wbuf_req_ready_o     (rc_wbuf_req_ready          ),
+    .rc_wbuf_req_channel_id_i(rc_wbuf_req_channel_id[1:0]),
+    .rc_wbuf_req_wbuffer_id_i(rc_wbuf_req_wbuffer_id[7:0]),
+    .rc_wbuf_rtn_valid_o     (rc_wbuf_rtn_valid          ),
+    .rc_wbuf_rtn_ready_i     (rc_wbuf_rtn_ready          ),
+    .rc_wbuf_rtn_data_o      (rc_wbuf_rtn_data[127:0]    )
+  );
+
+
 // xbra fake model
   reg [1:0] xbar_cnt;
 
