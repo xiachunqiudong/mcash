@@ -40,6 +40,17 @@ module mcash_tb;
   reg          mcash_ch2_rtn_ready;
   wire [127:0] mcash_ch2_rtn_data;
 
+  initial begin
+    mcash_ch0_req_valid = 1'b0;
+    mcash_ch0_req_addr = 28'b0;
+    mcash_ch1_req_valid = 1'b0;
+    mcash_ch1_req_addr = 28'b0;
+    mcash_ch2_req_valid = 1'b0;
+    mcash_ch2_req_addr = 28'b0;
+  end
+
+
+
   mcash_top
   u_mcash_top(
     .clk_i                  (clk                      ),
