@@ -1,4 +1,4 @@
-TOP ?= top
+TOP ?= mcash_tb
 
 MCASH_HOME = /home/ICer/project/mcash
 export MCASH_HOME
@@ -19,4 +19,4 @@ sim:
 
 vd:
 	verdi -elab ./build/simv.daidir/kdb \
-	-ssf tb.fsdb &
+	-ssf $(TOP).fsdb &

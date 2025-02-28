@@ -1,33 +1,32 @@
 module cross_bar_top(
   input wire          clk_i,
   input wire          rst_i,
-  // top >> xbar
   // channel0
-  input wire          mcash_ch0_valid_i,
-  input wire          mcash_ch0_ready_o,
-  input wire [2:0]    mcash_ch0_op_i,
-  input wire [31:4]   mcash_ch0_addr_i,
-  input wire [127:0]  mcash_ch0_data_i,
+  input  wire         mcash_ch0_req_valid_i,
+  output wire         mcash_ch0_req_allowIn_o,
+  input  wire [2:0]   mcash_ch0_req_op_i,
+  input  wire [31:4]  mcash_ch0_req_addr_i,
+  input  wire [127:0] mcash_ch0_req_data_i,
   output wire         mcash_ch0_rtn_valid_o,
-  output wire         mcash_ch0_rtn_ready_i,
+  input  wire         mcash_ch0_rtn_ready_i,
   output wire [127:0] mcash_ch0_rtn_data_o,
   // channel1
-  input wire          mcash_ch1_valid_i,
-  input wire          mcash_ch1_ready_o,
-  input wire [2:0]    mcash_ch1_op_i,
-  input wire [31:4]   mcash_ch1_addr_i,
-  input wire [127:0]  mcash_ch1_data_i,
+  input  wire         mcash_ch1_req_valid_i,
+  output wire         mcash_ch1_req_allowIn_o,
+  input  wire [2:0]   mcash_ch1_req_op_i,
+  input  wire [31:4]  mcash_ch1_req_addr_i,
+  input  wire [127:0] mcash_ch1_req_data_i,
   output wire         mcash_ch1_rtn_valid_o,
-  output wire         mcash_ch1_rtn_ready_i,
+  input  wire         mcash_ch1_rtn_ready_i,
   output wire [127:0] mcash_ch1_rtn_data_o,
   // channel2
-  input wire          mcash_ch2_valid_i,
-  input wire          mcash_ch2_ready_o,
-  input wire [2:0]    mcash_ch2_op_i,
-  input wire [31:4]   mcash_ch2_addr_i,
-  input wire [127:0]  mcash_ch2_data_i,
+  input  wire         mcash_ch2_req_valid_i,
+  output wire         mcash_ch2_req_allowIn_o,
+  input  wire [2:0]   mcash_ch2_req_op_i,
+  input  wire [31:4]  mcash_ch2_req_addr_i,
+  input  wire [127:0] mcash_ch2_req_data_i,
   output wire         mcash_ch2_rtn_valid_o,
-  output wire         mcash_ch2_rtn_ready_i,
+  input  wire         mcash_ch2_rtn_ready_i,
   output wire [127:0] mcash_ch2_rtn_data_o,
   // xbar >> htu
   output wire         xbar_htu_valid_o,
@@ -52,8 +51,20 @@ module cross_bar_top(
   input  wire [255:0] xbar_wbuf_rtn_free_id_i
 );
 
-  
-
+  cross_bar_core
+  u_cross_bar_core(
+    .clk_i                  (clk_i                     ),
+    .rst_i                  (rst_i                     ),
+    .mcash_ch0_req_valid_i  (mcash_ch0_req_valid_i     ),
+    .mcash_ch0_req_allowIn_o(mcash_ch0_req_allowIn_o   ),
+    .mcash_ch0_req_addr_i   (mcash_ch0_req_addr_i[31:4]),
+    .mcash_ch1_req_valid_i  (mcash_ch1_req_valid_i     ),
+    .mcash_ch1_req_allowIn_o(mcash_ch1_req_allowIn_o   ),
+    .mcash_ch1_req_addr_i   (mcash_ch1_req_addr_i[31:4]),
+    .mcash_ch2_req_valid_i  (mcash_ch2_req_valid_i     ),
+    .mcash_ch2_req_allowIn_o(mcash_ch2_req_allowIn_o   ),
+    .mcash_ch2_req_addr_i   (mcash_ch2_req_addr_i[31:4])
+  );
 
 
 
