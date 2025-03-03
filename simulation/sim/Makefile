@@ -17,6 +17,9 @@ vcs:
 sim:
 	./build/simv
 
+simb: vcs
+	./build/simv
+
 vd:
 	verdi -elab ./build/simv.daidir/kdb \
 	-ssf $(TOP).fsdb &

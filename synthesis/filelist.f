@@ -10,5 +10,6 @@ $MCASH_HOME/synthesis/src/bank_sram_controller.v
 $MCASH_HOME/synthesis/src/bank_wbuffer.v
 
 $MCASH_HOME/synthesis/src/cross_bar/channel_entry_rr.v
+$MCASH_HOME/synthesis/src/cross_bar/bank_ch_rr.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_core.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_top.v
