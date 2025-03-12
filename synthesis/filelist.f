@@ -1,4 +1,5 @@
-$MCASH_HOME/simulation/src/tb/mcash_tb.v
+$MCASH_HOME/simulation/src/tb/mcash_tb.sv
+$MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
 
 $MCASH_HOME/simulation/src/commons/ram_sp.v
 $MCASH_HOME/synthesis/src/commons/round_robin_arbiter.v

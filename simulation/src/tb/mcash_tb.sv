@@ -107,3 +107,5 @@ module mcash_tb;
   end
 
 endmodule
+
+bind mcash_tb mcash_dumper u_mcash_dumper(clk);
