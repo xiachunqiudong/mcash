@@ -1,6 +1,7 @@
 $MCASH_HOME/simulation/src/tb/mcash_tb.v
 
 $MCASH_HOME/simulation/src/commons/ram_sp.v
+$MCASH_HOME/synthesis/src/commons/round_robin_arbiter.v
 
 $MCASH_HOME/synthesis/src/mcash_top.v
 

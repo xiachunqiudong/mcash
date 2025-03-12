@@ -173,6 +173,10 @@ module cross_bar_core(
   wire [2:0] bank1_ch0to2_req_valid;
   wire [2:0] bank2_ch0to2_req_valid;
   wire [2:0] bank3_ch0to2_req_valid;
+  wire [2:0] bank0_channel_grant;
+  wire [2:0] bank1_channel_grant;
+  wire [2:0] bank2_channel_grant;
+  wire [2:0] bank3_channel_grant;
   wire [1:0] bank0_ch_req_id;
   wire [1:0] bank1_ch_req_id;
   wire [1:0] bank2_ch_req_id;
@@ -730,16 +734,19 @@ module cross_bar_core(
   assign ch2_entryID_send_to_bank0_dcd[2] = ch2_entryID_send_to_bank0[2:0] == 3'd2;
   assign ch2_entryID_send_to_bank0_dcd[3] = ch2_entryID_send_to_bank0[2:0] == 3'd3;
   assign ch2_entryID_send_to_bank0_dcd[4] = ch2_entryID_send_to_bank0[2:0] == 3'd4;
+
   assign ch2_entryID_send_to_bank1_dcd[0] = ch2_entryID_send_to_bank1[2:0] == 3'd0;
   assign ch2_entryID_send_to_bank1_dcd[1] = ch2_entryID_send_to_bank1[2:0] == 3'd1;
   assign ch2_entryID_send_to_bank1_dcd[2] = ch2_entryID_send_to_bank1[2:0] == 3'd2;
   assign ch2_entryID_send_to_bank1_dcd[3] = ch2_entryID_send_to_bank1[2:0] == 3'd3;
   assign ch2_entryID_send_to_bank1_dcd[4] = ch2_entryID_send_to_bank1[2:0] == 3'd4;
+
   assign ch2_entryID_send_to_bank2_dcd[0] = ch2_entryID_send_to_bank2[2:0] == 3'd0;
   assign ch2_entryID_send_to_bank2_dcd[1] = ch2_entryID_send_to_bank2[2:0] == 3'd1;
   assign ch2_entryID_send_to_bank2_dcd[2] = ch2_entryID_send_to_bank2[2:0] == 3'd2;
   assign ch2_entryID_send_to_bank2_dcd[3] = ch2_entryID_send_to_bank2[2:0] == 3'd3;
   assign ch2_entryID_send_to_bank2_dcd[4] = ch2_entryID_send_to_bank2[2:0] == 3'd4;
+  
   assign ch2_entryID_send_to_bank3_dcd[0] = ch2_entryID_send_to_bank3[2:0] == 3'd0;
   assign ch2_entryID_send_to_bank3_dcd[1] = ch2_entryID_send_to_bank3[2:0] == 3'd1;
   assign ch2_entryID_send_to_bank3_dcd[2] = ch2_entryID_send_to_bank3[2:0] == 3'd2;
@@ -747,15 +754,36 @@ module cross_bar_core(
   assign ch2_entryID_send_to_bank3_dcd[4] = ch2_entryID_send_to_bank3[2:0] == 3'd4;
 
 //--------------------------------------------------------------
-//          Bank channel cache request round robin
+//            Bank channel request round robin
 //
 // channel0------
 //              |  channel
-// channel1-----------------> BANK0/1/2/3
+// channel1-----------------> BANK0
 //              |
 // channel2------
 //
+//
+// channel0------
+//              |  channel
+// channel1-----------------> BANK1
+//              |
+// channel2------
+//
+//
+// channel0------
+//              |  channel
+// channel1-----------------> BANK2
+//              |
+// channel2------
+//
+//
+// channel0------
+//              |  channel
+// channel1-----------------> BANK3
+//              |
+// channel2------
 //--------------------------------------------------------------
+
   assign bank0_ch0to2_req_valid[2:0] = {ch2_has_entry_want_send_to_bank0,
                                         ch1_has_entry_want_send_to_bank0,
                                         ch0_has_entry_want_send_to_bank0};
@@ -772,51 +800,55 @@ module cross_bar_core(
                                         ch1_has_entry_want_send_to_bank3,
                                         ch0_has_entry_want_send_to_bank3};
 
-  bank_ch_rr
-  bank0_ch_rr (
-    .clk_i         (clk_i                      ),
-    .rst_i         (rst_i                      ),
-    .ch_req_valid_i(bank0_ch0to2_req_valid[2:0]),
-    .ch_req_id_o   (bank0_ch_req_id[1:0]       )
+  round_robin_arbiter #(
+    .N(3)
+  ) bank0_arbiter(
+    .clk_i  (clk_i                      ),
+    .rst_i  (rst_i                      ),
+    .req_i  (bank0_ch0to2_req_valid[2:0]),
+    .grant_o(bank0_channel_grant[2:0]   )
   );
 
-  bank_ch_rr
-  bank1_ch_rr (
-    .clk_i         (clk_i                      ),
-    .rst_i         (rst_i                      ),
-    .ch_req_valid_i(bank1_ch0to2_req_valid[2:0]),
-    .ch_req_id_o   (bank1_ch_req_id[1:0]       )
+  round_robin_arbiter #(
+    .N(3)
+  ) bank1_arbiter(
+    .clk_i  (clk_i                      ),
+    .rst_i  (rst_i                      ),
+    .req_i  (bank1_ch0to2_req_valid[2:0]),
+    .grant_o(bank1_channel_grant[2:0]   )
   );
 
-  bank_ch_rr
-  bank2_ch_rr (
-    .clk_i         (clk_i                      ),
-    .rst_i         (rst_i                      ),
-    .ch_req_valid_i(bank2_ch0to2_req_valid[2:0]),
-    .ch_req_id_o   (bank2_ch_req_id[1:0]       )
+  round_robin_arbiter #(
+    .N(3)
+  ) bank2_arbiter(
+    .clk_i  (clk_i                      ),
+    .rst_i  (rst_i                      ),
+    .req_i  (bank2_ch0to2_req_valid[2:0]),
+    .grant_o(bank2_channel_grant[2:0]   )
   );
 
-  bank_ch_rr
-  bank3_ch_rr (
-    .clk_i         (clk_i                      ),
-    .rst_i         (rst_i                      ),
-    .ch_req_valid_i(bank3_ch0to2_req_valid[2:0]),
-    .ch_req_id_o   (bank3_ch_req_id[1:0]       )
+  round_robin_arbiter #(
+    .N(3)
+  ) bank3_arbiter(
+    .clk_i  (clk_i                      ),
+    .rst_i  (rst_i                      ),
+    .req_i  (bank3_ch0to2_req_valid[2:0]),
+    .grant_o(bank3_channel_grant[2:0]   )
   );
 
-  assign ch0_bank0_array_inValidate[4:0] = ch0_entryID_send_to_bank0_dcd[4:0] & {5{bank0_ch_req_id[1:0] == 2'b00}};
-  assign ch0_bank1_array_inValidate[4:0] = ch0_entryID_send_to_bank1_dcd[4:0] & {5{bank1_ch_req_id[1:0] == 2'b00}};
-  assign ch0_bank2_array_inValidate[4:0] = ch0_entryID_send_to_bank2_dcd[4:0] & {5{bank2_ch_req_id[1:0] == 2'b00}};
-  assign ch0_bank3_array_inValidate[4:0] = ch0_entryID_send_to_bank3_dcd[4:0] & {5{bank3_ch_req_id[1:0] == 2'b00}};
+  assign ch0_bank0_array_inValidate[4:0] = ch0_entryID_send_to_bank0_dcd[4:0] & {5{bank0_channel_grant[0]}};
+  assign ch0_bank1_array_inValidate[4:0] = ch0_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant[0]}};
+  assign ch0_bank2_array_inValidate[4:0] = ch0_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant[0]}};
+  assign ch0_bank3_array_inValidate[4:0] = ch0_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant[0]}};
 
-  assign ch1_bank0_array_inValidate[4:0] = ch1_entryID_send_to_bank0_dcd[4:0] & {5{bank0_ch_req_id[1:0] == 2'b01}};
-  assign ch1_bank1_array_inValidate[4:0] = ch1_entryID_send_to_bank1_dcd[4:0] & {5{bank1_ch_req_id[1:0] == 2'b01}};
-  assign ch1_bank2_array_inValidate[4:0] = ch1_entryID_send_to_bank2_dcd[4:0] & {5{bank2_ch_req_id[1:0] == 2'b01}};
-  assign ch1_bank3_array_inValidate[4:0] = ch1_entryID_send_to_bank3_dcd[4:0] & {5{bank3_ch_req_id[1:0] == 2'b01}};
+  assign ch1_bank0_array_inValidate[4:0] = ch1_entryID_send_to_bank0_dcd[4:0] & {5{bank0_channel_grant[1]}};
+  assign ch1_bank1_array_inValidate[4:0] = ch1_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant[1]}};
+  assign ch1_bank2_array_inValidate[4:0] = ch1_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant[1]}};
+  assign ch1_bank3_array_inValidate[4:0] = ch1_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant[1]}};
 
-  assign ch2_bank0_array_inValidate[4:0] = ch2_entryID_send_to_bank0_dcd[4:0] & {5{bank0_ch_req_id[1:0] == 2'b10}};
-  assign ch2_bank1_array_inValidate[4:0] = ch2_entryID_send_to_bank1_dcd[4:0] & {5{bank1_ch_req_id[1:0] == 2'b10}};
-  assign ch2_bank2_array_inValidate[4:0] = ch2_entryID_send_to_bank2_dcd[4:0] & {5{bank2_ch_req_id[1:0] == 2'b10}};
-  assign ch2_bank3_array_inValidate[4:0] = ch2_entryID_send_to_bank3_dcd[4:0] & {5{bank3_ch_req_id[1:0] == 2'b10}};
+  assign ch2_bank0_array_inValidate[4:0] = ch2_entryID_send_to_bank0_dcd[4:0] & {5{bank0_channel_grant[2]}};
+  assign ch2_bank1_array_inValidate[4:0] = ch2_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant[2]}};
+  assign ch2_bank2_array_inValidate[4:0] = ch2_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant[2]}};
+  assign ch2_bank3_array_inValidate[4:0] = ch2_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant[2]}};
 
 endmodule
