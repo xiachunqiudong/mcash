@@ -38,6 +38,7 @@ module bank_htu_set_status(
   wire [31:10] way5_tag_In;
   wire [31:10] way6_tag_In;
   wire [31:10] way7_tag_In;
+
   reg  [31:10] way0_tag_Q;
   reg  [31:10] way1_tag_Q;
   reg  [31:10] way2_tag_Q;
@@ -63,6 +64,7 @@ module bank_htu_set_status(
   wire [1:0] way6_offset1_status_In;
   wire [1:0] way7_offset0_status_In;
   wire [1:0] way7_offset1_status_In;
+ 
   reg  [1:0] way0_offset0_status_Q;
   reg  [1:0] way0_offset1_status_Q;
   reg  [1:0] way1_offset0_status_Q;
@@ -80,8 +82,36 @@ module bank_htu_set_status(
   reg  [1:0] way7_offset0_status_Q;
   reg  [1:0] way7_offset1_status_Q;
 
-  wire way_hit_array;
+  wire [7:0] way_hit_array;
+
+  wire [1:0] hit_way_offset_status;
   
+  assign way_hit_array[0] = set_tag_i[31:10] == way0_tag_Q[31:10];
+  assign way_hit_array[1] = set_tag_i[31:10] == way1_tag_Q[31:10];
+  assign way_hit_array[2] = set_tag_i[31:10] == way2_tag_Q[31:10];
+  assign way_hit_array[3] = set_tag_i[31:10] == way3_tag_Q[31:10];
+  assign way_hit_array[4] = set_tag_i[31:10] == way4_tag_Q[31:10];
+  assign way_hit_array[5] = set_tag_i[31:10] == way5_tag_Q[31:10];
+  assign way_hit_array[6] = set_tag_i[31:10] == way6_tag_Q[31:10];
+  assign way_hit_array[7] = set_tag_i[31:10] == way7_tag_Q[31:10];
+
+  assign hit_way_offset_status[1:0] = {2{way_hit_array[0] & ~offset_i}} & way0_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[0] &  offset_i}} & way0_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[1] & ~offset_i}} & way1_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[1] &  offset_i}} & way1_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[2] & ~offset_i}} & way2_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[2] &  offset_i}} & way2_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[3] & ~offset_i}} & way3_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[3] &  offset_i}} & way3_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[4] & ~offset_i}} & way4_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[4] &  offset_i}} & way4_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[5] & ~offset_i}} & way5_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[5] &  offset_i}} & way5_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[6] & ~offset_i}} & way6_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[6] &  offset_i}} & way6_offset1_status_Q[1:0]
+                                    | {2{way_hit_array[7] & ~offset_i}} & way7_offset0_status_Q[1:0]
+                                    | {2{way_hit_array[7] &  offset_i}} & way7_offset1_status_Q[1:0];
+
 
 
 
