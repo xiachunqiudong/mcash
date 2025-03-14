@@ -1,6 +1,12 @@
 module bank_top(
-  input wire clk_i,
-  input wire rst_i
+  input  wire        clk_i,
+  input  wire        rst_i,
+  input  wire        xbar_bank_htu_valid_i,
+  output wire        xbar_bank_htu_ready_o,
+  input  wire [1:0]  xbar_bank_htu_ch_id_i,
+  input  wire [1:0]  xbar_bank_htu_opcode_i,
+  input  wire [31:4] xbar_bank_htu_addr_i,
+  input  wire [7:0]  xbar_bank_htu_wbuffer_id_i
 );
 
   wire         isu_sc_valid;
@@ -33,12 +39,26 @@ module bank_top(
   wire         rc_wbuf_rtn_ready;
   wire [127:0] rc_wbuf_rtn_data;
 
+//---------------------------------------------------------------------------------
+//                            HTU (Hit test unit)
+//---------------------------------------------------------------------------------
+  bank_htu
+  u_bank_htu ( 
+    .xbar_bank_htu_valid_i     (xbar_bank_htu_valid_i          ),
+    .xbar_bank_htu_ready_o     (xbar_bank_htu_ready_o          ),
+    .xbar_bank_htu_ch_id_i     (xbar_bank_htu_ch_id_i[1:0]     ),
+    .xbar_bank_htu_opcode_i    (xbar_bank_htu_opcode_i[1:0]    ),
+    .xbar_bank_htu_addr_i      (xbar_bank_htu_addr_i[31:4]     ),
+    .xbar_bank_htu_wbuffer_id_i(xbar_bank_htu_wbuffer_id_i[7:0])
+  );
+
+
 
 //---------------------------------------------------------------------------------
 //                                     ISU
 //---------------------------------------------------------------------------------
   bank_isu
-  u_bank_isu(
+  u_bank_isu (
     .clk_i                           (clk_i                              ),
     .rst_i                           (rst_i                              ),
     .isu_sc_valid_o                  (isu_sc_valid                       ),
