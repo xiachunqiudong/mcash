@@ -11,6 +11,8 @@ endif
 
 BUILD_DIR = ./build
 
+MCASH_DUMP_LOG = mcash.log
+
 vcs:
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \

@@ -12,7 +12,35 @@ module cross_bar_core(
   // channel2
   input wire          mcash_ch2_req_valid_i,
   input wire          mcash_ch2_req_allowIn_o,
-  input wire [31:4]   mcash_ch2_req_addr_i
+  input wire [31:4]   mcash_ch2_req_addr_i,
+  // xbar >> bank0 htu
+  output wire         xbar_bank0_htu_valid_o,
+  input  wire         xbar_bank0_htu_ready_i,
+  output wire [1:0]   xbar_bank0_htu_ch_id_o,
+  output wire [1:0]   xbar_bank0_htu_opcode_o,
+  output wire [31:4]  xbar_bank0_htu_addr_o,
+  output wire [7:0]   xbar_bank0_htu_wbuffer_id_o,
+  // xbar >> bank1 htu
+  output wire         xbar_bank1_htu_valid_o,
+  input  wire         xbar_bank1_htu_ready_i,
+  output wire [1:0]   xbar_bank1_htu_ch_id_o,
+  output wire [1:0]   xbar_bank1_htu_opcode_o,
+  output wire [31:4]  xbar_bank1_htu_addr_o,
+  output wire [7:0]   xbar_bank1_htu_wbuffer_id_o,
+  // xbar >> bank2 htu
+  output wire         xbar_bank2_htu_valid_o,
+  input  wire         xbar_bank2_htu_ready_i,
+  output wire [1:0]   xbar_bank2_htu_ch_id_o,
+  output wire [1:0]   xbar_bank2_htu_opcode_o,
+  output wire [31:4]  xbar_bank2_htu_addr_o,
+  output wire [7:0]   xbar_bank2_htu_wbuffer_id_o,
+  // xbar >> bank3 htu
+  output wire         xbar_bank3_htu_valid_o,
+  input  wire         xbar_bank3_htu_ready_i,
+  output wire [1:0]   xbar_bank3_htu_ch_id_o,
+  output wire [1:0]   xbar_bank3_htu_opcode_o,
+  output wire [31:4]  xbar_bank3_htu_addr_o,
+  output wire [7:0]   xbar_bank3_htu_wbuffer_id_o
 );
 
 // CBE ctrl
@@ -177,10 +205,6 @@ module cross_bar_core(
   wire [2:0] bank1_channel_grant;
   wire [2:0] bank2_channel_grant;
   wire [2:0] bank3_channel_grant;
-  wire [1:0] bank0_ch_req_id;
-  wire [1:0] bank1_ch_req_id;
-  wire [1:0] bank2_ch_req_id;
-  wire [1:0] bank3_ch_req_id;
 
 //--------------------------------------------------------------
 //                 channel0 req buffer ctrl
@@ -850,5 +874,21 @@ module cross_bar_core(
   assign ch2_bank1_array_inValidate[4:0] = ch2_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant[2]}};
   assign ch2_bank2_array_inValidate[4:0] = ch2_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant[2]}};
   assign ch2_bank3_array_inValidate[4:0] = ch2_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant[2]}};
+
+//--------------------------------------------------------------
+//           Corss Bar send request to Bank
+//--------------------------------------------------------------
+  assign xbar_bank0_htu_valid_o      = |bank0_ch0to2_req_valid[2:0];
+
+  assign xbar_bank0_htu_ch_id_o[1:0] = {2{bank0_channel_grant[0]}} & 2'd0
+                                     | {2{bank0_channel_grant[1]}} & 2'd1
+                                     | {2{bank0_channel_grant[2]}} & 2'd2;
+
+
+  assign xbar_bank1_htu_valid_o      = |bank1_ch0to2_req_valid[2:0];
+
+  assign xbar_bank1_htu_ch_id_o[1:0] = {2{bank1_channel_grant[0]}} & 2'd0
+                                     | {2{bank1_channel_grant[1]}} & 2'd1
+                                     | {2{bank1_channel_grant[2]}} & 2'd2;
 
 endmodule
