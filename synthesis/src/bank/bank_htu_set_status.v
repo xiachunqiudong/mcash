@@ -30,15 +30,7 @@ module bank_htu_set_status(
   reg  [2:0] way6_refer_cnt_Q;
   reg  [2:0] way7_refer_cnt_Q;
 
-  wire [31:10] way0_tag_In;
-  wire [31:10] way1_tag_In;
-  wire [31:10] way2_tag_In;
-  wire [31:10] way3_tag_In;
-  wire [31:10] way4_tag_In;
-  wire [31:10] way5_tag_In;
-  wire [31:10] way6_tag_In;
-  wire [31:10] way7_tag_In;
-
+  wire [7:0]   way_tag_update_array;
   reg  [31:10] way0_tag_Q;
   reg  [31:10] way1_tag_Q;
   reg  [31:10] way2_tag_Q;
@@ -89,14 +81,14 @@ module bank_htu_set_status(
 
   wire [1:0] hit_way_offset_status;
   
-  assign hit_way_array[0] = (set_tag_i[31:10] == way0_tag_Q[31:10]) & way_valid_array_Q[0];
-  assign hit_way_array[1] = (set_tag_i[31:10] == way1_tag_Q[31:10]) & way_valid_array_Q[1];
-  assign hit_way_array[2] = (set_tag_i[31:10] == way2_tag_Q[31:10]) & way_valid_array_Q[2];
-  assign hit_way_array[3] = (set_tag_i[31:10] == way3_tag_Q[31:10]) & way_valid_array_Q[3];
-  assign hit_way_array[4] = (set_tag_i[31:10] == way4_tag_Q[31:10]) & way_valid_array_Q[4];
-  assign hit_way_array[5] = (set_tag_i[31:10] == way5_tag_Q[31:10]) & way_valid_array_Q[5];
-  assign hit_way_array[6] = (set_tag_i[31:10] == way6_tag_Q[31:10]) & way_valid_array_Q[6];
-  assign hit_way_array[7] = (set_tag_i[31:10] == way7_tag_Q[31:10]) & way_valid_array_Q[7];
+  assign hit_way_array[0] = set_hit_i & (set_tag_i[31:10] == way0_tag_Q[31:10]) & way_valid_array_Q[0];
+  assign hit_way_array[1] = set_hit_i & (set_tag_i[31:10] == way1_tag_Q[31:10]) & way_valid_array_Q[1];
+  assign hit_way_array[2] = set_hit_i & (set_tag_i[31:10] == way2_tag_Q[31:10]) & way_valid_array_Q[2];
+  assign hit_way_array[3] = set_hit_i & (set_tag_i[31:10] == way3_tag_Q[31:10]) & way_valid_array_Q[3];
+  assign hit_way_array[4] = set_hit_i & (set_tag_i[31:10] == way4_tag_Q[31:10]) & way_valid_array_Q[4];
+  assign hit_way_array[5] = set_hit_i & (set_tag_i[31:10] == way5_tag_Q[31:10]) & way_valid_array_Q[5];
+  assign hit_way_array[6] = set_hit_i & (set_tag_i[31:10] == way6_tag_Q[31:10]) & way_valid_array_Q[6];
+  assign hit_way_array[7] = set_hit_i & (set_tag_i[31:10] == way7_tag_Q[31:10]) & way_valid_array_Q[7];
 
   assign cacheline_hit = |hit_way_array[7:0];
 
@@ -121,7 +113,7 @@ module bank_htu_set_status(
 //                     update plru tree
 //--------------------------------------------------------------
   assign access_way_array[7:0] = hit_way_array[7:0]
-                               | {8{~cacheline_hit}} & oldest_way_array[7:0];
+                               | {8{~cacheline_hit & set_hit_i}} & oldest_way_array[7:0];
 
   bank_htu_plru_tree
   u_bank_htu_plru_tree(
@@ -143,6 +135,84 @@ module bank_htu_set_status(
     end
     else begin
       way_valid_array_Q[7:0] <= way_valid_array_In[7:0];
+    end
+  end
+
+//--------------------------------------------------------------
+//                 update way tag array
+//--------------------------------------------------------------
+  assign way_tag_update_array[7:0] = oldest_way_array[7:0]
+                                   & {8{~cacheline_hit & set_hit_i}};
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way0_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[0]) begin
+      way0_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way1_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[1]) begin
+      way1_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way2_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[2]) begin
+      way2_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way3_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[3]) begin
+      way3_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way4_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[4]) begin
+      way4_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way5_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[5]) begin
+      way5_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way6_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[6]) begin
+      way6_tag_Q[31:10] <= set_tag_i[31:10];
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      way7_tag_Q[31:10] <= 'b0;
+    end
+    else if (way_tag_update_array[7]) begin
+      way7_tag_Q[31:10] <= set_tag_i[31:10];
     end
   end
 

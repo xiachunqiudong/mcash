@@ -19,6 +19,7 @@ module bank_htu_plru_tree(
 //  7       6       5         4        3           2      1          0  
 //==================================================================================
 
+  wire       plru_tree_node_state_wen;
   wire [6:0] plru_tree_node_state_In;
   reg  [6:0] plru_tree_node_state_Q;
 
@@ -27,6 +28,10 @@ module bank_htu_plru_tree(
   assign plru_node6_access_old = plru_tree_node_state_Q[6]
                                ? |access_array_i[7:4]
                                : |access_array_i[3:0];
+
+  assign plru_tree_node_state_In[6] = plru_node6_access_old
+                                    ? ~plru_tree_node_state_Q[6]
+                                    :  plru_tree_node_state_Q[6];
 
 // update level1
   assign plru_node5_access_old = plru_tree_node_state_Q[5]
@@ -78,11 +83,13 @@ module bank_htu_plru_tree(
                                     ? ~plru_tree_node_state_Q[0]
                                     :  plru_tree_node_state_Q[0];
 
+  assign plru_tree_node_state_wen = |access_array_i[7:0];
+
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
       plru_tree_node_state_Q[6:0] <= 7'b0;
     end
-    else begin
+    else if (plru_tree_node_state_wen) begin
       plru_tree_node_state_Q[6:0] <= plru_tree_node_state_In[6:0];
     end
   end

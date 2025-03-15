@@ -13,6 +13,14 @@ module mcash_tb;
     #5 rst = 1'b0;
   end
 
+  integer i;
+  reg [31:0] addr_list [99:0];
+
+  initial begin
+    i = 0;
+    $readmemh("/home/ICer/project/mcash/simulation/src/tools/addr.hex", addr_list);
+  end
+
   reg          mcash_ch0_req_valid;
   wire         mcash_ch0_req_allowIn;
   reg  [2:0]   mcash_ch0_req_op;
@@ -51,13 +59,14 @@ module mcash_tb;
 
   always @(posedge clk) begin
     if (mcash_ch0_req_valid & mcash_ch1_req_allowIn) begin
-      mcash_ch0_req_addr[31:4] = 28'b10;
+      mcash_ch0_req_addr[31:4] <= addr_list[i][31:4];
+      i++;
     end
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
-      mcash_ch1_req_addr[31:4] = 28'b10;
+      mcash_ch1_req_addr[31:4] <= 28'b10;
     end
     if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
-      mcash_ch2_req_addr[31:4] = 28'b10;
+      mcash_ch2_req_addr[31:4] <= 28'b10;
     end
   end
 
