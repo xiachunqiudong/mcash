@@ -144,6 +144,8 @@ module mcash_top (
 //------------------------------------------------------------------
   bank_top_wrapper
   u_bank_top_wrapper(
+    .clk_i                      (clk_i                         ),
+    .rst_i                      (rst_i                         ),
     // bank 0
     .xbar_bank0_htu_valid_i     (xbar_bank0_htu_valid          ),
     .xbar_bank0_htu_ready_o     (xbar_bank0_htu_ready          ),

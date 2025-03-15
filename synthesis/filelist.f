@@ -18,4 +18,5 @@ $MCASH_HOME/synthesis/src/bank/bank_wbuffer.v
 $MCASH_HOME/synthesis/src/cross_bar/channel_entry_rr.v
 $MCASH_HOME/synthesis/src/cross_bar/bank_ch_rr.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_core.v
+$MCASH_HOME/synthesis/src/cross_bar/cross_bar_core_buffer.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_top.v

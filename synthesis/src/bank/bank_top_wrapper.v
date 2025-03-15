@@ -32,6 +32,8 @@ module bank_top_wrapper(
 //------------------------------------------------------------------
   bank_top
   u_bank0_top (
+    .clk_i                     (clk_i                           ),
+    .rst_i                     (rst_i                           ),
     .xbar_bank_htu_valid_i     (xbar_bank0_htu_valid_i          ),
     .xbar_bank_htu_ready_o     (xbar_bank0_htu_ready_o          ),
     .xbar_bank_htu_ch_id_i     (xbar_bank0_htu_ch_id_i[1:0]     ),

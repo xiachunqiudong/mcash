@@ -96,7 +96,7 @@ module mcash_tb;
   );
 
   initial begin
-    $fsdbDumpfile("mcash.fsdb");
+    $fsdbDumpfile("mcash_tb.fsdb");
     $fsdbDumpvars(0, mcash_tb);
     $fsdbDumpvars("+struct");
     $fsdbDumpvars("+mda");

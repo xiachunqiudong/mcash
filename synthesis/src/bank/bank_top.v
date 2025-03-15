@@ -43,7 +43,9 @@ module bank_top(
 //                            HTU (Hit test unit)
 //---------------------------------------------------------------------------------
   bank_htu
-  u_bank_htu ( 
+  u_bank_htu (
+    .clk_i                     (clk_i                          ),
+    .rst_i                     (rst_i                          ),
     .xbar_bank_htu_valid_i     (xbar_bank_htu_valid_i          ),
     .xbar_bank_htu_ready_o     (xbar_bank_htu_ready_o          ),
     .xbar_bank_htu_ch_id_i     (xbar_bank_htu_ch_id_i[1:0]     ),
