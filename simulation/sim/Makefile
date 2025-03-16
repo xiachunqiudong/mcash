@@ -11,7 +11,13 @@ endif
 
 BUILD_DIR = ./build
 
-MCASH_DUMP_LOG = mcash.log
+MCASH_DUMP_LOG ?= $(CASE_PATH)/$(CASE_NAME).log
+
+CASE_PATH ?= /home/ICer/project/smoke_test
+CASE_NAME ?= ruike1
+
+gen_code:
+	python3 $(MCASH_HOME)/simulation/src/tools/addr_gen.py > $(CASE_PATH)/$(CASE_NAME).hex
 
 vcs:
 	mkdir -p $(BUILD_DIR) && \
@@ -22,11 +28,12 @@ vcs:
 
 sim:
 	./build/simv \
-	+MCASH_DUMP_LOG=$(MCASH_DUMP_LOG)
+	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_NAME).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CODE_FILE=$(CASE_PATH)/$(CASE_NAME).hex
 
 simb: vcs
-	./build/simv
+	./build/simv \
+	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_NAME).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CODE_FILE=$(CASE_PATH)/$(CASE_NAME).hex
 
 vd:
 	verdi -elab ./build/simv.daidir/kdb \
-	-ssf $(TOP).fsdb &
+	-ssf $(CASE_PATH)/$(CASE_NAME).fdsb &

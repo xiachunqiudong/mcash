@@ -1,5 +1,17 @@
 module mcash_tb;
 
+  string fsdb_file;
+  string code_file;
+
+  initial begin
+    if(!$value$plusargs("FSDB_FILE=%s", fsdb_file)) begin
+      fsdb_file = "mcash_tb.fsdb";
+    end
+    if(!$value$plusargs("CODE_FILE=%s", code_file)) begin
+      code_file = "code.hex";
+    end
+  end
+
   reg clk;
   reg rst;
 
@@ -14,11 +26,11 @@ module mcash_tb;
   end
 
   integer i;
-  reg [31:0] addr_list [99:0];
+  reg [162:0] code_list [99:0];
 
   initial begin
     i = 0;
-    $readmemh("/home/ICer/project/mcash/simulation/src/tools/addr.hex", addr_list);
+    $readmemb(code_file, code_list);
   end
 
   reg          mcash_ch0_req_valid;
@@ -59,7 +71,9 @@ module mcash_tb;
 
   always @(posedge clk) begin
     if (mcash_ch0_req_valid & mcash_ch1_req_allowIn) begin
-      mcash_ch0_req_addr[31:4] <= addr_list[i][31:4];
+      mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
+      mcash_ch0_req_data[127:0] <= code_list[i][159:32];
+      mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
       i++;
     end
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
@@ -105,7 +119,7 @@ module mcash_tb;
   );
 
   initial begin
-    $fsdbDumpfile("mcash_tb.fsdb");
+    $fsdbDumpfile(fsdb_file);
     $fsdbDumpvars(0, mcash_tb);
     $fsdbDumpvars("+struct");
     $fsdbDumpvars("+mda");
