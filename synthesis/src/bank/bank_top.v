@@ -9,6 +9,15 @@ module bank_top(
   input  wire [7:0]  xbar_bank_htu_wbuffer_id_i
 );
 
+  wire         htu_isu_valid;
+  wire         htu_isu_ready;
+  wire [1:0]   htu_isu_ch_id;
+  wire [1:0]   htu_isu_opcode;
+  wire [6:0]   htu_isu_set_way_offset;
+  wire [7:0]   htu_isu_wbuffer_id;
+  wire [1:0]   htu_isu_cacheline_offset0_dirty;
+  wire [1:0]   htu_isu_cacheline_offset1_dirty;
+
   wire         isu_sc_valid;
   wire         isu_sc_ready;
   wire [1:0]   isu_sc_channel_id;
@@ -44,16 +53,30 @@ module bank_top(
 //---------------------------------------------------------------------------------
   bank_htu
   u_bank_htu (
-    .clk_i                     (clk_i                          ),
-    .rst_i                     (rst_i                          ),
-    .xbar_bank_htu_valid_i     (xbar_bank_htu_valid_i          ),
-    .xbar_bank_htu_ready_o     (xbar_bank_htu_ready_o          ),
-    .xbar_bank_htu_ch_id_i     (xbar_bank_htu_ch_id_i[1:0]     ),
-    .xbar_bank_htu_opcode_i    (xbar_bank_htu_opcode_i[1:0]    ),
-    .xbar_bank_htu_addr_i      (xbar_bank_htu_addr_i[31:4]     ),
-    .xbar_bank_htu_wbuffer_id_i(xbar_bank_htu_wbuffer_id_i[7:0])
+    .clk_i                            (clk_i                               ),
+    .rst_i                            (rst_i                               ),
+    .xbar_bank_htu_valid_i            (xbar_bank_htu_valid_i               ),
+    .xbar_bank_htu_ready_o            (xbar_bank_htu_ready_o               ),
+    .xbar_bank_htu_ch_id_i            (xbar_bank_htu_ch_id_i[1:0]          ),
+    .xbar_bank_htu_opcode_i           (xbar_bank_htu_opcode_i[1:0]         ),
+    .xbar_bank_htu_addr_i             (xbar_bank_htu_addr_i[31:4]          ),
+    .xbar_bank_htu_wbuffer_id_i       (xbar_bank_htu_wbuffer_id_i[7:0]     ),
+    .htu_isu_valid_o                  (htu_isu_valid                       ),
+    .htu_isu_ready_i                  (htu_isu_ready                       ),
+    .htu_isu_ch_id_o                  (htu_isu_ch_id[1:0]                  ),
+    .htu_isu_opcode_o                 (htu_isu_opcode[1:0]                 ),
+    .htu_isu_set_way_offset_o         (htu_isu_set_way_offset[6:0]         ),
+    .htu_isu_wbuffer_id_o             (htu_isu_wbuffer_id[7:0]             ),
+    .htu_isu_cacheline_offset0_dirty_o(htu_isu_cacheline_offset0_dirty[1:0]),
+    .htu_isu_cacheline_offset1_dirty_o(htu_isu_cacheline_offset1_dirty[1:0]),
+    .isu_htu_already_done_valid_i     (),
+    .isu_htu_set_way_i                (),
+    .htu_submem_valid_o               (),
+    .htu_submem_ready_i               (),
+    .htu_submem_opcode_o              (),
+    .htu_submem_set_way_o             (),
+    .htu_submem_set_addr_o            ()
   );
-
 
 
 //---------------------------------------------------------------------------------
