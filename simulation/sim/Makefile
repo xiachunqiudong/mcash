@@ -33,4 +33,4 @@ simb: vcs
 
 vd:
 	verdi -elab ./build/simv.daidir/kdb \
-	-ssf $(CASE_PATH)/$(CASE_NAME).fdsb &
+	-ssf $(CASE_PATH)/$(CASE_NAME).fsdb &
