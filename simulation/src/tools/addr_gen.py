@@ -16,7 +16,7 @@ def main():
       addr_bin = "{:032b}".format(addr)
       op_bin = "{:03b}".format(2)
       data_bin = "{:0128b}".format(0)
-      print(op_bin + addr_bin + addr_bin)
+      print(op_bin + data_bin + addr_bin)
       tag = tag + 1
 
     tag = 0
