@@ -78,10 +78,13 @@ module cross_bar_top(
     .mcash_ch0_req_valid_i  (mcash_ch0_req_valid_i     ),
     .mcash_ch0_req_allowIn_o(mcash_ch0_req_allowIn_o   ),
     .mcash_ch0_req_addr_i   (mcash_ch0_req_addr_i[31:4]),
+    .mcash_ch0_req_op_i     (mcash_ch0_req_op_i[1:0]   ),
     .mcash_ch1_req_valid_i  (mcash_ch1_req_valid_i     ),
     .mcash_ch1_req_allowIn_o(mcash_ch1_req_allowIn_o   ),
+    .mcash_ch1_req_op_i     (mcash_ch1_req_op_i[1:0]   ),
     .mcash_ch1_req_addr_i   (mcash_ch1_req_addr_i[31:4]),
     .mcash_ch2_req_valid_i  (mcash_ch2_req_valid_i     ),
+    .mcash_ch2_req_op_i     (mcash_ch2_req_op_i[1:0]   ),
     .mcash_ch2_req_allowIn_o(mcash_ch2_req_allowIn_o   ),
     .mcash_ch2_req_addr_i   (mcash_ch2_req_addr_i[31:4]),
     // bank 0

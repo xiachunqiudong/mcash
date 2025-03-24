@@ -14,21 +14,24 @@ module bank_htu_offset (
   parameter DIRTY = 2'b10;
 
   wire       offset_state_wen;
+  wire       empty_to_sync;
+  wire       empty_to_dirty;
+  wire       sync_to_empty;
+  wire       sync_to_dirty;
+  wire       dirty_to_empty;
+  wire       dirty_to_sync;
+  wire       nstate_is_empty;
+  wire       nstate_is_sync;
+  wire       nstate_is_dirty;
   wire       offset_is_empty;
   wire       offset_is_sync;
   wire       offset_is_dirty;
   wire [1:0] offset_state_In;
   reg  [1:0] offset_state_Q;
 
-  wire empty_to_sync;
-  wire empty_to_dirty;
-  wire sync_to_empty;
-  wire sync_to_dirty;
-  wire dirty_to_empty;
-  wire dirty_to_sync;
-  wire nstate_is_empty;
-  wire nstate_is_sync;
-  wire nstate_is_dirty;
+  assign offset_is_empty = offset_state_Q[1:0] == EMPTY[1:0];
+  assign offset_is_sync  = offset_state_Q[1:0] == SYNC[1:0];
+  assign offset_is_dirty = offset_state_Q[1:0] == DIRTY[1:0];
 
   assign empty_to_sync = offset_is_empty
                        & op_is_read_i

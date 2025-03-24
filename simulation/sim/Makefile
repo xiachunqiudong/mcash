@@ -11,11 +11,6 @@ endif
 
 BUILD_DIR = ./build
 
-MCASH_DUMP_LOG ?= $(CASE_PATH)/$(CASE_NAME).log
-
-CASE_PATH ?= /home/ICer/project/smoke_test
-CASE_NAME ?= ruike1
-
 gen_code:
 	python3 $(MCASH_HOME)/simulation/src/tools/addr_gen.py > $(CASE_PATH)/$(CASE_NAME).hex
 
