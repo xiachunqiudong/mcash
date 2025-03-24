@@ -12,7 +12,7 @@ module bank_htu(
   output wire        htu_isu_valid_o,
   input  wire        htu_isu_ready_i,
   output wire [1:0]  htu_isu_ch_id_o,
-  output wire [1:0]  htu_isu_opcode_o,
+  output wire [2:0]  htu_isu_opcode_o,
   output wire [6:0]  htu_isu_set_way_offset_o,
   output wire [7:0]  htu_isu_wbuffer_id_o,
   output wire [1:0]  htu_isu_cacheline_offset0_state_o,
@@ -66,6 +66,11 @@ module bank_htu(
   wire [2:0] set6_access_way;
   wire [2:0] set7_access_way;
 
+  wire       htu_op_is_read;
+  wire       htu_op_is_read_with_linefill;
+  wire       htu_op_is_write;
+  wire       htu_op_is_write_back;
+
 //---------------------------------------------------------------
 //  cache opcode
 // 00 : read data
@@ -91,6 +96,34 @@ module bank_htu(
 
   assign cacheline_hit = |cacheline_hit_array[7:0];
 
+  assign access_way[2:0] = {3{set_hit_array[0]}} & set0_access_way[2:0]
+                         | {3{set_hit_array[1]}} & set1_access_way[2:0]
+                         | {3{set_hit_array[2]}} & set2_access_way[2:0]
+                         | {3{set_hit_array[3]}} & set3_access_way[2:0]
+                         | {3{set_hit_array[4]}} & set4_access_way[2:0]
+                         | {3{set_hit_array[5]}} & set5_access_way[2:0]
+                         | {3{set_hit_array[6]}} & set6_access_way[2:0]
+                         | {3{set_hit_array[7]}} & set7_access_way[2:0];
+
+//-------------------------------------------------------------------------
+//                               HTU >> ISU
+//-------------------------------------------------------------------------
+  assign htu_isu_valid_o = xbar_bank_htu_valid_i;
+
+  assign htu_isu_ch_id_o[1:0] = xbar_bank_htu_ch_id_i[1:0];
+
+  assign htu_op_is_read = cacheline_hit & op_is_read;
+
+  assign htu_op_is_read_with_linefill = ~cacheline_hit;
+
+  assign htu_op_is_write = cacheline_hit & op_is_write;
+
+  assign htu_isu_opcode_o[1:0] = xbar_bank_htu_ch_id_i[1:0];
+
+  assign htu_isu_set_way_offset_o[6:0] = {xbar_bank_htu_addr_i[7:5],
+                                          access_way[2:0],
+                                          xbar_bank_htu_addr_i[4]};
+
   assign htu_isu_cacheline_offset0_state_o[1:0] = {2{set_hit_array[0]}} & set0_cacheline_offset0_state[1:0]
                                                 | {2{set_hit_array[1]}} & set1_cacheline_offset0_state[1:0]
                                                 | {2{set_hit_array[2]}} & set2_cacheline_offset0_state[1:0]
@@ -108,19 +141,6 @@ module bank_htu(
                                                 | {2{set_hit_array[5]}} & set5_cacheline_offset1_state[1:0]
                                                 | {2{set_hit_array[6]}} & set6_cacheline_offset1_state[1:0]
                                                 | {2{set_hit_array[7]}} & set7_cacheline_offset1_state[1:0];
-
-  assign access_way[2:0] = {3{set_hit_array[0]}} & set0_access_way[2:0]
-                         | {3{set_hit_array[1]}} & set1_access_way[2:0]
-                         | {3{set_hit_array[2]}} & set2_access_way[2:0]
-                         | {3{set_hit_array[3]}} & set3_access_way[2:0]
-                         | {3{set_hit_array[4]}} & set4_access_way[2:0]
-                         | {3{set_hit_array[5]}} & set5_access_way[2:0]
-                         | {3{set_hit_array[6]}} & set6_access_way[2:0]
-                         | {3{set_hit_array[7]}} & set7_access_way[2:0];
-
-  assign htu_isu_set_way_offset_o[6:0] = {xbar_bank_htu_addr_i[7:5],
-                                          access_way[2:0],
-                                          xbar_bank_htu_addr_i[4]};
 
 // set0
   bank_htu_set_entry
