@@ -28,8 +28,25 @@ module bank_htu(
   output wire [31:4] htu_submem_set_addr_o
 );
 
+  wire       op_is_read;
+  wire       op_is_write;
+  wire       op_is_flush;
+  wire       op_is_invalidate;
+
   wire [7:0] set_hit_array;
-  wire [7:0] set_hit_arrayWV;
+  wire [7:0] set_hit_array_WV;
+
+//---------------------------------------------------------------
+//  cache opcode
+// 00 : read data
+// 01 : write data
+// 10 : flush dirty cacheline
+// 11 : cache invalidate
+//---------------------------------------------------------------
+  assign op_is_read       = xbar_bank_htu_opcode_i[1:0] == 2'b00;
+  assign op_is_write      = xbar_bank_htu_opcode_i[1:0] == 2'b01;
+  assign op_is_flush      = xbar_bank_htu_opcode_i[1:0] == 2'b10;
+  assign op_is_invalidate = xbar_bank_htu_opcode_i[1:0] == 2'b11;
 
   assign set_hit_array[7:0] = {xbar_bank_htu_addr_i[7:5] == 3'd7,
                                xbar_bank_htu_addr_i[7:5] == 3'd6,
@@ -40,17 +57,20 @@ module bank_htu(
                                xbar_bank_htu_addr_i[7:5] == 3'd1,
                                xbar_bank_htu_addr_i[7:5] == 3'd0};
 
-  assign set_hit_arrayWV[7:0] = {8{xbar_bank_htu_valid_i}} & set_hit_array[7:0];
+  assign set_hit_array_WV[7:0] = {8{xbar_bank_htu_valid_i}} & set_hit_array[7:0];
 
-  bank_htu_set_status
-  u_bank_htu_set0_status (
-    .clk_i(clk_i                          ),
-    .rst_i(rst_i                          ),
-    .set_hit_i(set_hit_arrayWV[0]         ),
-    .set_tag_i(xbar_bank_htu_addr_i[31:10]),
-    .offset_i(xbar_bank_htu_addr_i[4]     )
+  bank_htu_set_entry
+  u_bank_htu_set_entry0 (
+    .clk_i             (clk_i                       ),
+    .rst_i             (rst_i                       ),
+    .op_is_read_i      (op_is_read                  ),
+    .op_is_write_i     (op_is_write                 ),
+    .op_is_flush_i     (op_is_flush                 ),
+    .op_is_invalidate_i(op_is_invalidate            ),
+    .set_hit_WV_i      (set_hit_array_WV[0]         ),
+    .access_tag_i      (xbar_bank_htu_addr_i[31:10] ),
+    .access_offset_i   (xbar_bank_htu_addr_i[4]     )
   );
-
 
 
 endmodule
