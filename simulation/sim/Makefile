@@ -1,6 +1,8 @@
 TOP ?= mcash_tb
 
-MCASH_HOME = /home/ICer/project/mcash
+SIM_DIR = $(shell pwd)
+MCASH_HOME = $(SIM_DIR)/../../
+
 export MCASH_HOME
 
 ifeq ($(TOP), arbiter_tb)
