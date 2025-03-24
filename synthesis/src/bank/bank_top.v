@@ -15,8 +15,8 @@ module bank_top(
   wire [1:0]   htu_isu_opcode;
   wire [6:0]   htu_isu_set_way_offset;
   wire [7:0]   htu_isu_wbuffer_id;
-  wire [1:0]   htu_isu_cacheline_offset0_dirty;
-  wire [1:0]   htu_isu_cacheline_offset1_dirty;
+  wire [1:0]   htu_isu_cacheline_offset0_state;
+  wire [1:0]   htu_isu_cacheline_offset1_state;
 
   wire         isu_sc_valid;
   wire         isu_sc_ready;
@@ -67,8 +67,8 @@ module bank_top(
     .htu_isu_opcode_o                 (htu_isu_opcode[1:0]                 ),
     .htu_isu_set_way_offset_o         (htu_isu_set_way_offset[6:0]         ),
     .htu_isu_wbuffer_id_o             (htu_isu_wbuffer_id[7:0]             ),
-    .htu_isu_cacheline_offset0_dirty_o(htu_isu_cacheline_offset0_dirty[1:0]),
-    .htu_isu_cacheline_offset1_dirty_o(htu_isu_cacheline_offset1_dirty[1:0]),
+    .htu_isu_cacheline_offset0_state_o(htu_isu_cacheline_offset0_state[1:0]),
+    .htu_isu_cacheline_offset1_state_o(htu_isu_cacheline_offset1_state[1:0]),
     .isu_htu_already_done_valid_i     (),
     .isu_htu_set_way_i                (),
     .htu_submem_valid_o               (),

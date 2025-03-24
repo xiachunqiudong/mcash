@@ -1,13 +1,17 @@
 module bank_htu_set_entry (
-  input wire         clk_i,
-  input wire         rst_i,
-  input wire         op_is_read_i,
-  input wire         op_is_write_i,
-  input wire         op_is_flush_i,
-  input wire         op_is_invalidate_i,
-  input wire         set_hit_WV_i,
-  input wire [31:10] access_tag_i,
-  input wire         access_offset_i
+  input  wire         clk_i,
+  input  wire         rst_i,
+  input  wire         op_is_read_i,
+  input  wire         op_is_write_i,
+  input  wire         op_is_flush_i,
+  input  wire         op_is_invalidate_i,
+  input  wire         set_hit_WV_i,
+  input  wire [31:10] access_tag_i,
+  input  wire         access_offset_i,
+  output wire         cacheline_hit_o,
+  output wire [1:0]   cacheline_offset0_state_o,
+  output wire [1:0]   cacheline_offset1_state_o,
+  output wire [2:0]   access_way_o
 );
 
   wire       cacheline_hit_WV;
@@ -35,14 +39,47 @@ module bank_htu_set_entry (
   wire [6:0] plru_tree_In;
   reg  [6:0] plru_tree_Q;
 
-//--------------------------------------------------------------
-//                     Cache line state
-//--------------------------------------------------------------
-  assign cacheline_hit_WV  =  (|cacheline_hit_array[7:0]) & set_hit_WV_i;
-  assign cacheline_miss_WV = ~(|cacheline_hit_array[7:0]) & set_hit_WV_i;
+
+  assign cacheline_hit_o = |cacheline_hit_array[7:0];
+
+  assign cacheline_hit_WV  =  cacheline_hit_o & set_hit_WV_i;
+  assign cacheline_miss_WV = ~cacheline_hit_o & set_hit_WV_i;
 
   assign cacheline_allocate_array[7:0] = {8{cacheline_miss_WV}} & oldest_way_array[7:0];
 
+  assign access_way_array[7:0] = {8{cacheline_hit_WV}}  & cacheline_hit_array[7:0] // cacheline hit
+                               | cacheline_allocate_array[7:0];                    // cacheline miss
+
+  assign cacheline_offset0_state_o[1:0] = {2{access_way_array[0]}} & cacheline0_offset0_state[1:0]
+                                        | {2{access_way_array[1]}} & cacheline1_offset0_state[1:0]
+                                        | {2{access_way_array[2]}} & cacheline2_offset0_state[1:0]
+                                        | {2{access_way_array[3]}} & cacheline3_offset0_state[1:0]
+                                        | {2{access_way_array[4]}} & cacheline4_offset0_state[1:0]
+                                        | {2{access_way_array[5]}} & cacheline5_offset0_state[1:0]
+                                        | {2{access_way_array[6]}} & cacheline6_offset0_state[1:0]
+                                        | {2{access_way_array[7]}} & cacheline7_offset0_state[1:0];
+
+  assign cacheline_offset1_state_o[1:0] = {2{access_way_array[0]}} & cacheline0_offset1_state[1:0]
+                                        | {2{access_way_array[1]}} & cacheline1_offset1_state[1:0]
+                                        | {2{access_way_array[2]}} & cacheline2_offset1_state[1:0]
+                                        | {2{access_way_array[3]}} & cacheline3_offset1_state[1:0]
+                                        | {2{access_way_array[4]}} & cacheline4_offset1_state[1:0]
+                                        | {2{access_way_array[5]}} & cacheline5_offset1_state[1:0]
+                                        | {2{access_way_array[6]}} & cacheline6_offset1_state[1:0]
+                                        | {2{access_way_array[7]}} & cacheline7_offset1_state[1:0];
+
+  assign access_way_o[2:0] = {3{access_way_array[0]}} & 3'd0
+                           | {3{access_way_array[1]}} & 3'd1
+                           | {3{access_way_array[2]}} & 3'd2
+                           | {3{access_way_array[3]}} & 3'd3
+                           | {3{access_way_array[4]}} & 3'd4
+                           | {3{access_way_array[5]}} & 3'd5
+                           | {3{access_way_array[6]}} & 3'd6
+                           | {3{access_way_array[7]}} & 3'd7;
+
+//--------------------------------------------------------------
+//                     Cache line state
+//--------------------------------------------------------------
   bank_htu_cacheline
   cacheline0 (
     .clk_i               (clk_i                        ),
@@ -182,9 +219,6 @@ module bank_htu_set_entry (
 //--------------------------------------------------------------
 //                     PLRU Tree
 //--------------------------------------------------------------
-  assign access_way_array[7:0] = {8{cacheline_hit_WV}}  & cacheline_hit_array[7:0]
-                               | {8{cacheline_miss_WV}} & oldest_way_array[7:0];
-
   bank_htu_plru_tree
   u_bank_htu_plru_tree(
     .clk_i             (clk_i                ),
