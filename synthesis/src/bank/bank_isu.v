@@ -5,7 +5,7 @@ module bank_isu (
   input  wire         htu_isu_valid_i,
   output wire         htu_isu_ready_o,
   input  wire [1:0]   htu_isu_ch_id_i,
-  input  wire [2:0]   htu_isu_opcode_i,
+  input  wire [1:0]   htu_isu_opcode_i,
   input  wire [6:0]   htu_isu_set_way_offset_i,
   input  wire [7:0]   htu_isu_wbuffer_id_i,
   input  wire [1:0]   htu_isu_cacheline_offset0_state_i,
@@ -36,13 +36,9 @@ module bank_isu (
 
   assign isu_sc_channel_id_o[1:0] = htu_isu_ch_id_i[1:0];
 
-  assign isu_sc_opcode_o[2:0] = htu_isu_opcode_i[2:0];
+  assign isu_sc_opcode_o[1:0] = htu_isu_opcode_i[1:0];
 
   assign htu_isu_set_way_offset_i[6:0] = htu_isu_set_way_offset_i[6:0];
-
-  assign isu_sc_channel_id_o[1:0] = 2'b00;
-  // assign isu_sc_opcode_o[2:0] = 3'd0; // write
-  assign isu_sc_opcode_o[2:0] = 3'd1; // read
 
   assign isu_sc_wbuffer_id_o[7:0] = 8'd0;
   assign isu_sc_xbar_rob_num_o[2:0] = 'd0;
