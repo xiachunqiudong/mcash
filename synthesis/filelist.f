@@ -14,7 +14,7 @@ $MCASH_HOME/synthesis/src/bank/bank_htu_set_entry.v
 $MCASH_HOME/synthesis/src/bank/bank_htu_cacheline.v
 $MCASH_HOME/synthesis/src/bank/bank_htu_offset.v
 $MCASH_HOME/synthesis/src/bank/bank_htu_plru_tree.v
-$MCASH_HOME/synthesis/src/bank/bank_isu.v
+$MCASH_HOME/synthesis/src/bank/bank_isu_top.v
 $MCASH_HOME/synthesis/src/bank/bank_sram_controller.v
 $MCASH_HOME/synthesis/src/bank/bank_wbuffer.v
 
