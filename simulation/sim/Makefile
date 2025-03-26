@@ -1,7 +1,7 @@
 TOP ?= mcash_tb
 
 SIM_DIR = $(shell pwd)
-MCASH_HOME = $(SIM_DIR)/../../
+MCASH_HOME = $(SIM_DIR)/../..
 
 export MCASH_HOME
 

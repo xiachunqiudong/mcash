@@ -3,6 +3,7 @@ $MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
 
 $MCASH_HOME/simulation/src/commons/ram_sp.v
 $MCASH_HOME/synthesis/src/commons/round_robin_arbiter.v
+$MCASH_HOME/synthesis/src/commons/rob_id_gen.v
 
 $MCASH_HOME/synthesis/src/mcash_top.v
 
@@ -15,6 +16,7 @@ $MCASH_HOME/synthesis/src/bank/bank_htu_cacheline.v
 $MCASH_HOME/synthesis/src/bank/bank_htu_offset.v
 $MCASH_HOME/synthesis/src/bank/bank_htu_plru_tree.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_top.v
+$MCASH_HOME/synthesis/src/bank/bank_isu_iq.v
 $MCASH_HOME/synthesis/src/bank/bank_sram_controller.v
 $MCASH_HOME/synthesis/src/bank/bank_wbuffer.v
 

@@ -103,6 +103,10 @@ module bank_top(
     .htu_isu_wbuffer_id_i             (htu_isu_wbuffer_id[7:0]             ),
     .htu_isu_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state[1:0]),
     .htu_isu_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state[1:0]),
+    .biu_isu_valid_i (),
+    .biu_isu_ready_o(),
+    .biu_isu_rdata_i(),
+    .biu_isu_rid_i(),
     .isu_sc_valid_o                   (isu_sc_valid                        ),
     .isu_sc_ready_i                   (isu_sc_ready                        ),
     .isu_sc_channel_id_o              (isu_sc_channel_id[1:0]              ),
@@ -113,7 +117,10 @@ module bank_top(
     .isu_sc_cacheline_dirty_offset0_o (isu_sc_cacheline_dirty_offset0[1:0] ),
     .isu_sc_cacheline_dirty_offset1_o (isu_sc_cacheline_dirty_offset1[1:0] ),
     .isu_sc_linefill_data_offset0_o   (isu_sc_linefill_data_offset0[127:0] ),
-    .isu_sc_linefill_data_offset1_o   (isu_sc_linefill_data_offset1[127:0] )
+    .isu_sc_linefill_data_offset1_o   (isu_sc_linefill_data_offset1[127:0] ),
+    .xbar_isu_ch0_credit(),
+    .xbar_isu_ch1_credit(),
+    .xbar_isu_ch2_credit()
   );
 
 //---------------------------------------------------------------------------------

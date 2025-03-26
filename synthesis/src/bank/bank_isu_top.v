@@ -6,6 +6,9 @@ module bank_isu_top (
   input  wire         clk_i,
   input  wire         rst_i,
   // htu >> isu
+  input  wire         htu_isu_linefill_valid_i,
+  input  wire [2:0]   htu_isu_linefill_set_i,
+  input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire         htu_isu_valid_i,
   output wire         htu_isu_ready_o,
   input  wire [1:0]   htu_isu_ch_id_i,
@@ -14,10 +17,12 @@ module bank_isu_top (
   input  wire [7:0]   htu_isu_wbuffer_id_i,
   input  wire [1:0]   htu_isu_cacheline_offset0_state_i,
   input  wire [1:0]   htu_isu_cacheline_offset1_state_i,
+  // bui >> isu
+  input  wire         biu_isu_valid_i,
+  output wire         biu_isu_ready_o,
+  input  wire [255:0] biu_isu_rdata_i,
+  input  wire [5:0]   biu_isu_rid_i,
   // isu >> sc
-  output wire         htu_isu_linefill_valid_i,
-  output wire [2:0]   htu_isu_linefill_set_i,
-  output wire [2:0]   htu_isu_linefill_way_i,
   output wire         isu_sc_valid_o,
   input  wire         isu_sc_ready_i,
   output wire [1:0]   isu_sc_channel_id_o,
@@ -28,7 +33,10 @@ module bank_isu_top (
   output wire [1:0]   isu_sc_cacheline_dirty_offset0_o,
   output wire [1:0]   isu_sc_cacheline_dirty_offset1_o,
   output wire [127:0] isu_sc_linefill_data_offset0_o,
-  output wire [127:0] isu_sc_linefill_data_offset1_o
+  output wire [127:0] isu_sc_linefill_data_offset1_o,
+  input  wire [2:0]   xbar_isu_ch0_credit,
+  input  wire [2:0]   xbar_isu_ch1_credit,
+  input  wire [2:0]   xbar_isu_ch2_credit
 );
 
   wire [7:0] htu_isu_linefill_set_dcd;
@@ -165,7 +173,37 @@ module bank_isu_top (
   reg [127:0] line_fill_data;
 
 //-------------------------------------------------------------------------
-//                               ISU >> SC
+//                Reorder buffer ID generate
+//-------------------------------------------------------------------------
+  wire [2:0] isu_rob_id;
+
+  rob_id_gen #(
+    .ID_WIDTH(3)
+  ) u_isu_rob_id_gen(
+    .clk_i    (clk_i          ),
+    .rst_i    (rst_i          ),
+    .kickoff_i(htu_isu_valid_i),
+    .rob_id_o (isu_rob_id[2:0])
+  );
+
+  bank_isu_iq #(
+    .PTR_WIDH(4)
+  ) u_isu_iq (
+    .clk_i                (clk_i),
+    .rst_i                (rst_i),
+    .req_valid_i          (htu_isu_valid_i),
+    .req_allowIn_o        (),
+    .req_rob_id_i         (isu_rob_id[2:0]),
+    .req_ch_id_i          (htu_isu_ch_id_i[1:0]),
+    .req_opcode_i         (),
+    .req_set_way_offset_i (),
+    .req_wbuffer_id_i     (),
+    .req_cacheline_state_i()
+  );
+
+
+//-------------------------------------------------------------------------
+//                              ISU >> SC
 //-------------------------------------------------------------------------
   assign isu_sc_valid_o = htu_isu_valid_i;
 
