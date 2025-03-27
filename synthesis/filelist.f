@@ -19,6 +19,7 @@ $MCASH_HOME/synthesis/src/bank/bank_isu_top.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_iq.v
 $MCASH_HOME/synthesis/src/bank/bank_sram_controller.v
 $MCASH_HOME/synthesis/src/bank/bank_wbuffer.v
+$MCASH_HOME/synthesis/src/bank/bank_biu_top.v
 
 $MCASH_HOME/synthesis/src/cross_bar/channel_entry_rr.v
 $MCASH_HOME/synthesis/src/cross_bar/bank_ch_rr.v

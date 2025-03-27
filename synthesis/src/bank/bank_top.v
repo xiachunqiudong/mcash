@@ -24,7 +24,7 @@ module bank_top(
   wire        htu_biu_ready;
   wire [1:0]  htu_biu_opcode;
   wire [5:0]  htu_biu_set_way;
-  wire [31:5] htu_biu_set_addr;
+  wire [31:5] htu_biu_addr;
 
   wire         isu_sc_valid;
   wire         isu_sc_ready;
@@ -42,12 +42,12 @@ module bank_top(
   wire [1:0]   sc_xbar_channel_id;
   wire [2:0]   sc_xbar_rob_num;
   wire [127:0] sc_xbar_data;
-  wire         sc_subm_valid;
-  wire         sc_subm_ready;
-  wire [127:0] sc_subm_data;
-  wire         sc_subm_offset;
-  wire         sc_subm_all_offset;
-  wire [6:0]   sc_subm_set_way_offset;
+  wire         sc_biu_valid;
+  wire         sc_biu_ready;
+  wire [127:0] sc_biu_data;
+  wire         sc_biu_offset;
+  wire         sc_biu_all_offset;
+  wire [6:0]   sc_biu_set_way_offset;
   wire         sc_wbuf_req_valid;
   wire         sc_wbuf_req_ready;
   wire [1:0]   sc_wbuf_req_channel_id;
@@ -55,13 +55,6 @@ module bank_top(
   wire         sc_wbuf_rtn_valid;
   wire         sc_wbuf_rtn_ready;
   wire [127:0] sc_wbuf_rtn_data;
-
- 
-  wire         htu_biu_valid;
-  wire         htu_biu_ready;
-  wire [1:0]   htu_biu_op_code;
-  wire [5:0]   htu_biu_set_way;
-  wire [31:5]  htu_biu_addr;
 
   wire         biu_isu_rvalid;
   wire         biu_isu_rready;
@@ -113,7 +106,7 @@ module bank_top(
     .htu_biu_ready_i                  (htu_biu_ready                       ),
     .htu_biu_opcode_o                 (htu_biu_opcode[1:0]                 ),
     .htu_biu_set_way_o                (htu_biu_set_way[5:0]                ),
-    .htu_biu_set_addr_o               (htu_biu_set_addr[31:5]              )
+    .htu_biu_addr_o               (htu_biu_addr[31:5]              )
   );
 
 
@@ -159,16 +152,16 @@ module bank_top(
 //                                     BIU
 //---------------------------------------------------------------------------------
   bank_biu_top #(
-    ADDR_WIDTH = 32,
-    DATA_WIDTH = 256,
-    STRB_WIDTH = DATA_WIDTH / 8
+    .ADDR_WIDTH(32),
+    .DATA_WIDTH(256),
+    .ID_WIDTH  (6)
   )
   u_bank_biu (
   .clk_i                   (clk_i),
   .rst_i                   (rst_i),
   .htu_biu_valid_i         (htu_biu_valid),
   .htu_biu_ready_o         (htu_biu_ready),
-  .htu_biu_op_code_i       (htu_biu_op_code[1:0]),
+  .htu_biu_opcode_i        (htu_biu_opcode[1:0]),
   .htu_biu_set_way_i       (htu_biu_set_way[5:0]),
   .htu_biu_addr_i          (htu_biu_addr[31:5]),
   .sc_biu_valid_i          (),
@@ -235,12 +228,12 @@ module bank_top(
     .sc_xbar_channel_id_o            (sc_xbar_channel_id[1:0]            ),
     .sc_xbar_rob_num_o               (sc_xbar_rob_num[2:0]               ),
     .sc_xbar_data_o                  (sc_xbar_data[127:0]                ),
-    .sc_subm_valid_o                 (sc_subm_valid                      ),
-    .sc_subm_ready_i                 (sc_subm_ready                      ),
-    .sc_subm_data_o                  (sc_subm_data[127:0]                ),
-    .sc_subm_offset_o                (sc_subm_offset                     ),
-    .sc_subm_all_offset_o            (sc_subm_all_offset                 ),
-    .sc_subm_set_way_offset_o        (sc_subm_set_way_offset[6:0]        ),
+    .sc_biu_valid_o                  (sc_biu_valid                      ),
+    .sc_biu_ready_i                  (sc_biu_ready                      ),
+    .sc_biu_data_o                   (sc_biu_data[127:0]                ),
+    .sc_biu_offset_o                 (sc_biu_offset                     ),
+    .sc_biu_all_offset_o             (sc_biu_all_offset                 ),
+    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]        ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_ready_i             (sc_wbuf_req_ready                  ),
     .sc_wbuf_req_channel_id_o        (sc_wbuf_req_channel_id[1:0]        ),

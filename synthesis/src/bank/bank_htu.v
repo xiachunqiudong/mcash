@@ -28,7 +28,7 @@ module bank_htu(
   input  wire        htu_biu_ready_i,
   output wire [1:0]  htu_biu_opcode_o,
   output wire [5:0]  htu_biu_set_way_o,
-  output wire [31:5] htu_biu_set_addr_o
+  output wire [31:5] htu_biu_addr_o
 );
 
   wire         op_is_read;

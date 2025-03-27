@@ -2,14 +2,14 @@ module bank_biu_top #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 256,
     parameter STRB_WIDTH = DATA_WIDTH / 8,
-    parameter ID_WIDTH-1 = 4
+    parameter ID_WIDTH   = 6
 ) (
   input  wire                  clk_i,
   input  wire                  rst_i,
   // htu >> biu
   input  wire                  htu_biu_valid_i,
   output wire                  htu_biu_ready_o,
-  input  wire [1:0]            htu_biu_op_code_i,
+  input  wire [1:0]            htu_biu_opcode_i,
   input  wire [ID_WIDTH-1:0]            htu_biu_set_way_i,
   input  wire [31:5]           htu_biu_addr_i,
   // sram >> biu
@@ -60,17 +60,18 @@ module bank_biu_top #(
 //                            AXI3 Bus Configure
 //-------------------------------------------------------------------------
   assign biu_axi3_arvalid_o                = htu_biu_valid_i 
-                                           & htu_biu_op_code_i[1:0] == 2'b00;
+                                           & htu_biu_opcode_i[1:0] == 2'b00;
   assign biu_axi3_arid_o[5:0]              = htu_biu_set_way_i[5:0];
   assign biu_axi3_arsize_o[2:0]            = 3'b101;  // 32 Byte
   assign biu_axi3_arlen_o[3:0]             = 4'b0000;
   assign biu_axi3_arburst_o[1:0]           = 2'b01;   // Incrementing burst
-  assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {htu_biu_addr_i[31:4], 5'b00000};
+  assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {htu_biu_addr_i[31:5], 5'b00000};
 
   assign biu_axi3_rready_o                = 1'b1;
 
 // axi3 bus test
   reg [2:0] isu_cnt;
+  reg [ID_WIDTH-1:0]htu_biu_set_way_Q;
   assign biu_isu_rvalid_o = isu_cnt == 'd1;
   
   always @(posedge clk_i or posedge rst_i) begin
@@ -87,7 +88,7 @@ module bank_biu_top #(
     end
   end
   
-  always @(posedge clk_i or posedge ) begin
+  always @(posedge clk_i) begin
       if (htu_biu_valid_i && htu_biu_ready_o) begin
           htu_biu_set_way_Q <= htu_biu_set_way_i;
       end
@@ -104,7 +105,7 @@ module bank_biu_top #(
   assign biu_isu_rvalid_o                = biu_axi3_rvalid_i
                                          & biu_axi3_rready_o
                                          & biu_axi3_rresp_i;
-  assign biu_siu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
-  assign biu_isu_rid[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
+  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
+  assign biu_isu_rid_o[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
 
 endmodule
