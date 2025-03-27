@@ -18,8 +18,8 @@ module bank_isu_top (
   input  wire [1:0]   htu_isu_cacheline_offset0_state_i,
   input  wire [1:0]   htu_isu_cacheline_offset1_state_i,
   // bui >> isu
-  input  wire         biu_isu_rdata_valid_i,
-  output wire         biu_isu_rdata_ready_o,
+  input  wire         biu_isu_rvalid_i,
+  output wire         biu_isu_rready_o,
   input  wire [255:0] biu_isu_rdata_i,
   input  wire [5:0]   biu_isu_rid_i,
   // isu >> sc
@@ -80,6 +80,10 @@ module bank_isu_top (
 //-------------------------------------------------------------------------
 //                            In-flight array
 //-------------------------------------------------------------------------
+
+
+  assign biu_isu_rready_o = 1'b1;
+
   assign htu_isu_linefill_set_dcd[7:0] = {htu_isu_linefill_set_i[2:0] == 3'd7,
                                           htu_isu_linefill_set_i[2:0] == 3'd6,
                                           htu_isu_linefill_set_i[2:0] == 3'd5,
