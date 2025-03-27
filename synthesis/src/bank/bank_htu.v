@@ -13,7 +13,7 @@ module bank_htu(
   output wire [2:0]  htu_isu_linefill_set_o,
   output wire [2:0]  htu_isu_linefill_way_o,
   output wire        htu_isu_valid_o,
-  input  wire        htu_isu_ready_i,
+  input  wire        htu_isu_allowIn_i,
   output wire [1:0]  htu_isu_ch_id_o,
   output wire [1:0]  htu_isu_opcode_o,
   output wire [6:0]  htu_isu_set_way_offset_o,

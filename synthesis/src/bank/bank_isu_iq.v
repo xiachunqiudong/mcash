@@ -10,7 +10,8 @@ module bank_isu_iq #(
   input  wire [1:0] req_opcode_i,
   input  wire [6:0] req_set_way_offset_i,
   input  wire [7:0] req_wbuffer_id_i,
-  input  wire [3:0] req_cacheline_state_i
+  input  wire [1:0] req_cacheline_offset0_state_i,
+  input  wire [1:0] req_cacheline_offset1_state_i
 );
 
   parameter DEPTH = 1 << PTR_WIDH;
@@ -23,11 +24,22 @@ module bank_isu_iq #(
   wire [PTR_WIDH-1:0] writePtr_In;
   reg  [PTR_WIDH-1:0] writePtr_Q;
 
-  wire [DEPTH-1:0] valid_array_In;
-  reg  [DEPTH-1:0] valid_array_Q;
-
-  reg  [2:0] rob_id_array_In [DEPTH-1:0];
-  reg  [2:0] rob_id_array_Q  [DEPTH-1:0];
+  wire [DEPTH-1:0]    valid_array_In;
+  reg  [DEPTH-1:0]    valid_array_Q;
+  reg  [2:0]          rob_id_array_In          [DEPTH-1:0];
+  reg  [2:0]          rob_id_array_Q           [DEPTH-1:0];
+  reg  [1:0]          ch_id_array_In           [DEPTH-1:0];
+  reg  [1:0]          ch_id_array_Q            [DEPTH-1:0];
+  reg                 opcode0_array_In         [DEPTH-1:0];
+  reg                 opcode0_array_Q          [DEPTH-1:0];
+  reg                 opcode1_array_In         [DEPTH-1:0];
+  reg                 opcode1_array_Q          [DEPTH-1:0];
+  reg [6:0]           set_way_offset_array_In  [DEPTH-1:0];
+  reg [6:0]           set_way_offset_array_Q   [DEPTH-1:0];
+  reg [6:0]           wbuffer_id_array_In      [DEPTH-1:0];
+  reg [6:0]           wbuffer_id_array_Q       [DEPTH-1:0];
+  reg [3:0]           cacheline_state_array_In [DEPTH-1:0];
+  reg [3:0]           cacheline_state_array_Q  [DEPTH-1:0];
 
   assign req_allowIn_o = queue_size_Q[PTR_WIDH:0] != DEPTH[PTR_WIDH:0];
 
@@ -51,18 +63,34 @@ module bank_isu_iq #(
     end
   end
 
+// update issue queue
   always @(*) begin
-    rob_id_array_In = rob_id_array_Q;
-    if (writePtr_kickoff) begin
-      rob_id_array_In[writePtr_Q] = req_rob_id_i;
-    end
+    // default value
+    rob_id_array_In                      = rob_id_array_Q;
+    ch_id_array_In                       = ch_id_array_Q;
+    opcode0_array_In                     = opcode0_array_Q;
+    set_way_offset_array_In              = set_way_offset_array_Q;
+    wbuffer_id_array_In                  = wbuffer_id_array_Q;
+    cacheline_state_array_In             = cacheline_state_array_Q;
+    // update value
+    rob_id_array_In[writePtr_Q]          = req_rob_id_i;
+    ch_id_array_In[writePtr_Q]           = req_ch_id_i;
+    opcode0_array_In[writePtr_Q]         = req_opcode_i[0];
+    set_way_offset_array_In[writePtr_Q]  = req_set_way_offset_i;
+    wbuffer_id_array_In[writePtr_Q]      = req_wbuffer_id_i;
+    cacheline_state_array_In[writePtr_Q] = {req_cacheline_offset1_state_i[1:0],
+                                            req_cacheline_offset0_state_i[1:0]};
   end
 
   always @(posedge clk_i) begin
-    if (writePtr_kickoff) begin
-      rob_id_array_Q <= rob_id_array_In;
+    if (writePtr_kickoff) begin // update array when write
+      rob_id_array_Q          <= rob_id_array_In;
+      ch_id_array_Q           <= ch_id_array_In;
+      opcode0_array_Q         <= opcode0_array_In;
+      set_way_offset_array_Q  <= set_way_offset_array_In;
+      wbuffer_id_array_Q      <= wbuffer_id_array_In;
+      cacheline_state_array_Q <= cacheline_state_array_In;
     end
   end
-
 
 endmodule

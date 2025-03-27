@@ -13,7 +13,7 @@ module bank_top(
   wire [2:0]   htu_isu_linefill_set;
   wire [2:0]   htu_isu_linefill_way;
   wire         htu_isu_valid;
-  wire         htu_isu_ready;
+  wire         htu_isu_allowIn;
   wire [1:0]   htu_isu_ch_id;
   wire [1:0]   htu_isu_opcode;
   wire [6:0]   htu_isu_set_way_offset;
@@ -68,7 +68,7 @@ module bank_top(
     .htu_isu_linefill_set_o           (htu_isu_linefill_set[2:0]           ),
     .htu_isu_linefill_way_o           (htu_isu_linefill_way[2:0]           ),
     .htu_isu_valid_o                  (htu_isu_valid                       ),
-    .htu_isu_ready_i                  (htu_isu_ready                       ),
+    .htu_isu_allowIn_i                (htu_isu_allowIn                     ),
     .htu_isu_ch_id_o                  (htu_isu_ch_id[1:0]                  ),
     .htu_isu_opcode_o                 (htu_isu_opcode[1:0]                 ),
     .htu_isu_set_way_offset_o         (htu_isu_set_way_offset[6:0]         ),
@@ -96,17 +96,17 @@ module bank_top(
     .htu_isu_linefill_set_i           (htu_isu_linefill_set[2:0]           ),
     .htu_isu_linefill_way_i           (htu_isu_linefill_way[2:0]           ),
     .htu_isu_valid_i                  (htu_isu_valid                       ),
-    .htu_isu_ready_o                  (htu_isu_ready                       ),
+    .htu_isu_allowIn_o                (htu_isu_allowIn                     ),
     .htu_isu_ch_id_i                  (htu_isu_ch_id[1:0]                  ),
     .htu_isu_opcode_i                 (htu_isu_opcode[1:0]                 ),
     .htu_isu_set_way_offset_i         (htu_isu_set_way_offset[6:0]         ),
     .htu_isu_wbuffer_id_i             (htu_isu_wbuffer_id[7:0]             ),
     .htu_isu_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state[1:0]),
     .htu_isu_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state[1:0]),
-    .biu_isu_valid_i (),
-    .biu_isu_ready_o(),
-    .biu_isu_rdata_i(),
-    .biu_isu_rid_i(),
+    .biu_isu_rdata_valid_i            (),
+    .biu_isu_rdata_ready_o            (),
+    .biu_isu_rdata_i                  (),
+    .biu_isu_rid_i                    (),
     .isu_sc_valid_o                   (isu_sc_valid                        ),
     .isu_sc_ready_i                   (isu_sc_ready                        ),
     .isu_sc_channel_id_o              (isu_sc_channel_id[1:0]              ),

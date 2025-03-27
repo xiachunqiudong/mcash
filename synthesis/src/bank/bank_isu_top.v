@@ -10,7 +10,7 @@ module bank_isu_top (
   input  wire [2:0]   htu_isu_linefill_set_i,
   input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire         htu_isu_valid_i,
-  output wire         htu_isu_ready_o,
+  output wire         htu_isu_allowIn_o,
   input  wire [1:0]   htu_isu_ch_id_i,
   input  wire [1:0]   htu_isu_opcode_i,
   input  wire [6:0]   htu_isu_set_way_offset_i,
@@ -18,8 +18,8 @@ module bank_isu_top (
   input  wire [1:0]   htu_isu_cacheline_offset0_state_i,
   input  wire [1:0]   htu_isu_cacheline_offset1_state_i,
   // bui >> isu
-  input  wire         biu_isu_valid_i,
-  output wire         biu_isu_ready_o,
+  input  wire         biu_isu_rdata_valid_i,
+  output wire         biu_isu_rdata_ready_o,
   input  wire [255:0] biu_isu_rdata_i,
   input  wire [5:0]   biu_isu_rid_i,
   // isu >> sc
@@ -38,6 +38,9 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch1_credit,
   input  wire [2:0]   xbar_isu_ch2_credit
 );
+
+  wire       htu_isu_kickoff;
+  wire [2:0] isu_rob_id;
 
   wire [7:0] htu_isu_linefill_set_dcd;
   wire [7:0] htu_isu_linefill_way_dcd;
@@ -173,32 +176,36 @@ module bank_isu_top (
   reg [127:0] line_fill_data;
 
 //-------------------------------------------------------------------------
-//                Reorder buffer ID generate
+//                            ISU: issue queue
 //-------------------------------------------------------------------------
-  wire [2:0] isu_rob_id;
+
+  // push req into issue queue
+  assign htu_isu_kickoff = htu_isu_valid_i & htu_isu_allowIn_o;
 
   rob_id_gen #(
     .ID_WIDTH(3)
   ) u_isu_rob_id_gen(
-    .clk_i    (clk_i          ),
-    .rst_i    (rst_i          ),
-    .kickoff_i(htu_isu_valid_i),
-    .rob_id_o (isu_rob_id[2:0])
+    .clk_i    (clk_i               ),
+    .rst_i    (rst_i               ),
+    .ch_id_i  (htu_isu_ch_id_i[1:0]),
+    .kickoff_i(htu_isu_kickoff     ),
+    .rob_id_o (isu_rob_id[2:0]     )
   );
 
   bank_isu_iq #(
     .PTR_WIDH(4)
   ) u_isu_iq (
-    .clk_i                (clk_i),
-    .rst_i                (rst_i),
-    .req_valid_i          (htu_isu_valid_i),
-    .req_allowIn_o        (),
-    .req_rob_id_i         (isu_rob_id[2:0]),
-    .req_ch_id_i          (htu_isu_ch_id_i[1:0]),
-    .req_opcode_i         (),
-    .req_set_way_offset_i (),
-    .req_wbuffer_id_i     (),
-    .req_cacheline_state_i()
+    .clk_i                        (clk_i                                 ),
+    .rst_i                        (rst_i                                 ),
+    .req_valid_i                  (htu_isu_valid_i                       ),
+    .req_allowIn_o                (htu_isu_allowIn_o                     ),
+    .req_rob_id_i                 (isu_rob_id[2:0]                       ),
+    .req_ch_id_i                  (htu_isu_ch_id_i[1:0]                  ),
+    .req_opcode_i                 (htu_isu_opcode_i[1:0]                 ),
+    .req_set_way_offset_i         (htu_isu_set_way_offset_i[6:0]         ),
+    .req_wbuffer_id_i             (htu_isu_wbuffer_id_i[7:0]             ),
+    .req_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state_i[1:0]),
+    .req_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state_i[1:0])
   );
 
 
@@ -211,7 +218,7 @@ module bank_isu_top (
 
   assign isu_sc_opcode_o[1:0] = htu_isu_opcode_i[1:0];
 
-  assign htu_isu_set_way_offset_i[6:0] = htu_isu_set_way_offset_i[6:0];
+  // assign htu_isu_set_way_offset_i[6:0] = htu_isu_set_way_offset_i[6:0];
 
   assign isu_sc_wbuffer_id_o[7:0] = 8'd0;
   assign isu_sc_xbar_rob_num_o[2:0] = 'd0;
