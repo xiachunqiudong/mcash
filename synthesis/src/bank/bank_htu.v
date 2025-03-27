@@ -24,11 +24,11 @@ module bank_htu(
   input  wire        isu_htu_already_done_valid_i,
   input  wire [5:0]  isu_htu_set_way_i,
   // htu >> sub mem
-  output wire        htu_submem_valid_o,
-  input  wire        htu_submem_ready_i,
-  output wire [1:0]  htu_submem_opcode_o,
-  output wire [1:0]  htu_submem_set_way_o,
-  output wire [31:4] htu_submem_set_addr_o
+  output wire        htu_biu_valid_o,
+  input  wire        htu_biu_ready_i,
+  output wire [1:0]  htu_biu_opcode_o,
+  output wire [5:0]  htu_biu_set_way_o,
+  output wire [31:5] htu_biu_set_addr_o
 );
 
   wire         op_is_read;
