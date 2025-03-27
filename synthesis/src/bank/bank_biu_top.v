@@ -102,10 +102,10 @@ module bank_biu_top #(
 //-------------------------------------------------------------------------
 //                            BIU -> BIU Tranfer Data
 //-------------------------------------------------------------------------
-  assign biu_isu_rvalid_o                = biu_axi3_rvalid_i
-                                         & biu_axi3_rready_o
-                                         & biu_axi3_rresp_i;
-  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
-  assign biu_isu_rid_o[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
+  // assign biu_isu_rvalid_o                = biu_axi3_rvalid_i
+  //                                        & biu_axi3_rready_o
+  //                                        & biu_axi3_rresp_i;
+  // assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
+  // assign biu_isu_rid_o[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
 
 endmodule
