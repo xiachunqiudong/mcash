@@ -3,7 +3,7 @@ module bank_htu(
   input  wire        rst_i,
   // xbar >> htu
   input  wire        xbar_bank_htu_valid_i,
-  output wire        xbar_bank_htu_ready_o,
+  output wire        xbar_bank_htu_allowIn_o,
   input  wire [1:0]  xbar_bank_htu_ch_id_i,
   input  wire [1:0]  xbar_bank_htu_opcode_i,
   input  wire [31:4] xbar_bank_htu_addr_i,
@@ -124,6 +124,8 @@ module bank_htu(
   assign htu_isu_linefill_way_o[2:0] = htu_access_way[2:0];
 
   assign htu_isu_valid_o = xbar_bank_htu_valid_i;
+
+  assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i;
 
 // ISU opcode[0]: 0 => read    1 => write
 // ISU opcode[1]: 0 => no evit 1 => need evit
