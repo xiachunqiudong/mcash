@@ -51,6 +51,33 @@ module bank_top(
   wire         rc_wbuf_rtn_ready;
   wire [127:0] rc_wbuf_rtn_data;
 
+ 
+  wire         htu_biu_valid;
+  wire         htu_biu_ready;
+  wire [1:0]   htu_biu_op_code;
+  wire [5:0]   htu_biu_set_way;
+  wire [31:5]  htu_biu_addr;
+
+  wire         biu_isu_rvalid;
+  wire         biu_isu_rready;
+  wire [255:0] biu_isu_rdata;
+  wire [5:0]   biu_isu_rid;
+
+  wire         biu_axi3_arvalid;
+  wire         biu_axi3_arready;
+  wire [5:0]   biu_axi3_arid;
+  wire [31:0]  biu_axi3_araddr;
+  wire [2:0]   biu_axi3_arsize;
+  wire [3:0]   biu_axi3_arlen;
+  wire [1:0]   biu_axi3_arburst;
+  wire         biu_axi3_rvalid;
+  wire         biu_axi3_rready;
+  wire [5:0]   biu_axi3_rid;
+  wire [255:0] biu_axi3_rdata;
+  wire [1:0]   biu_axi3_rresp;
+  wire         biu_axi3_rlast;
+
+
 //---------------------------------------------------------------------------------
 //                            HTU (Hit test unit)
 //---------------------------------------------------------------------------------
@@ -122,6 +149,63 @@ module bank_top(
     .xbar_isu_ch1_credit(),
     .xbar_isu_ch2_credit()
   );
+
+//---------------------------------------------------------------------------------
+//                                     BIU
+//---------------------------------------------------------------------------------
+  bank_biu_top #(
+    ADDR_WIDTH = 32,
+    DATA_WIDTH = 256,
+    STRB_WIDTH = DATA_WIDTH / 8
+  )
+  u_bank_biu (
+  .clk_i                   (clk_i),
+  .rst_i                   (rst_i),
+  .htu_biu_valid_i         (htu_biu_valid),
+  .htu_biu_ready_o         (htu_biu_ready),
+  .htu_biu_op_code_i       (htu_biu_op_code[1:0]),
+  .htu_biu_set_way_i       (htu_biu_set_way[5:0]),
+  .htu_biu_addr_i          (htu_biu_addr[31:5]),
+  .sc_biu_valid_i          (),
+  .sc_biu_ready_o          (),
+  .sc_biu_data_i           (),
+  .sc_biu_offset_i         (),
+  .sc_biu_all_offset_i     (),
+  .sc_biu_set_way_offset_i (),
+  .biu_isu_rvalid_o        (biu_isu_rvalid),
+  .biu_isu_rready_i        (biu_isu_rready),
+  .biu_isu_rdata_o         (biu_isu_rdata[255:0]),
+  .biu_isu_rid_o           (biu_isu_rid[5:0]),
+  .biu_axi3_arvalid_o      (biu_axi3_arvalid),
+  .biu_axi3_arready_i      (biu_axi3_arready),
+  .biu_axi3_arid_o         (biu_axi3_arid[5:0]),
+  .biu_axi3_araddr_o       (biu_axi3_araddr[31:0]),
+  .biu_axi3_arsize_o       (biu_axi3_arsize[2:0]),
+  .biu_axi3_arlen_o        (biu_axi3_arlen[3:0]),
+  .biu_axi3_arburst_o      (biu_axi3_arburst[1:0]),
+  .biu_axi3_rvalid_i       (biu_axi3_rvalid),
+  .biu_axi3_rready_o       (biu_axi3_rready),
+  .biu_axi3_rid_i          (biu_axi3_rid[5:0]),
+  .biu_axi3_rdata_i        (biu_axi3_rdata[255:0]),
+  .biu_axi3_rresp_i        (biu_axi3_rresp[1:0]),
+  .biu_axi3_rlast_i        (biu_axi3_rlast),
+  .biu_axi3_awvalid_o      (),
+  .biu_axi3_awready_i      (),
+  .biu_axi3_wid_o          (),
+  .biu_axi3_awaddr_o       (),
+  .biu_axi3_awlen_o        (),
+  .biu_axi3_awsize_o       (),
+  .biu_axi3_awburst_o      (),
+  .biu_axi3_wvalid_o       (),
+  .biu_axi3_wready_i       (),
+  .biu_axi3_wdata_o        (),
+  .biu_axi3_wstrb_o        (),
+  .biu_axi3_wlast_o        (),
+  .biu_axi3_bvalid_i       (),
+  .biu_axi3_bready_o       (),
+  .biu_axi3_bid_i          (),
+  .biu_axi3_bresp_i        ()
+);
 
 //---------------------------------------------------------------------------------
 //                              SRAM CONTROLLER
@@ -196,7 +280,5 @@ module bank_top(
       end
     end
   end
-
-
 
 endmodule
