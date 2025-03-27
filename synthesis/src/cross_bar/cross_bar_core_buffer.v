@@ -13,6 +13,10 @@ module cross_bar_core_buffer(
   input  wire         bank1_channel_grant_i,
   input  wire         bank2_channel_grant_i,
   input  wire         bank3_channel_grant_i,
+  input  wire         bank0_req_can_go_i,
+  input  wire         bank1_req_can_go_i,
+  input  wire         bank2_req_can_go_i,
+  input  wire         bank3_req_can_go_i,
   output wire [1:0]   ch_send_to_bank0_op_o,
   output wire [1:0]   ch_send_to_bank1_op_o,
   output wire [1:0]   ch_send_to_bank2_op_o,
@@ -171,10 +175,10 @@ module cross_bar_core_buffer(
                                        & ch_wr_ptr_dcd[4:0];
 
 // Innvalidate
-  assign ch_bank0_array_inValidate[4:0] = ch_entryID_send_to_bank0_dcd[4:0] & {5{bank0_channel_grant_i}};
-  assign ch_bank1_array_inValidate[4:0] = ch_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant_i}};
-  assign ch_bank2_array_inValidate[4:0] = ch_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant_i}};
-  assign ch_bank3_array_inValidate[4:0] = ch_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant_i}};
+  assign ch_bank0_array_inValidate[4:0] = ch_entryID_send_to_bank0_dcd[4:0] & {5{bank0_channel_grant_i & bank0_req_can_go_i}};
+  assign ch_bank1_array_inValidate[4:0] = ch_entryID_send_to_bank1_dcd[4:0] & {5{bank1_channel_grant_i & bank1_req_can_go_i}};
+  assign ch_bank2_array_inValidate[4:0] = ch_entryID_send_to_bank2_dcd[4:0] & {5{bank2_channel_grant_i & bank2_req_can_go_i}};
+  assign ch_bank3_array_inValidate[4:0] = ch_entryID_send_to_bank3_dcd[4:0] & {5{bank3_channel_grant_i & bank3_req_can_go_i}};
 
   assign ch_bank0_array_In[4:0] = (ch_bank0_array_Q[4:0] & ~ch_bank0_array_inValidate[4:0]) // invalidate
                                  | ch_bank0_array_validate[4:0];                              // validate

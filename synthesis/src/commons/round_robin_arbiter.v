@@ -4,6 +4,7 @@ module round_robin_arbiter #(
   input  wire         clk_i,
   input  wire         rst_i,
   input  wire [N-1:0] req_i,
+  input  wire         req_can_go_i,
   output wire [N-1:0] grant_o
 );
 
@@ -59,14 +60,14 @@ module round_robin_arbiter #(
   assign higher_prior_reqs_In[N-1:0] = {N{grant_use_masked}}   & higher_prior_reqs_masked[N-1:0]
                                    | {N{grant_use_unmasked}} & higher_prior_reqs_unmasked[N-1:0];
 
-  assign higher_prior_reqs_wen = |req_i[N-1:0];
+  assign higher_prior_reqs_wen = (|req_i[N-1:0]) & req_can_go_i;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
       higher_prior_reqs_Q[N-1:0] <= {N{1'b1}};
     end
     else if(higher_prior_reqs_wen) begin
-      higher_prior_reqs_Q[N-1:0] <= higher_prior_reqs_In[N-1:0];
+      higher_prior_reqs_Q[N-1:0] <= higher_prior_reqs_In[N-1:0];  
     end
   end
 

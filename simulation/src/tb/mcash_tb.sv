@@ -70,7 +70,7 @@ module mcash_tb;
   end
 
   always @(posedge clk) begin
-    if (mcash_ch0_req_valid & mcash_ch1_req_allowIn) begin
+    if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
       mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
       mcash_ch0_req_data[127:0] <= code_list[i][159:32];
       mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
