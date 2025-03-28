@@ -2,7 +2,7 @@ module bank_biu_top #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 256,
     parameter STRB_WIDTH = DATA_WIDTH / 8,
-    parameter ID_WIDTH   = 6
+    parameter ID_WIDTH   = 8
 ) (
   input  wire                  clk_i,
   input  wire                  rst_i,
@@ -13,7 +13,7 @@ module bank_biu_top #(
   input  wire                  htu_biu_awvalid_i,
   output wire                  htu_biu_awready_o,
   input  wire [ADDR_WIDTH-1:5] htu_biu_awaddr_i,
-  input  wire [ID_WIDTH-1:0]   htu_biu_set_way_i,
+  input  wire [5:0]            htu_biu_set_way_i,
   // sram >> biu
   input  wire                  sc_biu_valid_i,
   output wire                  sc_biu_ready_o,
@@ -25,7 +25,7 @@ module bank_biu_top #(
   output wire                  biu_isu_rvalid_o,
   input  wire                  biu_isu_rready_i,
   output wire [DATA_WIDTH-1:0] biu_isu_rdata_o,
-  output wire [ID_WIDTH-1:0]   biu_isu_rid_o,
+  output wire [5:0]            biu_isu_rid_o,
   // biu >> bus
   output wire                  biu_axi3_arvalid_o,
   input  wire                  biu_axi3_arready_i,
@@ -49,7 +49,7 @@ module bank_biu_top #(
   output wire [1:0]            biu_axi3_awburst_o,
   output wire                  biu_axi3_wvalid_o,
   input  wire                  biu_axi3_wready_i,
-  output wire [ADDR_WIDTH-1:0] biu_axi3_wdata_o,
+  output wire [DATA_WIDTH-1:0] biu_axi3_wdata_o,
   output wire [STRB_WIDTH-1:0] biu_axi3_wstrb_o,
   output wire                  biu_axi3_wlast_o,
   input  wire                  biu_axi3_bvalid_i,
@@ -65,7 +65,7 @@ module bank_biu_top #(
 //                            AXI3 Bus Configure
 //-------------------------------------------------------------------------
   assign biu_axi3_arvalid_o                = htu_biu_arvalid_i;
-  assign biu_axi3_arid_o[5:0]              = htu_biu_set_way_i[5:0];
+  assign biu_axi3_arid_o[7:0]              = {2'b00, htu_biu_set_way_i[5:0]};
   assign biu_axi3_arsize_o[2:0]            = 3'b101;  // 32 Byte
   assign biu_axi3_arlen_o[3:0]             = 4'b0000;
   assign biu_axi3_arburst_o[1:0]           = 2'b01;   // Incrementing burst
@@ -75,7 +75,7 @@ module bank_biu_top #(
 
 // axi3 bus test
   reg [2:0] isu_cnt;
-  reg [ID_WIDTH-1:0] htu_biu_set_way_Q;
+  reg [5:0] htu_biu_set_way_Q;
 
 
   assign biu_isu_rvalid_o = isu_cnt == 'd1;
@@ -103,7 +103,7 @@ module bank_biu_top #(
   end
 
   assign biu_isu_rdata_o[DATA_WIDTH-1:0] = 'h12345;
-  assign biu_isu_rid_o[ID_WIDTH-1:0] = htu_biu_set_way_Q[ID_WIDTH-1:0];
+  assign biu_isu_rid_o[5:0] = htu_biu_set_way_Q[5:0];
 
 
 //-------------------------------------------------------------------------

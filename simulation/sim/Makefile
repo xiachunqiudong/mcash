@@ -19,9 +19,9 @@ gen_code:
 vcs:
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \
-	vcs -full64 -timescale=1ns/1ns -debug_acc+all -fsdb -kdb -sverilog \
+	vcs -full64 -timescale=1ns/1ns +lint=TFIPC-L -debug_acc+all -fsdb -kdb -sverilog \
 	$(FILELIST) \
-	-top $(TOP)
+	-top $(TOP) -l elab.log
 
 sim:
 	./build/simv \
