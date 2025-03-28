@@ -10,7 +10,7 @@ module bank_biu_top #(
   input  wire                  htu_biu_valid_i,
   output wire                  htu_biu_ready_o,
   input  wire [1:0]            htu_biu_opcode_i,
-  input  wire [ID_WIDTH-1:0]            htu_biu_set_way_i,
+  input  wire [ID_WIDTH-1:0]   htu_biu_set_way_i,
   input  wire [31:5]           htu_biu_addr_i,
   // sram >> biu
   input  wire                  sc_biu_valid_i,
@@ -23,26 +23,26 @@ module bank_biu_top #(
   output wire                  biu_isu_rvalid_o,
   input  wire                  biu_isu_rready_i,
   output wire [DATA_WIDTH-1:0] biu_isu_rdata_o,
-  output wire [ID_WIDTH-1:0]            biu_isu_rid_o,
+  output wire [ID_WIDTH-1:0]   biu_isu_rid_o,
   // biu >> bus
   output wire                  biu_axi3_arvalid_o,
   input  wire                  biu_axi3_arready_i,
-  output wire [ID_WIDTH-1:0]            biu_axi3_arid_o,
+  output wire [ID_WIDTH-1:0]   biu_axi3_arid_o,
   output wire [ADDR_WIDTH-1:0] biu_axi3_araddr_o,
   output wire [2:0]            biu_axi3_arsize_o,
   output wire [3:0]            biu_axi3_arlen_o,
   output wire [1:0]            biu_axi3_arburst_o,
   input  wire                  biu_axi3_rvalid_i,
   output wire                  biu_axi3_rready_o,
-  input  wire [ID_WIDTH-1:0]            biu_axi3_rid_i,
+  input  wire [ID_WIDTH-1:0]   biu_axi3_rid_i,
   input  wire [DATA_WIDTH-1:0] biu_axi3_rdata_i,
   input  wire [1:0]            biu_axi3_rresp_i,
   input  wire                  biu_axi3_rlast_i,
   output wire                  biu_axi3_awvalid_o,
   input  wire                  biu_axi3_awready_i,
-  output wire [ID_WIDTH-1:0]            biu_axi3_wid_o,
+  output wire [ID_WIDTH-1:0]   biu_axi3_wid_o,
   output wire [ADDR_WIDTH-1:0] biu_axi3_awaddr_o,
-  output wire [7:0]            biu_axi3_awlen_o,
+  output wire [3:0]            biu_axi3_awlen_o,
   output wire [2:0]            biu_axi3_awsize_o,
   output wire [1:0]            biu_axi3_awburst_o,
   output wire                  biu_axi3_wvalid_o,
@@ -52,7 +52,7 @@ module bank_biu_top #(
   output wire                  biu_axi3_wlast_o,
   input  wire                  biu_axi3_bvalid_i,
   output wire                  biu_axi3_bready_o,
-  input  wire [ID_WIDTH-1:0]            biu_axi3_bid_i,
+  input  wire [ID_WIDTH-1:0]   biu_axi3_bid_i,
   input  wire [1:0]            biu_axi3_bresp_i
 );
 
@@ -94,7 +94,7 @@ module bank_biu_top #(
       end
   end
 
-  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = 'd12345;
+  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = 'h12345;
   assign biu_isu_rid_o[ID_WIDTH-1:0] = htu_biu_set_way_Q[ID_WIDTH-1:0];
 
 
@@ -106,6 +106,6 @@ module bank_biu_top #(
                                          & biu_axi3_rready_o
                                          & biu_axi3_rresp_i;
   assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
-  assign biu_isu_rid_o[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
+  assign biu_isu_rid_o[ID_WIDTH-1:0]     = biu_axi3_rid_i[ID_WIDTH-1:0];
 
 endmodule

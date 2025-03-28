@@ -1,31 +1,60 @@
 module bank_top(
-  input  wire        clk_i,
-  input  wire        rst_i,
-  input  wire        xbar_bank_htu_valid_i,
-  output wire        xbar_bank_htu_allowIn_o,
-  input  wire [1:0]  xbar_bank_htu_ch_id_i,
-  input  wire [1:0]  xbar_bank_htu_opcode_i,
-  input  wire [31:4] xbar_bank_htu_addr_i,
-  input  wire [7:0]  xbar_bank_htu_wbuffer_id_i
+  input  wire         clk_i,
+  input  wire         rst_i,
+  input  wire         xbar_bank_htu_valid_i,
+  output wire         xbar_bank_htu_allowIn_o,
+  input  wire [1:0]   xbar_bank_htu_ch_id_i,
+  input  wire [1:0]   xbar_bank_htu_opcode_i,
+  input  wire [31:4]  xbar_bank_htu_addr_i,
+  input  wire [7:0]   xbar_bank_htu_wbuffer_id_i,
+  output wire         biu_axi3_arvalid_o,
+  input  wire         biu_axi3_arready_i,
+  output wire [5:0]   biu_axi3_arid_o,
+  output wire [31:0]  biu_axi3_araddr_o,
+  output wire [2:0]   biu_axi3_arsize_o,
+  output wire [3:0]   biu_axi3_arlen_o,
+  output wire [1:0]   biu_axi3_arburst_o,
+  input  wire         biu_axi3_rvalid_i,
+  output wire         biu_axi3_rready_o,
+  input  wire [5:0]   biu_axi3_rid_i,
+  input  wire [255:0] biu_axi3_rdata_i,
+  input  wire [1:0]   biu_axi3_rresp_i,
+  input  wire         biu_axi3_rlast_i,
+  output wire         biu_axi3_awvalid_o,
+  input  wire         biu_axi3_awready_i,
+  output wire [5:0]   biu_axi3_wid_o,
+  output wire [31:0]  biu_axi3_awaddr_o,
+  output wire [3:0]   biu_axi3_awlen_o,
+  output wire [2:0]   biu_axi3_awsize_o,
+  output wire [1:0]   biu_axi3_awburst_o,
+  output wire         biu_axi3_wvalid_o,
+  input  wire         biu_axi3_wready_i,
+  output wire [255:0] biu_axi3_wdata_o,
+  output wire [31:0]  biu_axi3_wstrb_o,
+  output wire         biu_axi3_wlast_o,
+  input  wire         biu_axi3_bvalid_i,
+  output wire         biu_axi3_bready_o,
+  input  wire [3:0]   biu_axi3_bid_i,
+  input  wire [1:0]   biu_axi3_bresp_i
 );
-
-  wire        htu_isu_linefill_valid;
-  wire [2:0]  htu_isu_linefill_set;
-  wire [2:0]  htu_isu_linefill_way;
-  wire        htu_isu_valid;
-  wire        htu_isu_allowIn;
-  wire [1:0]  htu_isu_ch_id;
-  wire [1:0]  htu_isu_opcode;
-  wire [6:0]  htu_isu_set_way_offset;
-  wire [7:0]  htu_isu_wbuffer_id;
-  wire [1:0]  htu_isu_cacheline_offset0_state;
-  wire [1:0]  htu_isu_cacheline_offset1_state;
-  wire        htu_biu_valid;
-  wire        htu_biu_ready;
-  wire [1:0]  htu_biu_opcode;
-  wire [5:0]  htu_biu_set_way;
-  wire [31:5] htu_biu_addr;
-
+  // htu signals
+  wire         htu_isu_linefill_valid;
+  wire [2:0]   htu_isu_linefill_set;
+  wire [2:0]   htu_isu_linefill_way;
+  wire         htu_isu_valid;
+  wire         htu_isu_allowIn;
+  wire [1:0]   htu_isu_ch_id;
+  wire [1:0]   htu_isu_opcode;
+  wire [6:0]   htu_isu_set_way_offset;
+  wire [7:0]   htu_isu_wbuffer_id;
+  wire [1:0]   htu_isu_cacheline_offset0_state;
+  wire [1:0]   htu_isu_cacheline_offset1_state;
+  wire         htu_biu_valid;
+  wire         htu_biu_ready;
+  wire [1:0]   htu_biu_opcode;
+  wire [5:0]   htu_biu_set_way;
+  wire [31:5]  htu_biu_addr;
+  // isu signals
   wire         isu_sc_valid;
   wire         isu_sc_ready;
   wire [1:0]   isu_sc_channel_id;
@@ -55,26 +84,12 @@ module bank_top(
   wire         sc_wbuf_rtn_valid;
   wire         sc_wbuf_rtn_ready;
   wire [127:0] sc_wbuf_rtn_data;
-
+  // biu signals
   wire         biu_isu_rvalid;
   wire         biu_isu_rready;
   wire [255:0] biu_isu_rdata;
   wire [5:0]   biu_isu_rid;
-
-  wire         biu_axi3_arvalid;
-  wire         biu_axi3_arready;
-  wire [5:0]   biu_axi3_arid;
-  wire [31:0]  biu_axi3_araddr;
-  wire [2:0]   biu_axi3_arsize;
-  wire [3:0]   biu_axi3_arlen;
-  wire [1:0]   biu_axi3_arburst;
-  wire         biu_axi3_rvalid;
-  wire         biu_axi3_rready;
-  wire [5:0]   biu_axi3_rid;
-  wire [255:0] biu_axi3_rdata;
-  wire [1:0]   biu_axi3_rresp;
-  wire         biu_axi3_rlast;
-
+  
 
 //---------------------------------------------------------------------------------
 //                            HTU (Hit test unit)
@@ -106,7 +121,7 @@ module bank_top(
     .htu_biu_ready_i                  (htu_biu_ready                       ),
     .htu_biu_opcode_o                 (htu_biu_opcode[1:0]                 ),
     .htu_biu_set_way_o                (htu_biu_set_way[5:0]                ),
-    .htu_biu_addr_o               (htu_biu_addr[31:5]              )
+    .htu_biu_addr_o                   (htu_biu_addr[31:5]                  )
   );
 
 
@@ -157,53 +172,53 @@ module bank_top(
     .ID_WIDTH  (6)
   )
   u_bank_biu (
-  .clk_i                   (clk_i),
-  .rst_i                   (rst_i),
-  .htu_biu_valid_i         (htu_biu_valid),
-  .htu_biu_ready_o         (htu_biu_ready),
-  .htu_biu_opcode_i        (htu_biu_opcode[1:0]),
-  .htu_biu_set_way_i       (htu_biu_set_way[5:0]),
-  .htu_biu_addr_i          (htu_biu_addr[31:5]),
-  .sc_biu_valid_i          (),
-  .sc_biu_ready_o          (),
-  .sc_biu_data_i           (),
-  .sc_biu_offset_i         (),
-  .sc_biu_all_offset_i     (),
-  .sc_biu_set_way_offset_i (),
-  .biu_isu_rvalid_o        (biu_isu_rvalid),
-  .biu_isu_rready_i        (biu_isu_rready),
-  .biu_isu_rdata_o         (biu_isu_rdata[255:0]),
-  .biu_isu_rid_o           (biu_isu_rid[5:0]),
-  .biu_axi3_arvalid_o      (biu_axi3_arvalid),
-  .biu_axi3_arready_i      (biu_axi3_arready),
-  .biu_axi3_arid_o         (biu_axi3_arid[5:0]),
-  .biu_axi3_araddr_o       (biu_axi3_araddr[31:0]),
-  .biu_axi3_arsize_o       (biu_axi3_arsize[2:0]),
-  .biu_axi3_arlen_o        (biu_axi3_arlen[3:0]),
-  .biu_axi3_arburst_o      (biu_axi3_arburst[1:0]),
-  .biu_axi3_rvalid_i       (biu_axi3_rvalid),
-  .biu_axi3_rready_o       (biu_axi3_rready),
-  .biu_axi3_rid_i          (biu_axi3_rid[5:0]),
-  .biu_axi3_rdata_i        (biu_axi3_rdata[255:0]),
-  .biu_axi3_rresp_i        (biu_axi3_rresp[1:0]),
-  .biu_axi3_rlast_i        (biu_axi3_rlast),
-  .biu_axi3_awvalid_o      (),
-  .biu_axi3_awready_i      (),
-  .biu_axi3_wid_o          (),
-  .biu_axi3_awaddr_o       (),
-  .biu_axi3_awlen_o        (),
-  .biu_axi3_awsize_o       (),
-  .biu_axi3_awburst_o      (),
-  .biu_axi3_wvalid_o       (),
-  .biu_axi3_wready_i       (),
-  .biu_axi3_wdata_o        (),
-  .biu_axi3_wstrb_o        (),
-  .biu_axi3_wlast_o        (),
-  .biu_axi3_bvalid_i       (),
-  .biu_axi3_bready_o       (),
-  .biu_axi3_bid_i          (),
-  .biu_axi3_bresp_i        ()
-);
+    .clk_i                   (clk_i),
+    .rst_i                   (rst_i),
+    .htu_biu_valid_i         (htu_biu_valid),
+    .htu_biu_ready_o         (htu_biu_ready),
+    .htu_biu_opcode_i        (htu_biu_opcode[1:0]),
+    .htu_biu_set_way_i       (htu_biu_set_way[5:0]),
+    .htu_biu_addr_i          (htu_biu_addr[31:5]),
+    .sc_biu_valid_i          (sc_biu_valid),
+    .sc_biu_ready_o          (sc_biu_ready),
+    .sc_biu_data_i           (sc_biu_data[127:0]),
+    .sc_biu_offset_i         (sc_biu_offset),
+    .sc_biu_all_offset_i     (sc_biu_all_offset),
+    .sc_biu_set_way_offset_i (sc_biu_set_way_offset[6:0]),
+    .biu_isu_rvalid_o        (biu_isu_rvalid),
+    .biu_isu_rready_i        (biu_isu_rready),
+    .biu_isu_rdata_o         (biu_isu_rdata[255:0]),
+    .biu_isu_rid_o           (biu_isu_rid[5:0]),
+    .biu_axi3_arvalid_o      (biu_axi3_arvalid_o),
+    .biu_axi3_arready_i      (biu_axi3_arready_i),
+    .biu_axi3_arid_o         (biu_axi3_arid_o[5:0]),
+    .biu_axi3_araddr_o       (biu_axi3_araddr_o[31:0]),
+    .biu_axi3_arsize_o       (biu_axi3_arsize_o[2:0]),
+    .biu_axi3_arlen_o        (biu_axi3_arlen_o[3:0]),
+    .biu_axi3_arburst_o      (biu_axi3_arburst_o[1:0]),
+    .biu_axi3_rvalid_i       (biu_axi3_rvalid_i),
+    .biu_axi3_rready_o       (biu_axi3_rready_o),
+    .biu_axi3_rid_i          (biu_axi3_rid_i[5:0]),
+    .biu_axi3_rdata_i        (biu_axi3_rdata_i[255:0]),
+    .biu_axi3_rresp_i        (biu_axi3_rresp_i[1:0]),
+    .biu_axi3_rlast_i        (biu_axi3_rlast_i),
+    .biu_axi3_awvalid_o      (biu_axi3_awvalid_o),
+    .biu_axi3_awready_i      (biu_axi3_awready_i),
+    .biu_axi3_wid_o          (biu_axi3_wid_o[5:0]),
+    .biu_axi3_awaddr_o       (biu_axi3_awaddr_o[31:0]),
+    .biu_axi3_awlen_o        (biu_axi3_awlen_o[3:0]),
+    .biu_axi3_awsize_o       (biu_axi3_awsize_o[2:0]),
+    .biu_axi3_awburst_o      (biu_axi3_awburst_o[1:0]),
+    .biu_axi3_wvalid_o       (biu_axi3_wvalid_o),
+    .biu_axi3_wready_i       (biu_axi3_wready_i),
+    .biu_axi3_wdata_o        (biu_axi3_wdata_o)[255:0],
+    .biu_axi3_wstrb_o        (biu_axi3_wstrb_o[31:0]),
+    .biu_axi3_wlast_o        (biu_axi3_wlast_o),
+    .biu_axi3_bvalid_i       (biu_axi3_bvalid_i),
+    .biu_axi3_bready_o       (biu_axi3_bready_o),
+    .biu_axi3_bid_i          (biu_axi3_bid_i[3:0]),
+    .biu_axi3_bresp_i        (biu_axi3_bresp_i[1:0])
+  );
 
 //---------------------------------------------------------------------------------
 //                              SRAM CONTROLLER
@@ -228,12 +243,12 @@ module bank_top(
     .sc_xbar_channel_id_o            (sc_xbar_channel_id[1:0]            ),
     .sc_xbar_rob_num_o               (sc_xbar_rob_num[2:0]               ),
     .sc_xbar_data_o                  (sc_xbar_data[127:0]                ),
-    .sc_biu_valid_o                  (sc_biu_valid                      ),
-    .sc_biu_ready_i                  (sc_biu_ready                      ),
-    .sc_biu_data_o                   (sc_biu_data[127:0]                ),
-    .sc_biu_offset_o                 (sc_biu_offset                     ),
-    .sc_biu_all_offset_o             (sc_biu_all_offset                 ),
-    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]        ),
+    .sc_biu_valid_o                  (sc_biu_valid                       ),
+    .sc_biu_ready_i                  (sc_biu_ready                       ),
+    .sc_biu_data_o                   (sc_biu_data[127:0]                 ),
+    .sc_biu_offset_o                 (sc_biu_offset                      ),
+    .sc_biu_all_offset_o             (sc_biu_all_offset                  ),
+    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]         ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_ready_i             (sc_wbuf_req_ready                  ),
     .sc_wbuf_req_channel_id_o        (sc_wbuf_req_channel_id[1:0]        ),
