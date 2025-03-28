@@ -37,24 +37,27 @@ module bank_top(
   input  wire [3:0]   biu_axi3_bid_i,
   input  wire [1:0]   biu_axi3_bresp_i
 );
-  // htu signals
-  wire         htu_isu_linefill_valid;
-  wire [2:0]   htu_isu_linefill_set;
-  wire [2:0]   htu_isu_linefill_way;
-  wire         htu_isu_valid;
-  wire         htu_isu_allowIn;
-  wire [1:0]   htu_isu_ch_id;
-  wire [1:0]   htu_isu_opcode;
-  wire [6:0]   htu_isu_set_way_offset;
-  wire [7:0]   htu_isu_wbuffer_id;
-  wire [1:0]   htu_isu_cacheline_offset0_state;
-  wire [1:0]   htu_isu_cacheline_offset1_state;
-  wire         htu_biu_valid;
-  wire         htu_biu_ready;
-  wire [1:0]   htu_biu_opcode;
-  wire [5:0]   htu_biu_set_way;
-  wire [31:5]  htu_biu_addr;
-  // isu signals
+
+  wire        htu_isu_linefill_valid;
+  wire [2:0]  htu_isu_linefill_set;
+  wire [2:0]  htu_isu_linefill_way;
+  wire        htu_isu_valid;
+  wire        htu_isu_allowIn;
+  wire [1:0]  htu_isu_ch_id;
+  wire [1:0]  htu_isu_opcode;
+  wire [6:0]  htu_isu_set_way_offset;
+  wire [7:0]  htu_isu_wbuffer_id;
+  wire [1:0]  htu_isu_cacheline_offset0_state;
+  wire [1:0]  htu_isu_cacheline_offset1_state;
+  wire        htu_biu_arvalid;
+  wire        htu_biu_arready;
+  wire [31:5] htu_biu_araddr;
+  wire        htu_biu_awvalid;
+  wire        htu_biu_awready;
+  wire [31:5] htu_biu_awaddr;
+  wire [5:0]  htu_biu_set_way;
+ 
+
   wire         isu_sc_valid;
   wire         isu_sc_ready;
   wire [1:0]   isu_sc_channel_id;
@@ -66,6 +69,10 @@ module bank_top(
   wire [1:0]   isu_sc_cacheline_dirty_offset1;
   wire [127:0] isu_sc_linefill_data_offset0;
   wire [127:0] isu_sc_linefill_data_offset1;
+  wire         biu_isu_rvalid;
+  wire         biu_isu_rready;
+  wire [255:0] biu_isu_rdata;
+  wire [5:0]   biu_isu_rid;
   wire         sc_xbar_valid;
   wire         sc_xbar_ready;
   wire [1:0]   sc_xbar_channel_id;
@@ -94,8 +101,8 @@ module bank_top(
 //---------------------------------------------------------------------------------
 //                            HTU (Hit test unit)
 //---------------------------------------------------------------------------------
-  bank_htu
-  u_bank_htu (
+  bank_htu_top
+  htu_top (
     .clk_i                            (clk_i                               ),
     .rst_i                            (rst_i                               ),
     .xbar_bank_htu_valid_i            (xbar_bank_htu_valid_i               ),
@@ -117,11 +124,13 @@ module bank_top(
     .htu_isu_cacheline_offset1_state_o(htu_isu_cacheline_offset1_state[1:0]),
     .isu_htu_already_done_valid_i     (                                    ),
     .isu_htu_set_way_i                (                                    ),
-    .htu_biu_valid_o                  (htu_biu_valid                       ),
-    .htu_biu_ready_i                  (htu_biu_ready                       ),
-    .htu_biu_opcode_o                 (htu_biu_opcode[1:0]                 ),
-    .htu_biu_set_way_o                (htu_biu_set_way[5:0]                ),
-    .htu_biu_addr_o                   (htu_biu_addr[31:5]                  )
+    .htu_biu_arvalid_o                (htu_biu_arvalid                     ),
+    .htu_biu_arready_i                (htu_biu_arready                     ),
+    .htu_biu_araddr_o                 (htu_biu_araddr[31:5]                ),
+    .htu_biu_awvalid_o                (htu_biu_awvalid                     ),
+    .htu_biu_awready_i                (htu_biu_awready                     ),
+    .htu_biu_awaddr_o                 (htu_biu_awaddr[31:5]                ),
+    .htu_biu_set_way_o                (htu_biu_set_way[5:0]                )
   );
 
 
@@ -129,7 +138,7 @@ module bank_top(
 //                                     ISU
 //---------------------------------------------------------------------------------
   bank_isu_top
-  u_bank_isu (
+  isu_top (
     .clk_i                            (clk_i                               ),
     .rst_i                            (rst_i                               ),
     .htu_isu_linefill_valid_i         (htu_isu_linefill_valid              ),
@@ -143,10 +152,10 @@ module bank_top(
     .htu_isu_wbuffer_id_i             (htu_isu_wbuffer_id[7:0]             ),
     .htu_isu_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state[1:0]),
     .htu_isu_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state[1:0]),
-    .biu_isu_rdata_valid_i            (),
-    .biu_isu_rdata_ready_o            (),
-    .biu_isu_rdata_i                  (),
-    .biu_isu_rid_i                    (),
+    .biu_isu_rvalid_i                 (biu_isu_rvalid),
+    .biu_isu_rready_o                 (biu_isu_rready),
+    .biu_isu_rdata_i                  (biu_isu_rdata[255:0]),
+    .biu_isu_rid_i                    (biu_isu_rid[5:0]),
     .isu_sc_valid_o                   (isu_sc_valid                        ),
     .isu_sc_ready_i                   (isu_sc_ready                        ),
     .isu_sc_channel_id_o              (isu_sc_channel_id[1:0]              ),
@@ -174,11 +183,13 @@ module bank_top(
   u_bank_biu (
     .clk_i                   (clk_i),
     .rst_i                   (rst_i),
-    .htu_biu_valid_i         (htu_biu_valid),
-    .htu_biu_ready_o         (htu_biu_ready),
-    .htu_biu_opcode_i        (htu_biu_opcode[1:0]),
+    .htu_biu_arvalid_i       (htu_biu_arvalid),
+    .htu_biu_arready_o       (htu_biu_arready),
+    .htu_biu_araddr_i        (htu_biu_araddr[31:5]),
+    .htu_biu_awvalid_i       (htu_biu_awvalid),
+    .htu_biu_awready_o       (htu_biu_awready),
+    .htu_biu_awaddr_i        (htu_biu_awaddr[31:5]),
     .htu_biu_set_way_i       (htu_biu_set_way[5:0]),
-    .htu_biu_addr_i          (htu_biu_addr[31:5]),
     .sc_biu_valid_i          (sc_biu_valid),
     .sc_biu_ready_o          (sc_biu_ready),
     .sc_biu_data_i           (sc_biu_data[127:0]),
@@ -224,7 +235,7 @@ module bank_top(
 //                              SRAM CONTROLLER
 //---------------------------------------------------------------------------------
   bank_sram_controller
-  u_bank_sram_controller (
+  sc_top (
     .clk_i                           (clk_i                              ),
     .rst_i                           (rst_i                              ),
     .isu_sc_valid_i                  (isu_sc_valid                       ),
