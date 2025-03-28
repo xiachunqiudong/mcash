@@ -213,6 +213,17 @@ module bank_isu_top (
   );
 
 
+  bank_isu_linefill_buffer
+  isu_linefill_buffer(
+    .clk_i  (clk_i),
+    .wen_i  (biu_isu_rvalid_i),
+    .waddr_i(biu_isu_rid_i[5:0]),
+    .wdata_i(biu_isu_rdata_i),
+    .ren_i  (),
+    .raddr_i(),
+    .rdata_o()
+  );
+
 //-------------------------------------------------------------------------
 //                              ISU >> SC
 //-------------------------------------------------------------------------

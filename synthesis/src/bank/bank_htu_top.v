@@ -1,4 +1,4 @@
-module bank_htu(
+module bank_htu_top (
   input  wire        clk_i,
   input  wire        rst_i,
   // xbar >> htu
@@ -117,6 +117,11 @@ module bank_htu(
                                     | access_cacheline_offset_state[1:0] == 2'b00 // cacheline hit but empty [E, D]
                                  );
 
+  assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i
+                                 & (~cacheline_need_refill | htu_biu_arready_i); // htu send ar to biu
+
+
+
 //-------------------------------------------------------------------------
 //                               HTU >> ISU
 //-------------------------------------------------------------------------
@@ -138,8 +143,6 @@ module bank_htu(
   assign htu_isu_linefill_way_o[2:0] = htu_access_way[2:0];
 
   assign htu_isu_valid_o = xbar_bank_htu_valid_i;
-
-  assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i;
 
 // ISU opcode[0]: 0 => read    1 => write
 // ISU opcode[1]: 0 => no evit 1 => need evit

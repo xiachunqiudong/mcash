@@ -75,7 +75,9 @@ module bank_biu_top #(
 
 // axi3 bus test
   reg [2:0] isu_cnt;
-  reg [ID_WIDTH-1:0]htu_biu_set_way_Q;
+  reg [ID_WIDTH-1:0] htu_biu_set_way_Q;
+
+
   assign biu_isu_rvalid_o = isu_cnt == 'd1;
   
     assign htu_biu_arready_o = isu_cnt == 'd0;
@@ -95,16 +97,15 @@ module bank_biu_top #(
   end
   
   always @(posedge clk_i) begin
-      if (htu_biu_arvalid_i && htu_biu_arready_o) begin
-          htu_biu_set_way_Q <= htu_biu_set_way_i;
-      end
+    if (htu_biu_arvalid_i && htu_biu_arready_o) begin
+        htu_biu_set_way_Q <= htu_biu_set_way_i;
+    end
   end
 
   assign biu_isu_rdata_o[DATA_WIDTH-1:0] = 'd12345;
   assign biu_isu_rid_o[ID_WIDTH-1:0] = htu_biu_set_way_Q[ID_WIDTH-1:0];
 
 
-  
 //-------------------------------------------------------------------------
 //                            BIU -> BIU Tranfer Data
 //-------------------------------------------------------------------------

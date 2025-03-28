@@ -81,8 +81,8 @@ module bank_top(
 //---------------------------------------------------------------------------------
 //                            HTU (Hit test unit)
 //---------------------------------------------------------------------------------
-  bank_htu
-  u_bank_htu (
+  bank_htu_top
+  htu_top (
     .clk_i                            (clk_i                               ),
     .rst_i                            (rst_i                               ),
     .xbar_bank_htu_valid_i            (xbar_bank_htu_valid_i               ),
@@ -118,7 +118,7 @@ module bank_top(
 //                                     ISU
 //---------------------------------------------------------------------------------
   bank_isu_top
-  u_bank_isu (
+  isu_top (
     .clk_i                            (clk_i                               ),
     .rst_i                            (rst_i                               ),
     .htu_isu_linefill_valid_i         (htu_isu_linefill_valid              ),
@@ -159,7 +159,7 @@ module bank_top(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(256),
     .ID_WIDTH  (6)
-  ) u_bank_biu (
+  ) biu_top (
   .clk_i                   (clk_i),
   .rst_i                   (rst_i),
   .htu_biu_arvalid_i       (htu_biu_arvalid),
@@ -214,7 +214,7 @@ module bank_top(
 //                              SRAM CONTROLLER
 //---------------------------------------------------------------------------------
   bank_sram_controller
-  u_bank_sram_controller (
+  sc_top (
     .clk_i                           (clk_i                              ),
     .rst_i                           (rst_i                              ),
     .isu_sc_valid_i                  (isu_sc_valid                       ),
@@ -233,12 +233,12 @@ module bank_top(
     .sc_xbar_channel_id_o            (sc_xbar_channel_id[1:0]            ),
     .sc_xbar_rob_num_o               (sc_xbar_rob_num[2:0]               ),
     .sc_xbar_data_o                  (sc_xbar_data[127:0]                ),
-    .sc_biu_valid_o                  (sc_biu_valid                      ),
-    .sc_biu_ready_i                  (sc_biu_ready                      ),
-    .sc_biu_data_o                   (sc_biu_data[127:0]                ),
-    .sc_biu_offset_o                 (sc_biu_offset                     ),
-    .sc_biu_all_offset_o             (sc_biu_all_offset                 ),
-    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]        ),
+    .sc_biu_valid_o                  (sc_biu_valid                       ),
+    .sc_biu_ready_i                  (sc_biu_ready                       ),
+    .sc_biu_data_o                   (sc_biu_data[127:0]                 ),
+    .sc_biu_offset_o                 (sc_biu_offset                      ),
+    .sc_biu_all_offset_o             (sc_biu_all_offset                  ),
+    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]         ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_ready_i             (sc_wbuf_req_ready                  ),
     .sc_wbuf_req_channel_id_o        (sc_wbuf_req_channel_id[1:0]        ),
