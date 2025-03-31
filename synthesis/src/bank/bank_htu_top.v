@@ -185,7 +185,8 @@ module bank_htu_top (
 //-------------------------------------------------------------------------
 //                               HTU >> BIU
 //-------------------------------------------------------------------------
-  assign htu_biu_arvalid_o = xbar_bank_htu_valid_i & cacheline_need_refill;
+  assign htu_biu_arvalid_o = xbar_bank_htu_valid_i & cacheline_need_refill
+                           & htu_isu_allowIn_i;
 
   assign htu_biu_set_way_o[5:0] = {htu_cacheline_index[2:0],
                                    htu_access_way[2:0]};

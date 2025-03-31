@@ -25,7 +25,7 @@ module bank_biu_top #(
   output wire                  biu_isu_rvalid_o,
   input  wire                  biu_isu_rready_i,
   output wire [DATA_WIDTH-1:0] biu_isu_rdata_o,
-  output wire [5:0]            biu_isu_rid_o,
+  output wire [ID_WIDTH-1:0]   biu_isu_rid_o,
   // biu >> bus
   output wire                  biu_axi3_arvalid_o,
   input  wire                  biu_axi3_arready_i,
@@ -63,57 +63,35 @@ module bank_biu_top #(
 
 
 //-------------------------------------------------------------------------
-//                            AXI3 Bus Configure
+//                            AR channel
+// to add fifo to release timing
 //-------------------------------------------------------------------------
   assign biu_axi3_arvalid_o                = htu_biu_arvalid_i;
-  assign biu_axi3_arid_o[7:0]              = {2'b00, htu_biu_set_way_i[5:0]};
+  assign biu_axi3_arid_o[5:0]              = htu_biu_set_way_i[5:0];
   assign biu_axi3_arsize_o[2:0]            = 3'b101;  // 32 Byte
   assign biu_axi3_arlen_o[3:0]             = 4'b0000;
   assign biu_axi3_arburst_o[1:0]           = 2'b01;   // Incrementing burst
   assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {htu_biu_araddr_i[ADDR_WIDTH-1:5], 5'b00000};
 
-  assign biu_axi3_rready_o                = 1'b1;
-
-// axi3 bus test
-  reg [2:0] isu_cnt;
-  reg [5:0] htu_biu_set_way_Q;
-
-
-  assign biu_isu_rvalid_o = isu_cnt == 'd1;
-  
-    assign htu_biu_arready_o = isu_cnt == 'd0;
-
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      isu_cnt <= 'd0;
-    end
-    else begin
-      if (isu_cnt == 'd1 && biu_isu_rready_i) begin
-        isu_cnt <= 'd0;
-      end
-      else if (isu_cnt != 1 && htu_biu_arvalid_i) begin
-        isu_cnt <= isu_cnt + 'd1;
-      end
-    end
-  end
-  
-  always @(posedge clk_i) begin
-    if (htu_biu_arvalid_i && htu_biu_arready_o) begin
-        htu_biu_set_way_Q <= htu_biu_set_way_i;
-    end
-  end
-
-  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = 'h12345;
-  assign biu_isu_rid_o[5:0] = htu_biu_set_way_Q[5:0];
+  assign htu_biu_arready_o = biu_axi3_arready_i;
 
 
 //-------------------------------------------------------------------------
-//                            BIU -> BIU Tranfer Data
+//                             R channel
 //-------------------------------------------------------------------------
-  // assign biu_isu_rvalid_o                = biu_axi3_rvalid_i
-  //                                        & biu_axi3_rready_o
-  //                                        & biu_axi3_rresp_i;
-  // assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
-  // assign biu_isu_rid_o[ID_WIDTH-1:0]       = biu_axi3_rid_i[ID_WIDTH-1:0];
+  assign biu_isu_rvalid_o                = biu_axi3_rvalid_i;
+  assign biu_isu_rdata_o[DATA_WIDTH-1:0] = biu_axi3_rdata_i[DATA_WIDTH-1:0];
+  assign biu_isu_rid_o[ID_WIDTH-1:0]     = biu_axi3_rid_i[ID_WIDTH-1:0];
+  assign biu_axi3_rready_o               = biu_isu_rready_i;
+
+
+//-------------------------------------------------------------------------
+//                             AW channel
+//-------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------
+//                             W channel
+//-------------------------------------------------------------------------
+
 
 endmodule

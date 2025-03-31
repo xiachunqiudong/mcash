@@ -312,8 +312,42 @@ u_cross_bar_core_buffer_ch2(
                                      | {2{bank1_channel_grant[1]}} & 2'd1
                                      | {2{bank1_channel_grant[2]}} & 2'd2;
 
+  assign xbar_bank1_htu_opcode_o[1:0] = {2{bank1_channel_grant[0]}} & ch0_send_to_bank1_op[1:0]
+                                      | {2{bank1_channel_grant[1]}} & ch1_send_to_bank1_op[1:0]
+                                      | {2{bank1_channel_grant[2]}} & ch2_send_to_bank1_op[1:0];
+
   assign xbar_bank1_htu_addr_o[31:4] = {28{bank1_channel_grant[0]}} & ch0_send_to_bank1_addr[31:4]
                                      | {28{bank1_channel_grant[1]}} & ch1_send_to_bank1_addr[31:4]
                                      | {28{bank1_channel_grant[2]}} & ch2_send_to_bank1_addr[31:4];
+
+// send request to bank2
+  assign xbar_bank2_htu_valid_o      = |bank2_ch0to2_req_valid[2:0];
+
+  assign xbar_bank2_htu_ch_id_o[1:0] = {2{bank2_channel_grant[0]}} & 2'd0
+                                     | {2{bank2_channel_grant[1]}} & 2'd1
+                                     | {2{bank2_channel_grant[2]}} & 2'd2;
+
+  assign xbar_bank2_htu_opcode_o[1:0] = {2{bank2_channel_grant[0]}} & ch0_send_to_bank2_op[1:0]
+                                      | {2{bank2_channel_grant[1]}} & ch1_send_to_bank2_op[1:0]
+                                      | {2{bank2_channel_grant[2]}} & ch2_send_to_bank2_op[1:0];
+
+  assign xbar_bank2_htu_addr_o[31:4] = {28{bank2_channel_grant[0]}} & ch0_send_to_bank2_addr[31:4]
+                                     | {28{bank2_channel_grant[1]}} & ch1_send_to_bank2_addr[31:4]
+                                     | {28{bank2_channel_grant[2]}} & ch2_send_to_bank2_addr[31:4];
+
+// send request to bank3
+  assign xbar_bank3_htu_valid_o      = |bank3_ch0to2_req_valid[2:0];
+
+  assign xbar_bank3_htu_ch_id_o[1:0] = {2{bank3_channel_grant[0]}} & 2'd0
+                                     | {2{bank3_channel_grant[1]}} & 2'd1
+                                     | {2{bank3_channel_grant[2]}} & 2'd2;
+
+  assign xbar_bank3_htu_opcode_o[1:0] = {2{bank3_channel_grant[0]}} & ch0_send_to_bank3_op[1:0]
+                                      | {2{bank3_channel_grant[1]}} & ch1_send_to_bank3_op[1:0]
+                                      | {2{bank3_channel_grant[2]}} & ch2_send_to_bank3_op[1:0];
+
+  assign xbar_bank3_htu_addr_o[31:4] = {28{bank3_channel_grant[0]}} & ch0_send_to_bank3_addr[31:4]
+                                     | {28{bank3_channel_grant[1]}} & ch1_send_to_bank3_addr[31:4]
+                                     | {28{bank3_channel_grant[2]}} & ch2_send_to_bank3_addr[31:4];
 
 endmodule

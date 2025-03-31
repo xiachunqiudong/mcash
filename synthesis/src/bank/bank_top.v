@@ -7,35 +7,40 @@ module bank_top(
   input  wire [1:0]   xbar_bank_htu_opcode_i,
   input  wire [31:4]  xbar_bank_htu_addr_i,
   input  wire [7:0]   xbar_bank_htu_wbuffer_id_i,
+  output wire         bank_rc_xbar_valid_o,
+  input  wire         bank_rc_xbar_allowIn_i,
+  output wire [1:0]   bank_rc_xbar_ch_id_o,
+  output wire [2:0]   bank_rc_xbar_rob_num_o,
+  output wire [127:0] bank_rc_xbar_data_o,
   output wire         biu_axi3_arvalid_o,
   input  wire         biu_axi3_arready_i,
-  output wire [7:0]   biu_axi3_arid_o,
+  output wire [5:0]   biu_axi3_arid_o,
   output wire [31:0]  biu_axi3_araddr_o,
   output wire [2:0]   biu_axi3_arsize_o,
   output wire [3:0]   biu_axi3_arlen_o,
   output wire [1:0]   biu_axi3_arburst_o,
   input  wire         biu_axi3_rvalid_i,
   output wire         biu_axi3_rready_o,
-  input  wire [7:0]   biu_axi3_rid_i,
+  input  wire [5:0]   biu_axi3_rid_i,
   input  wire [255:0] biu_axi3_rdata_i,
   input  wire [1:0]   biu_axi3_rresp_i,
   input  wire         biu_axi3_rlast_i,
   output wire         biu_axi3_awvalid_o,
   input  wire         biu_axi3_awready_i,
-  output wire [7:0]   biu_axi3_awid_o,
+  output wire [5:0]   biu_axi3_awid_o,
   output wire [31:0]  biu_axi3_awaddr_o,
   output wire [3:0]   biu_axi3_awlen_o,
   output wire [2:0]   biu_axi3_awsize_o,
   output wire [1:0]   biu_axi3_awburst_o,
   output wire         biu_axi3_wvalid_o,
   input  wire         biu_axi3_wready_i,
-  output wire [7:0]   biu_axi3_wid_o,
+  output wire [5:0]   biu_axi3_wid_o,
   output wire [255:0] biu_axi3_wdata_o,
   output wire [31:0]  biu_axi3_wstrb_o,
   output wire         biu_axi3_wlast_o,
   input  wire         biu_axi3_bvalid_i,
   output wire         biu_axi3_bready_o,
-  input  wire [7:0]   biu_axi3_bid_i,
+  input  wire [5:0]   biu_axi3_bid_i,
   input  wire [1:0]   biu_axi3_bresp_i
 );
 
@@ -176,9 +181,9 @@ module bank_top(
   bank_biu_top #(
     .ADDR_WIDTH(32),
     .DATA_WIDTH(256),
-    .ID_WIDTH  (8)
+    .ID_WIDTH  (6)
   )
-  u_bank_biu (
+  biu_top (
     .clk_i                   (clk_i                     ),
     .rst_i                   (rst_i                     ),
     .htu_biu_arvalid_i       (htu_biu_arvalid           ),
@@ -200,33 +205,33 @@ module bank_top(
     .biu_isu_rid_o           (biu_isu_rid[5:0]          ),
     .biu_axi3_arvalid_o      (biu_axi3_arvalid_o        ),
     .biu_axi3_arready_i      (biu_axi3_arready_i        ),
-    .biu_axi3_arid_o         (biu_axi3_arid_o[7:0]      ),
+    .biu_axi3_arid_o         (biu_axi3_arid_o[5:0]      ),
     .biu_axi3_araddr_o       (biu_axi3_araddr_o[31:0]   ),
     .biu_axi3_arsize_o       (biu_axi3_arsize_o[2:0]    ),
     .biu_axi3_arlen_o        (biu_axi3_arlen_o[3:0]     ),
     .biu_axi3_arburst_o      (biu_axi3_arburst_o[1:0]   ),
     .biu_axi3_rvalid_i       (biu_axi3_rvalid_i         ),
     .biu_axi3_rready_o       (biu_axi3_rready_o         ),
-    .biu_axi3_rid_i          (biu_axi3_rid_i[7:0]       ),
+    .biu_axi3_rid_i          (biu_axi3_rid_i[5:0]       ),
     .biu_axi3_rdata_i        (biu_axi3_rdata_i[255:0]   ),
     .biu_axi3_rresp_i        (biu_axi3_rresp_i[1:0]     ),
     .biu_axi3_rlast_i        (biu_axi3_rlast_i          ),
     .biu_axi3_awvalid_o      (biu_axi3_awvalid_o        ),
     .biu_axi3_awready_i      (biu_axi3_awready_i        ),
-    .biu_axi3_awid_o         (biu_axi3_awid_o[7:0]       ),
+    .biu_axi3_awid_o         (biu_axi3_awid_o[5:0]       ),
     .biu_axi3_awaddr_o       (biu_axi3_awaddr_o[31:0]   ),
     .biu_axi3_awlen_o        (biu_axi3_awlen_o[3:0]     ),
     .biu_axi3_awsize_o       (biu_axi3_awsize_o[2:0]    ),
     .biu_axi3_awburst_o      (biu_axi3_awburst_o[1:0]   ),
     .biu_axi3_wvalid_o       (biu_axi3_wvalid_o         ),
     .biu_axi3_wready_i       (biu_axi3_wready_i         ),
-    .biu_axi3_wid_o          (biu_axi3_wid_o[7:0]       ),
+    .biu_axi3_wid_o          (biu_axi3_wid_o[5:0]       ),
     .biu_axi3_wdata_o        (biu_axi3_wdata_o[255:0]   ),
     .biu_axi3_wstrb_o        (biu_axi3_wstrb_o[31:0]    ),
     .biu_axi3_wlast_o        (biu_axi3_wlast_o          ),
     .biu_axi3_bvalid_i       (biu_axi3_bvalid_i         ),
     .biu_axi3_bready_o       (biu_axi3_bready_o         ),
-    .biu_axi3_bid_i          (biu_axi3_bid_i[7:0]       ),
+    .biu_axi3_bid_i          (biu_axi3_bid_i[5:0]       ),
     .biu_axi3_bresp_i        (biu_axi3_bresp_i[1:0]     )
   );
 
@@ -272,7 +277,7 @@ module bank_top(
 //                              Write Buffer
 //---------------------------------------------------------------------------------
   bank_wbuffer
-  u_bank_wbuffer(
+  wbuffer (
     .clk_i                   (clk_i                      ),
     .rst_i                   (rst_i                      ),
     .sc_wbuf_req_valid_i     (sc_wbuf_req_valid          ),
