@@ -1,5 +1,5 @@
 module priority_arbiter #(
-  parameter N = 4;
+  parameter N = 4
 )(
   input  wire [N-1:0] req_i,
   output wire [N-1:0] grant_o
