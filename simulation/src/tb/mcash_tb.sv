@@ -531,7 +531,7 @@ module mcash_tb;
     .awsize_s0      (),
     .awvalid_s0     (),
     .bready_s0      (),
-    .pad_cpu_rst_b  (rst),
+    .pad_cpu_rst    (rst),
     .pll_core_cpuclk(clk),
     .rready_s0      (S0_axi3_rready),
     .wdata_s0       (),
@@ -563,14 +563,14 @@ module mcash_tb;
     .SLAVE_EN1(0),
     .SLAVE_EN2(0),
     .SLAVE_EN3(0),
-    .ADDR_LENGTH0(12), // effective address bits-widgh
+    .ADDR_LENGTH0(26), // effective address bits-widgh
     .ADDR_LENGTH1(12), // effective address bits-widgh
     .ADDR_LENGTH2(12), // effective address bits-widgh
     .ADDR_LENGTH3(12), // effective address bits-widgh
     .ADDR_BASE0('h0),
-    .ADDR_BASE1('h2000),
-    .ADDR_BASE2('h4000),
-    .ADDR_BASE3('h6000)
+    .ADDR_BASE1('h20000),
+    .ADDR_BASE2('h40000),
+    .ADDR_BASE3('h60000)
   )
   u_amba_axi_m4s4(
     .ACLK      (clk                                  ),

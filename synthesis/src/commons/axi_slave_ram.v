@@ -35,7 +35,7 @@ input  wire  [2  :0]    awprot_s0,
 input  wire  [2  :0]    awsize_s0,      
 input  wire             awvalid_s0,     
 input  wire             bready_s0,      
-input  wire             pad_cpu_rst_b,  
+input  wire             pad_cpu_rst,  
 input  wire             pll_core_cpuclk, 
 input  wire             rready_s0,      
 input  wire  [DW-1:0]   wdata_s0,       
@@ -103,9 +103,9 @@ assign  bvalid = (cur_state[1:0] == WRITE_RESP);
 assign  read_over = (read_step[7:0] == arlen[7:0]) ? 1'b1 : 1'b0;
 assign  write_over = (write_step[7:0] == awlen[7:0]) ? 1'b1 : 1'b0;
 
-always@(posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always@(posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
     cur_state[1:0] <= IDLE;
   else
     cur_state[1:0] <= next_state[1:0];
@@ -165,9 +165,9 @@ begin
 end
 
 
-always@ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always@ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b) begin
+  if(pad_cpu_rst) begin
 
       arid[7:0] <= 8'b0;
       arlen[7:0] <= 8'b0;
@@ -186,9 +186,9 @@ begin
 end
 
 
-always @ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
       read_step[7:0] <= 8'b0;
   else if(next_state[1:0] == IDLE)
       read_step[7:0] <= 8'b0;
@@ -199,9 +199,9 @@ begin
 end
 
 
-always @ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
       write_step[7:0] <= 8'b0;
   else if(next_state[1:0] == IDLE)
       write_step[7:0] <= 8'b0;
@@ -233,9 +233,9 @@ assign wrap4_2 = (mem_addr[5:4]==2'b11)&&(((read_step[7:0]==8'h01)&&wrap4_read_e
 assign wrap4_3 = (mem_addr[5:4]==2'b11)&&(((read_step[7:0]==8'h02)&&wrap4_read_en)||
                  ((write_step[7:0]==8'h02)&&wrap4_write_en));
 
-always @ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
     begin
       mem_addr[AW-1:0] <= 'b0;
     end
@@ -267,9 +267,9 @@ end
 assign wready = (cur_state[1:0]==WRITE);
 
 
-always @ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
       read_dly <= 1'b0;
   else if((arvalid_s0 && arready) || (rvalid && rready_s0))
       read_dly <= 1'b1;
@@ -277,9 +277,9 @@ begin
       read_dly <= 1'b0;
 end
 
-always @ (posedge pll_core_cpuclk or negedge pad_cpu_rst_b)
+always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
-  if(!pad_cpu_rst_b)
+  if(pad_cpu_rst)
       rvalid <= 1'b0;
   else if((cur_state[1:0] == READ) && read_dly)
       rvalid <= 1'b1;
@@ -387,14 +387,24 @@ begin
 
 end
 
-f_spsram_large x_f_spsram_large (
-  .A                 (mem_addr[24:4]   ),
+f_spsram_large x0_f_spsram_large (
+  .A                 (mem_addr[25:5] ),
+  .CEN               (mem_cen        ),
+  .CLK               (pll_core_cpuclk),
+  .D                 (mem_din[127:0] ),
+  .Q                 (mem_dout[127:0]),
+  .WEN               (mem_wen[15:0]  )
+);
+
+f_spsram_large x1_f_spsram_large (
+  .A                 (mem_addr[25:5]   ),
   .CEN               (mem_cen          ),
   .CLK               (pll_core_cpuclk  ),
-  .D                 (mem_din[127:0]   ),
-  .Q                 (mem_dout[127:0]  ),
-  .WEN               (mem_wen[15:0]    )
+  .D                 (mem_din[255:128] ),
+  .Q                 (mem_dout[255:128]),
+  .WEN               (mem_wen[31:16]   )
 );
+
 
 endmodule
 
