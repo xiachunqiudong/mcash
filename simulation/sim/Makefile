@@ -20,6 +20,7 @@ vcs:
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \
 	vcs -full64 -timescale=1ns/1ns +lint=TFIPC-L -debug_acc+all -fsdb -kdb -sverilog \
+	+vcs+loopreport+10000 \
 	$(FILELIST) \
 	-top $(TOP) -l elab.log
 

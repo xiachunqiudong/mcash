@@ -6,11 +6,11 @@ module bank_isu_top (
   input  wire         clk_i,
   input  wire         rst_i,
   // htu >> isu
-  input  wire         htu_isu_linefill_valid_i,
-  input  wire [2:0]   htu_isu_linefill_set_i,
-  input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire         htu_isu_valid_i,
   output wire         htu_isu_allowIn_o,
+  input  wire         htu_isu_need_linefill_i,
+  input  wire [2:0]   htu_isu_linefill_set_i,
+  input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire [1:0]   htu_isu_ch_id_i,
   input  wire [1:0]   htu_isu_opcode_i,
   input  wire [6:0]   htu_isu_set_way_offset_i,
@@ -39,49 +39,20 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch2_credit
 );
 
+  wire       req_need_linefill_WV;
+
   wire       htu_isu_kickoff;
   wire [2:0] isu_rob_id;
 
   wire [7:0] htu_isu_linefill_set_dcd;
   wire [7:0] htu_isu_linefill_way_dcd;
-  wire [7:0] isu_set0_inflight_array_validate;
-  wire [7:0] isu_set1_inflight_array_validate;
-  wire [7:0] isu_set2_inflight_array_validate;
-  wire [7:0] isu_set3_inflight_array_validate;
-  wire [7:0] isu_set4_inflight_array_validate;
-  wire [7:0] isu_set5_inflight_array_validate;
-  wire [7:0] isu_set6_inflight_array_validate;
-  wire [7:0] isu_set7_inflight_array_validate;
-  wire [7:0] isu_set0_inflight_array_InValidate;
-  wire [7:0] isu_set1_inflight_array_InValidate;
-  wire [7:0] isu_set2_inflight_array_InValidate;
-  wire [7:0] isu_set3_inflight_array_InValidate;
-  wire [7:0] isu_set4_inflight_array_InValidate;
-  wire [7:0] isu_set5_inflight_array_InValidate;
-  wire [7:0] isu_set6_inflight_array_InValidate;
-  wire [7:0] isu_set7_inflight_array_InValidate;
-  wire [7:0] isu_set0_inflight_array_In;
-  wire [7:0] isu_set1_inflight_array_In;
-  wire [7:0] isu_set2_inflight_array_In;
-  wire [7:0] isu_set3_inflight_array_In;
-  wire [7:0] isu_set4_inflight_array_In;
-  wire [7:0] isu_set5_inflight_array_In;
-  wire [7:0] isu_set6_inflight_array_In;
-  wire [7:0] isu_set7_inflight_array_In;
-  reg  [7:0] isu_set0_inflight_array_Q;
-  reg  [7:0] isu_set1_inflight_array_Q;
-  reg  [7:0] isu_set2_inflight_array_Q;
-  reg  [7:0] isu_set3_inflight_array_Q;
-  reg  [7:0] isu_set4_inflight_array_Q;
-  reg  [7:0] isu_set5_inflight_array_Q;
-  reg  [7:0] isu_set6_inflight_array_Q;
-  reg  [7:0] isu_set7_inflight_array_Q;
+
+  wire [7:0] biu_isu_set_dcd;
+  wire [7:0] biu_isu_way_dcd;
 
 //-------------------------------------------------------------------------
 //                            In-flight array
 //-------------------------------------------------------------------------
-
-
   assign biu_isu_rready_o = 1'b1;
 
   assign htu_isu_linefill_set_dcd[7:0] = {htu_isu_linefill_set_i[2:0] == 3'd7,
@@ -102,78 +73,38 @@ module bank_isu_top (
                                           htu_isu_linefill_way_i[2:0] == 3'd1,
                                           htu_isu_linefill_way_i[2:0] == 3'd0};
 
-  assign isu_set0_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[0]}};
-  assign isu_set1_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[1]}};
-  assign isu_set2_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[2]}};
-  assign isu_set3_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[3]}};
-  assign isu_set4_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[4]}};
-  assign isu_set5_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[5]}};
-  assign isu_set6_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[6]}};
-  assign isu_set7_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[7]}};
+  assign biu_isu_set_dcd[7:0] = {biu_isu_rid_i[5:3] == 3'd7,
+                                 biu_isu_rid_i[5:3] == 3'd6,
+                                 biu_isu_rid_i[5:3] == 3'd5,
+                                 biu_isu_rid_i[5:3] == 3'd4,
+                                 biu_isu_rid_i[5:3] == 3'd3,
+                                 biu_isu_rid_i[5:3] == 3'd2,
+                                 biu_isu_rid_i[5:3] == 3'd1,
+                                 biu_isu_rid_i[5:3] == 3'd0};
 
-  assign isu_set0_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[0]}} & 'd0;
-  assign isu_set1_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[1]}} & 'd0;
-  assign isu_set2_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[2]}} & 'd0;
-  assign isu_set3_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[3]}} & 'd0;
-  assign isu_set4_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[4]}} & 'd0;
-  assign isu_set5_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[5]}} & 'd0;
-  assign isu_set6_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[6]}} & 'd0;
-  assign isu_set7_inflight_array_InValidate[7:0] = htu_isu_linefill_way_dcd[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd[7]}} & 'd0;
+  assign biu_isu_way_dcd[7:0] = {biu_isu_rid_i[2:0] == 3'd7,
+                                 biu_isu_rid_i[2:0] == 3'd6,
+                                 biu_isu_rid_i[2:0] == 3'd5,
+                                 biu_isu_rid_i[2:0] == 3'd4,
+                                 biu_isu_rid_i[2:0] == 3'd3,
+                                 biu_isu_rid_i[2:0] == 3'd2,
+                                 biu_isu_rid_i[2:0] == 3'd1,
+                                 biu_isu_rid_i[2:0] == 3'd0};
 
-  assign isu_set0_inflight_array_In[7:0] = isu_set0_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set0_inflight_array_Q[7:0]
-                                             & ~isu_set0_inflight_array_InValidate[7:0]); // In-validate
-  
-  assign isu_set1_inflight_array_In[7:0] = isu_set1_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set1_inflight_array_Q[7:0]
-                                             & ~isu_set1_inflight_array_InValidate[7:0]); // In-validate
+  assign req_need_linefill_WV = htu_isu_need_linefill_i & htu_isu_valid_i;
 
-  assign isu_set2_inflight_array_In[7:0] = isu_set2_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set2_inflight_array_Q[7:0]
-                                             & ~isu_set2_inflight_array_InValidate[7:0]); // In-validate
+  bank_isu_inflight_array
+  isu_inflight_array (
+    .clk_i                     (clk_i                        ),
+    .rst_i                     (rst_i                        ),
+    .htu_isu_linefill_valid_i  (req_need_linefill_WV         ),
+    .htu_isu_linefill_set_dcd_i(htu_isu_linefill_set_dcd[7:0]),
+    .htu_isu_linefill_way_dcd_i(htu_isu_linefill_way_dcd[7:0]),
+    .biu_isu_rvalid_i          (biu_isu_rvalid_i             ),
+    .biu_isu_set_dcd_i         (biu_isu_set_dcd[7:0]         ),
+    .biu_isu_way_dcd_i         (biu_isu_way_dcd[7:0]         )
+  );
 
-  assign isu_set3_inflight_array_In[7:0] = isu_set3_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set3_inflight_array_Q[7:0]
-                                             & ~isu_set3_inflight_array_InValidate[7:0]); // In-validate
-
-  assign isu_set4_inflight_array_In[7:0] = isu_set4_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set4_inflight_array_Q[7:0]
-                                             & ~isu_set4_inflight_array_InValidate[7:0]); // In-validate
-
-  assign isu_set5_inflight_array_In[7:0] = isu_set5_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set5_inflight_array_Q[7:0]
-                                             & ~isu_set5_inflight_array_InValidate[7:0]); // In-validate
-
-  assign isu_set6_inflight_array_In[7:0] = isu_set6_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set6_inflight_array_Q[7:0]
-                                             & ~isu_set6_inflight_array_InValidate[7:0]); // In-validate
-
-  assign isu_set7_inflight_array_In[7:0] = isu_set7_inflight_array_validate[7:0]          // validate
-                                         | (    isu_set7_inflight_array_Q[7:0]
-                                             & ~isu_set7_inflight_array_InValidate[7:0]); // In-validate
-
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      isu_set0_inflight_array_Q[7:0] <= 8'b0;
-      isu_set1_inflight_array_Q[7:0] <= 8'b0;
-      isu_set2_inflight_array_Q[7:0] <= 8'b0;
-      isu_set3_inflight_array_Q[7:0] <= 8'b0;
-      isu_set4_inflight_array_Q[7:0] <= 8'b0;
-      isu_set5_inflight_array_Q[7:0] <= 8'b0;
-      isu_set6_inflight_array_Q[7:0] <= 8'b0;
-      isu_set7_inflight_array_Q[7:0] <= 8'b0;
-    end
-    else begin
-      isu_set0_inflight_array_Q[7:0] <= isu_set0_inflight_array_In[7:0];
-      isu_set1_inflight_array_Q[7:0] <= isu_set1_inflight_array_In[7:0];
-      isu_set2_inflight_array_Q[7:0] <= isu_set2_inflight_array_In[7:0];
-      isu_set3_inflight_array_Q[7:0] <= isu_set3_inflight_array_In[7:0];
-      isu_set4_inflight_array_Q[7:0] <= isu_set4_inflight_array_In[7:0];
-      isu_set5_inflight_array_Q[7:0] <= isu_set5_inflight_array_In[7:0];
-      isu_set6_inflight_array_Q[7:0] <= isu_set6_inflight_array_In[7:0];
-      isu_set7_inflight_array_Q[7:0] <= isu_set7_inflight_array_In[7:0];
-    end
-  end
 
   reg [6:0] set_way_offset;
 
@@ -203,6 +134,7 @@ module bank_isu_top (
     .rst_i                        (rst_i                                 ),
     .req_valid_i                  (htu_isu_valid_i                       ),
     .req_allowIn_o                (htu_isu_allowIn_o                     ),
+    .req_need_linefill_i          (htu_isu_need_linefill_i               ),
     .req_rob_id_i                 (isu_rob_id[2:0]                       ),
     .req_ch_id_i                  (htu_isu_ch_id_i[1:0]                  ),
     .req_opcode_i                 (htu_isu_opcode_i[1:0]                 ),

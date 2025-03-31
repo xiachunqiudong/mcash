@@ -1,6 +1,7 @@
 module bank_htu_plru_tree(
   input  wire       clk_i,
   input  wire       rst_i,
+  input  wire       access_valid_i,
   input  wire [7:0] access_array_i,
   output wire [7:0] oldest_way_array_o
 );
@@ -83,7 +84,7 @@ module bank_htu_plru_tree(
                                     ? ~plru_tree_node_state_Q[0]
                                     :  plru_tree_node_state_Q[0];
 
-  assign plru_tree_node_state_wen = |access_array_i[7:0];
+  assign plru_tree_node_state_wen = access_valid_i;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
