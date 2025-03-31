@@ -38,7 +38,7 @@ module bank_top(
   input  wire [1:0]   biu_axi3_bresp_i
 );
 
-  wire        htu_isu_linefill_valid;
+  wire        htu_isu_need_linefill;
   wire [2:0]  htu_isu_linefill_set;
   wire [2:0]  htu_isu_linefill_way;
   wire        htu_isu_valid;
@@ -108,7 +108,7 @@ module bank_top(
     .xbar_bank_htu_opcode_i           (xbar_bank_htu_opcode_i[1:0]         ),
     .xbar_bank_htu_addr_i             (xbar_bank_htu_addr_i[31:4]          ),
     .xbar_bank_htu_wbuffer_id_i       (xbar_bank_htu_wbuffer_id_i[7:0]     ),
-    .htu_isu_linefill_valid_o         (htu_isu_linefill_valid              ),
+    .htu_isu_need_linefill_o          (htu_isu_need_linefill               ),
     .htu_isu_linefill_set_o           (htu_isu_linefill_set[2:0]           ),
     .htu_isu_linefill_way_o           (htu_isu_linefill_way[2:0]           ),
     .htu_isu_valid_o                  (htu_isu_valid                       ),
@@ -138,7 +138,7 @@ module bank_top(
   isu_top (
     .clk_i                            (clk_i                               ),
     .rst_i                            (rst_i                               ),
-    .htu_isu_linefill_valid_i         (htu_isu_linefill_valid              ),
+    .htu_isu_need_linefill_i          (htu_isu_need_linefill               ),
     .htu_isu_linefill_set_i           (htu_isu_linefill_set[2:0]           ),
     .htu_isu_linefill_way_i           (htu_isu_linefill_way[2:0]           ),
     .htu_isu_valid_i                  (htu_isu_valid                       ),

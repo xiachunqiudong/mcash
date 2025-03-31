@@ -6,11 +6,11 @@ module bank_isu_top (
   input  wire         clk_i,
   input  wire         rst_i,
   // htu >> isu
-  input  wire         htu_isu_linefill_valid_i,
-  input  wire [2:0]   htu_isu_linefill_set_i,
-  input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire         htu_isu_valid_i,
   output wire         htu_isu_allowIn_o,
+  input  wire         htu_isu_need_linefill_i,
+  input  wire [2:0]   htu_isu_linefill_set_i,
+  input  wire [2:0]   htu_isu_linefill_way_i,
   input  wire [1:0]   htu_isu_ch_id_i,
   input  wire [1:0]   htu_isu_opcode_i,
   input  wire [6:0]   htu_isu_set_way_offset_i,
@@ -38,6 +38,8 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch1_credit,
   input  wire [2:0]   xbar_isu_ch2_credit
 );
+
+  wire       req_need_linefill_WV;
 
   wire       htu_isu_kickoff;
   wire [2:0] isu_rob_id;
@@ -89,19 +91,19 @@ module bank_isu_top (
                                  biu_isu_rid_i[2:0] == 3'd1,
                                  biu_isu_rid_i[2:0] == 3'd0};
 
+  assign req_need_linefill_WV = htu_isu_need_linefill_i & htu_isu_valid_i;
 
-bank_isu_inflight_array
-
-isu_inflight_array (
-  .clk_i                     (clk_i                        ),
-  .rst_i                     (rst_i                        ),
-  .htu_isu_linefill_valid_i  (htu_isu_linefill_valid_i     ),
-  .htu_isu_linefill_set_dcd_i(htu_isu_linefill_set_dcd[7:0]),
-  .htu_isu_linefill_way_dcd_i(htu_isu_linefill_way_dcd[7:0]),
-  .biu_isu_rvalid_i          (biu_isu_rvalid_i             ),
-  .biu_isu_set_dcd_i         (biu_isu_set_dcd[7:0]         ),
-  .biu_isu_way_dcd_i         (biu_isu_way_dcd[7:0]         )
-);
+  bank_isu_inflight_array
+  isu_inflight_array (
+    .clk_i                     (clk_i                        ),
+    .rst_i                     (rst_i                        ),
+    .htu_isu_linefill_valid_i  (req_need_linefill_WV         ),
+    .htu_isu_linefill_set_dcd_i(htu_isu_linefill_set_dcd[7:0]),
+    .htu_isu_linefill_way_dcd_i(htu_isu_linefill_way_dcd[7:0]),
+    .biu_isu_rvalid_i          (biu_isu_rvalid_i             ),
+    .biu_isu_set_dcd_i         (biu_isu_set_dcd[7:0]         ),
+    .biu_isu_way_dcd_i         (biu_isu_way_dcd[7:0]         )
+  );
 
 
   reg [6:0] set_way_offset;
@@ -132,6 +134,7 @@ isu_inflight_array (
     .rst_i                        (rst_i                                 ),
     .req_valid_i                  (htu_isu_valid_i                       ),
     .req_allowIn_o                (htu_isu_allowIn_o                     ),
+    .req_need_linefill_i          (htu_isu_need_linefill_i               ),
     .req_rob_id_i                 (isu_rob_id[2:0]                       ),
     .req_ch_id_i                  (htu_isu_ch_id_i[1:0]                  ),
     .req_opcode_i                 (htu_isu_opcode_i[1:0]                 ),

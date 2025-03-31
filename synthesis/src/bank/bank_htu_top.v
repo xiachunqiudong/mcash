@@ -9,7 +9,7 @@ module bank_htu_top (
   input  wire [31:4] xbar_bank_htu_addr_i,
   input  wire [7:0]  xbar_bank_htu_wbuffer_id_i,
   // htu >> isu
-  output wire        htu_isu_linefill_valid_o,
+  output wire        htu_isu_need_linefill_o,
   output wire [2:0]  htu_isu_linefill_set_o,
   output wire [2:0]  htu_isu_linefill_way_o,
   output wire        htu_isu_valid_o,
@@ -114,7 +114,6 @@ module bank_htu_top (
 
   assign htu_cacheline_index_dcd_WV[7:0] = {8{xbar_bank_htu_kickoff}} & htu_cacheline_index_dcd[7:0];
 
-
   assign cacheline_need_refill = op_is_read
                                & (   ~cacheline_hit                               // cacheline miss
                                     | access_cacheline_offset_state[1:0] == 2'b00 // cacheline hit but empty [E, D]
@@ -139,7 +138,7 @@ module bank_htu_top (
                              | {3{htu_cacheline_index_dcd[6]}} & set6_access_way[2:0]
                              | {3{htu_cacheline_index_dcd[7]}} & set7_access_way[2:0];
 
-  assign htu_isu_linefill_valid_o = xbar_bank_htu_valid_i & cacheline_need_refill;
+  assign htu_isu_need_linefill_o = cacheline_need_refill;
 
   assign htu_isu_linefill_set_o[2:0] = htu_cacheline_index[2:0];
 

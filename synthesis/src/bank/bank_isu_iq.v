@@ -5,6 +5,7 @@ module bank_isu_iq #(
   input  wire       rst_i,
   input  wire       req_valid_i,
   output wire       req_allowIn_o,
+  input  wire       req_need_linefill_i,
   input  wire [2:0] req_rob_id_i,
   input  wire [1:0] req_ch_id_i,
   input  wire [1:0] req_opcode_i,
@@ -41,6 +42,11 @@ module bank_isu_iq #(
   reg [3:0]           cacheline_state_array_In [DEPTH-1:0];
   reg [3:0]           cacheline_state_array_Q  [DEPTH-1:0];
 
+  reg [DEPTH-1:0]     mshr_allow_array_In;
+  reg [DEPTH-1:0]     mshr_allow_array_Q;
+  reg [DEPTH-1:0]     credit_allow_array_In;
+  reg [DEPTH-1:0]     credit_allow_array_Q;
+
   assign req_allowIn_o = queue_size_Q[PTR_WIDH:0] != DEPTH[PTR_WIDH:0];
 
   assign writePtr_kickoff = req_valid_i & req_allowIn_o;
@@ -63,7 +69,9 @@ module bank_isu_iq #(
     end
   end
 
-// update issue queue
+//--------------------------------------------------------------
+//                    issue queue enqueue
+//--------------------------------------------------------------
   always @(*) begin
     // default value
     rob_id_array_In                      = rob_id_array_Q;
@@ -92,5 +100,26 @@ module bank_isu_iq #(
       cacheline_state_array_Q <= cacheline_state_array_In;
     end
   end
+
+//--------------------------------------------------------------
+//                    MSHR allow array
+//--------------------------------------------------------------
+
+  always @(*) begin
+    mshr_allow_array_In[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0];
+    if (writePtr_kickoff) begin
+      mshr_allow_array_In[writePtr_Q] = ~req_need_linefill_i;
+    end
+  end
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      mshr_allow_array_Q[DEPTH-1:0] <= 'd0;
+    end
+    else begin
+      mshr_allow_array_Q[DEPTH-1:0] <= mshr_allow_array_In[DEPTH-1:0];
+    end
+  end
+
 
 endmodule
