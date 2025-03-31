@@ -33,6 +33,17 @@ module mcash_tb;
     $readmemb(code_file, code_list);
   end
 
+  reg [63:0] cycle_cnt_Q;
+
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+      cycle_cnt_Q <= 'd0;
+    end
+    else begin
+      cycle_cnt_Q <= cycle_cnt_Q + 'd1;
+    end
+  end
+
   reg          mcash_ch0_req_valid;
   wire         mcash_ch0_req_allowIn;
   reg  [2:0]   mcash_ch0_req_op;
@@ -195,6 +206,7 @@ module mcash_tb;
       mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
       mcash_ch0_req_data[127:0] <= code_list[i][159:32];
       mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
+      $display("send mcash request, ID: %d", i);
       i++;
     end
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
@@ -365,10 +377,14 @@ module mcash_tb;
     $fsdbDumpvars("+struct");
     $fsdbDumpvars("+mda");
     $fsdbDumpon;
+  end
+
+  initial begin
     #10000
     $fsdbDumpoff;
     $finish;
   end
+
 
 endmodule
 
