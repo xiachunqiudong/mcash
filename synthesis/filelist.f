@@ -27,3 +27,6 @@ $MCASH_HOME/synthesis/src/cross_bar/bank_ch_rr.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_core.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_core_buffer.v
 $MCASH_HOME/synthesis/src/cross_bar/cross_bar_top.v
+
+$MCASH_HOME/synthesis/src/commons/amba_axi_m4s4.v
+$MCASH_HOME/synthesis/src/commons/priority_aribiter.v
