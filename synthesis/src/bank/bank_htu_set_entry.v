@@ -9,7 +9,7 @@ module bank_htu_set_entry (
   input  wire [31:10] access_tag_i,
   input  wire         access_offset_i,
   output wire         cacheline_hit_o,
-  output wire         cacheline_need_evit_WV_o,
+  output wire         cacheline_need_evit_o,
   output wire [31:10] evit_cacheline_tag_o,
   output wire [1:0]   cacheline_offset0_state_o,
   output wire [1:0]   cacheline_offset1_state_o,
@@ -74,8 +74,8 @@ module bank_htu_set_entry (
                                                | {2{cacheline_allocate_array[7]}} & cacheline7_offset1_state[1:0];
 
 // if any offset is dirty, then this cacheline needs to be write back to sub memory.
-  assign cacheline_need_evit_WV_o = allocate_cacheline_offset0_state[1:0] == 2'b10
-                                  | allocate_cacheline_offset1_state[1:0] == 2'b10;
+  assign cacheline_need_evit_o = allocate_cacheline_offset0_state[1:0] == 2'b10
+                               | allocate_cacheline_offset1_state[1:0] == 2'b10;
 
   assign evit_cacheline_tag_o[31:10] = {22{cacheline_allocate_array[0]}} & cacheline0_tag[31:10]
                                      | {22{cacheline_allocate_array[1]}} & cacheline1_tag[31:10]

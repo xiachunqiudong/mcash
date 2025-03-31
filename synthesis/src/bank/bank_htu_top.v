@@ -46,8 +46,8 @@ module bank_htu_top (
   wire [7:0]   cacheline_hit_array;
   wire         cacheline_hit;
   wire         cacheline_need_refill;
-  wire [7:0]   cacheline_evit_WV_array;
-  wire         cacheline_evit_WV;
+  wire [7:0]   cacheline_evit_array;
+  wire         cacheline_need_evit;
   wire [31:10] evit_cacheline_tag;
   wire [31:10] set0_evit_cacheline_tag;
   wire [31:10] set1_evit_cacheline_tag;
@@ -151,11 +151,11 @@ module bank_htu_top (
 // ISU opcode[0]: 0 => read    1 => write
 // ISU opcode[1]: 0 => no evit 1 => need evit
   assign htu_isu_opcode_o[0] = op_is_write;
-  assign htu_isu_opcode_o[1] = cacheline_evit_WV;
+  assign htu_isu_opcode_o[1] = cacheline_need_evit;
 
   assign htu_isu_ch_id_o[1:0] = xbar_bank_htu_ch_id_i[1:0];
 
-  assign cacheline_evit_WV = |cacheline_evit_WV_array[7:0];
+  assign cacheline_need_evit = |(htu_cacheline_index_dcd[7:0] & cacheline_evit_array[7:0]);
 
   assign htu_isu_set_way_offset_o[6:0] = {htu_cacheline_index[2:0],
                                           htu_access_way[2:0],
@@ -219,7 +219,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[0]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[0]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[0]          ),
     .evit_cacheline_tag_o     (set0_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[0]           ),
     .cacheline_offset0_state_o(set0_cacheline_offset0_state[1:0]),
@@ -239,7 +239,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[1]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[1]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[1]          ),
     .evit_cacheline_tag_o     (set1_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[1]           ),
     .cacheline_offset0_state_o(set1_cacheline_offset0_state[1:0]),
@@ -259,7 +259,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[2]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[2]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[2]          ),
     .evit_cacheline_tag_o     (set2_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[2]           ),
     .cacheline_offset0_state_o(set2_cacheline_offset0_state[1:0]),
@@ -279,7 +279,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[3]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[3]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[3]          ),
     .evit_cacheline_tag_o     (set3_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[3]           ),
     .cacheline_offset0_state_o(set3_cacheline_offset0_state[1:0]),
@@ -299,7 +299,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[4]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[4]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[4]          ),
     .evit_cacheline_tag_o     (set4_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[4]           ),
     .cacheline_offset0_state_o(set4_cacheline_offset0_state[1:0]),
@@ -319,7 +319,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[5]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[5]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[5]          ),
     .evit_cacheline_tag_o     (set5_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[5]           ),
     .cacheline_offset0_state_o(set5_cacheline_offset0_state[1:0]),
@@ -339,7 +339,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[6]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (htu_cacheline_offset             ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[6]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[6]          ),
     .evit_cacheline_tag_o     (set6_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[6]           ),
     .cacheline_offset0_state_o(set6_cacheline_offset0_state[1:0]),
@@ -359,7 +359,7 @@ module bank_htu_top (
     .set_hit_WV_i             (htu_cacheline_index_dcd_WV[7]    ),
     .access_tag_i             (htu_cacheline_tag[31:10]         ),
     .access_offset_i          (xbar_bank_htu_addr_i[7]          ),
-    .cacheline_need_evit_WV_o (cacheline_evit_WV_array[7]       ),
+    .cacheline_need_evit_o    (cacheline_evit_array[7]          ),
     .evit_cacheline_tag_o     (set7_evit_cacheline_tag[31:10]   ),
     .cacheline_hit_o          (cacheline_hit_array[7]           ),
     .cacheline_offset0_state_o(set7_cacheline_offset0_state[1:0]),
