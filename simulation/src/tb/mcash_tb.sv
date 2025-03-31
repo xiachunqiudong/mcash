@@ -2,7 +2,7 @@ module mcash_tb;
   parameter NUM_MASTER = 4;                   // should not be changed
   parameter NUM_SLAVE  = 4;                   // should not be changed
   parameter WIDTH_CID  = $clog2(NUM_MASTER);  // Channel ID width in bits
-  parameter WIDTH_ID   = 8;                   // ID width in bits
+  parameter WIDTH_ID   = 6;                   // ID width in bits
   parameter WIDTH_AD   = 32;                  // address width
   parameter WIDTH_DA   = 256;                 // data width
   parameter WIDTH_DS   =(WIDTH_DA/8);         // data strobe width
@@ -512,16 +512,57 @@ module mcash_tb;
     .bank3_biu_axi3_bresp_i  (bank3_biu_axi3_bresp[1:0]   )
   );
 
+  axi_slave_ram
+  ram0 (
+    .araddr_s0      (S0_axi3_araddr[WIDTH_AD-1:0]),
+    .arburst_s0     (S0_axi3_arburst[1:0]),
+    .arcache_s0     (),
+    .arid_s0        (S0_axi3_arid[WIDTH_SID-1:0]),
+    .arlen_s0       ({4'b0, S0_axi3_arlen[3:0]}),
+    .arprot_s0      (),
+    .arsize_s0      (S0_axi3_arsize[2:0]),
+    .arvalid_s0     (S0_axi3_arvalid),
+    .awaddr_s0      (),
+    .awburst_s0     (),
+    .awcache_s0     (),
+    .awid_s0        (),
+    .awlen_s0       (),
+    .awprot_s0      (),
+    .awsize_s0      (),
+    .awvalid_s0     (),
+    .bready_s0      (),
+    .pad_cpu_rst_b  (rst),
+    .pll_core_cpuclk(clk),
+    .rready_s0      (S0_axi3_rready),
+    .wdata_s0       (),
+    .wid_s0         (),
+    .wlast_s0       (),
+    .wstrb_s0       (),
+    .wvalid_s0      (),
+    .arready_s0     (S0_axi3_arready),
+    .awready_s0     (),
+    .bid_s0         (),
+    .bresp_s0       (),
+    .bvalid_s0      (),
+    .rdata_s0       (S0_axi3_rdata[WIDTH_DA-1:0]),
+    .rid_s0         (S0_axi3_rid[WIDTH_SID-1:0]),
+    .rlast_s0       (S0_axi3_rlast),
+    .rresp_s0       (),
+    .rvalid_s0      (S0_axi3_rvalid),
+    .wready_s0      ()
+  );
+
+
   amba_axi_m4s4 #(
     .NUM_MASTER(4),    // should not be changed
     .NUM_SLAVE(4),     // should not be changed
-    .WIDTH_ID(8),      // ID width in bits
-    .WIDTH_AD(32),     // address width
-    .WIDTH_DA(256),    // data width
+    .WIDTH_ID(WIDTH_ID),      // ID width in bits
+    .WIDTH_AD(WIDTH_AD),     // address width
+    .WIDTH_DA(WIDTH_DA),    // data width
     .SLAVE_EN0(1),
-    .SLAVE_EN1(1),
-    .SLAVE_EN2(1),
-    .SLAVE_EN3(1),
+    .SLAVE_EN1(0),
+    .SLAVE_EN2(0),
+    .SLAVE_EN3(0),
     .ADDR_LENGTH0(12), // effective address bits-widgh
     .ADDR_LENGTH1(12), // effective address bits-widgh
     .ADDR_LENGTH2(12), // effective address bits-widgh
