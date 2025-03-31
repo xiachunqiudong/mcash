@@ -5,6 +5,10 @@ $MCASH_HOME/simulation/src/commons/ram_sp.v
 $MCASH_HOME/synthesis/src/commons/round_robin_arbiter.v
 $MCASH_HOME/synthesis/src/commons/rob_id_gen.v
 
+$MCASH_HOME/synthesis/src/commons/mem/f_spsram_large.v
+$MCASH_HOME/synthesis/src/commons/mem/ram.v
+$MCASH_HOME/synthesis/src/commons/axi_slave.v
+
 $MCASH_HOME/synthesis/src/mcash_top.v
 
 $MCASH_HOME/synthesis/src/bank/bank_top_wrapper.v
