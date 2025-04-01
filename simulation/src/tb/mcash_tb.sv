@@ -962,7 +962,7 @@ module mcash_tb;
 
 
   initial begin
-    $fsdbDumpfile(fsdb_file);
+    $fsdbDumpfile(fsdb_file, 1024);
     $fsdbDumpvars(0, mcash_tb);
     $fsdbDumpvars("+struct");
     $fsdbDumpvars("+mda");

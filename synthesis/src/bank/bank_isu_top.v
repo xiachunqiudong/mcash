@@ -39,7 +39,8 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch2_credit
 );
 
-  wire       req_need_linefill_WV;
+  wire       htu_req_cacheline_inflight;
+  wire       htu_req_need_linefill_WV;
 
   wire       htu_isu_kickoff;
   wire [2:0] isu_rob_id;
@@ -91,18 +92,19 @@ module bank_isu_top (
                                  biu_isu_rid_i[2:0] == 3'd1,
                                  biu_isu_rid_i[2:0] == 3'd0};
 
-  assign req_need_linefill_WV = htu_isu_need_linefill_i & htu_isu_valid_i;
+  assign htu_req_need_linefill_WV = htu_isu_need_linefill_i & htu_isu_valid_i;
 
   bank_isu_inflight_array
   isu_inflight_array (
-    .clk_i                     (clk_i                        ),
-    .rst_i                     (rst_i                        ),
-    .htu_isu_linefill_valid_i  (req_need_linefill_WV         ),
-    .htu_isu_linefill_set_dcd_i(htu_isu_linefill_set_dcd[7:0]),
-    .htu_isu_linefill_way_dcd_i(htu_isu_linefill_way_dcd[7:0]),
-    .biu_isu_rvalid_i          (biu_isu_rvalid_i             ),
-    .biu_isu_set_dcd_i         (biu_isu_set_dcd[7:0]         ),
-    .biu_isu_way_dcd_i         (biu_isu_way_dcd[7:0]         )
+    .clk_i                       (clk_i                        ),
+    .rst_i                       (rst_i                        ),
+    .htu_isu_linefill_valid_i    (htu_req_need_linefill_WV     ),
+    .htu_isu_linefill_set_dcd_i  (htu_isu_linefill_set_dcd[7:0]),
+    .htu_isu_linefill_way_dcd_i  (htu_isu_linefill_way_dcd[7:0]),
+    .htu_isu_cacheline_inflight_o(htu_req_cacheline_inflight   ),
+    .biu_isu_rvalid_i            (biu_isu_rvalid_i             ),
+    .biu_isu_set_dcd_i           (biu_isu_set_dcd[7:0]         ),
+    .biu_isu_way_dcd_i           (biu_isu_way_dcd[7:0]         )
   );
 
 
@@ -135,6 +137,7 @@ module bank_isu_top (
     .req_valid_i                  (htu_isu_valid_i                       ),
     .req_allowIn_o                (htu_isu_allowIn_o                     ),
     .req_need_linefill_i          (htu_isu_need_linefill_i               ),
+    .req_cacheline_inflight_i     (htu_req_cacheline_inflight            ),
     .req_rob_id_i                 (isu_rob_id[2:0]                       ),
     .req_ch_id_i                  (htu_isu_ch_id_i[1:0]                  ),
     .req_opcode_i                 (htu_isu_opcode_i[1:0]                 ),

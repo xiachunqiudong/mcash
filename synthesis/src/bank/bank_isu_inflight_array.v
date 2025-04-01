@@ -1,12 +1,13 @@
 module bank_isu_inflight_array(
-  input wire       clk_i,
-  input wire       rst_i,
-  input wire       htu_isu_linefill_valid_i,
-  input wire [7:0] htu_isu_linefill_set_dcd_i,
-  input wire [7:0] htu_isu_linefill_way_dcd_i,
-  input wire       biu_isu_rvalid_i,
-  input wire [7:0] biu_isu_set_dcd_i,
-  input wire [7:0] biu_isu_way_dcd_i
+  input  wire       clk_i,
+  input  wire       rst_i,
+  input  wire       htu_isu_linefill_valid_i,
+  input  wire [7:0] htu_isu_linefill_set_dcd_i,
+  input  wire [7:0] htu_isu_linefill_way_dcd_i,
+  output wire       htu_isu_cacheline_inflight_o,
+  input  wire       biu_isu_rvalid_i,
+  input  wire [7:0] biu_isu_set_dcd_i,
+  input  wire [7:0] biu_isu_way_dcd_i
 );
 
   wire [7:0] isu_set0_inflight_array_validate;
@@ -41,6 +42,8 @@ module bank_isu_inflight_array(
   reg  [7:0] isu_set5_inflight_array_Q;
   reg  [7:0] isu_set6_inflight_array_Q;
   reg  [7:0] isu_set7_inflight_array_Q;
+
+  wire [7:0] htu_isu_inflight_array;
 
   assign isu_set0_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd_i[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd_i[0]}};
   assign isu_set1_inflight_array_validate[7:0] = htu_isu_linefill_way_dcd_i[7:0] & {8{htu_isu_linefill_valid_i & htu_isu_linefill_set_dcd_i[1]}};
@@ -114,6 +117,20 @@ module bank_isu_inflight_array(
       isu_set7_inflight_array_Q[7:0] <= isu_set7_inflight_array_In[7:0];
     end
   end
+
+//--------------------------------------------------------------
+//   HTU -> ISU: read inflight array
+//--------------------------------------------------------------
+  assign htu_isu_inflight_array[7:0] = {8{htu_isu_linefill_set_dcd_i[0]}} & isu_set0_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[1]}} & isu_set1_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[2]}} & isu_set2_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[3]}} & isu_set3_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[4]}} & isu_set4_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[5]}} & isu_set5_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[6]}} & isu_set6_inflight_array_Q[7:0]
+                                     | {8{htu_isu_linefill_set_dcd_i[7]}} & isu_set7_inflight_array_Q[7:0];
+
+  assign htu_isu_cacheline_inflight_o = |(htu_isu_linefill_way_dcd_i[7:0] & htu_isu_inflight_array[7:0]);
 
 
 endmodule

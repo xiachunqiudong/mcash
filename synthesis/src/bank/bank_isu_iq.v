@@ -5,6 +5,7 @@ module bank_isu_iq #(
   input  wire       rst_i,
   input  wire       req_valid_i,
   output wire       req_allowIn_o,
+  input  wire       req_cacheline_inflight_i,
   input  wire       req_need_linefill_i,
   input  wire [2:0] req_rob_id_i,
   input  wire [1:0] req_ch_id_i,
@@ -108,7 +109,10 @@ module bank_isu_iq #(
   always @(*) begin
     mshr_allow_array_In[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0];
     if (writePtr_kickoff) begin
-      mshr_allow_array_In[writePtr_Q] = ~req_need_linefill_i;
+      // set mshr allow array zero when:
+      // 1. cacheline miss
+      // 2. cacheline hit but inflight
+      mshr_allow_array_In[writePtr_Q] = ~(req_need_linefill_i | req_cacheline_inflight_i);
     end
   end
 

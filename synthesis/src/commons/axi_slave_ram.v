@@ -80,7 +80,7 @@ reg     [STRB-1:0] mem_wen;
 reg     [1  :0]    next_state;
 reg                read_dly;
 reg     [7  :0]    read_step;
-reg                rvalid;
+wire               rvalid;
 reg     [7  :0]    write_step;
 wire               rlast;
 wire               wready;
@@ -277,16 +277,19 @@ begin
       read_dly <= 1'b0;
 end
 
+reg [4:0] read_cnt;
+
 always @ (posedge pll_core_cpuclk or posedge pad_cpu_rst)
 begin
   if(pad_cpu_rst)
-      rvalid <= 1'b0;
-  else if((cur_state[1:0] == READ) && read_dly)
-      rvalid <= 1'b1;
+      read_cnt <= 'b0;
+  else if((cur_state[1:0] == READ) && read_cnt != 'd16)
+      read_cnt <= read_cnt + 1;
   else if(rvalid && rready_s0)
-      rvalid <= 1'b0;
+      read_cnt <= 'b0;
 end
 
+assign rvalid = read_cnt == 'd16;
 
 
 assign rlast = ((read_step[7:0]==arlen[7:0]) && rvalid);
@@ -387,7 +390,9 @@ begin
 
 end
 
-f_spsram_large x0_f_spsram_large (
+f_spsram_large # (
+  .ADDR_WIDTH(21)
+) x0_f_spsram_large (
   .A                 (mem_addr[25:5] ),
   .CEN               (mem_cen        ),
   .CLK               (pll_core_cpuclk),
@@ -396,7 +401,9 @@ f_spsram_large x0_f_spsram_large (
   .WEN               (mem_wen[15:0]  )
 );
 
-f_spsram_large x1_f_spsram_large (
+f_spsram_large # (
+  .ADDR_WIDTH(21)
+) x1_f_spsram_large (
   .A                 (mem_addr[25:5]   ),
   .CEN               (mem_cen          ),
   .CLK               (pll_core_cpuclk  ),
