@@ -88,10 +88,30 @@ module bank_biu_top #(
 //-------------------------------------------------------------------------
 //                             AW channel
 //-------------------------------------------------------------------------
+  assign biu_axi3_awvalid_o                = htu_biu_awvalid_i;
+  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, htu_biu_set_way_i[5:0]};
+  assign biu_axi3_awlen_o[3:0]             = 4'b0000;
+  assign biu_axi3_awsize_o[2:0]            = 3'b101;
+  assign biu_axi3_awburst_o[1:0]           = 2'b01;
+  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {htu_biu_araddr_i[ADDR_WIDTH-1:5], 5'b00000};
 
 //-------------------------------------------------------------------------
 //                             W channel
 //-------------------------------------------------------------------------
+  reg [2:0] data_counter;
+  reg [DATA_WIDTH-1:0] sc_biu_allData;
+  assign data_counter[2:0] = data_counter[2:0] == 'd2
+                           ? 'd0
+                           : sc_biu_valid_i
+                            ? data_counter[2:0] + 'd1
+                            : data_counter[2:0];
+  assign biu_axi3_wvalid_o                = sc_biu_valid_i;
+  assign biu_axi3_wdata_o[DATA_WIDTH-1:0] = sc_biu_allData;
+  assign biu_axi3_wid_o[ID_WIDTH-1:0] = {2'b00, htu_biu_set_way_i[5:0]};
+  assign biu_axi3_wstrb_o[STRB_WIDTH-1:0] = 32'hFFFFFFFF;
+  assign biu_axi3_wlast_o = 1'b0;
 
+
+  assign sc_biu_ready_o = sc_biu_valid_i;
 
 endmodule
