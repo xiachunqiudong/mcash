@@ -159,19 +159,21 @@ module bank_isu_top (
 //-------------------------------------------------------------------------
 //                              ISU >> SC
 //-------------------------------------------------------------------------
-  assign isu_sc_valid_o = htu_isu_valid_i;
+  // assign isu_sc_valid_o = htu_isu_valid_i;
+  assign isu_sc_valid_o = 1'b1;
 
   assign isu_sc_channel_id_o[1:0] = htu_isu_ch_id_i[1:0];
 
-  assign isu_sc_opcode_o[1:0] = htu_isu_opcode_i[1:0];
+  // assign isu_sc_opcode_o[1:0] = htu_isu_opcode_i[1:0];
+  assign isu_sc_opcode_o[2:0] = 3'b011;
 
   // assign htu_isu_set_way_offset_i[6:0] = htu_isu_set_way_offset_i[6:0];
 
   assign isu_sc_wbuffer_id_o[7:0] = 8'd0;
   assign isu_sc_xbar_rob_num_o[2:0] = 'd0;
 
-  assign isu_sc_cacheline_dirty_offset0_o[1:0] = 'd0; // empty
-  assign isu_sc_cacheline_dirty_offset1_o[1:0] = 'd0; // empty
+  assign isu_sc_cacheline_dirty_offset0_o[1:0] = 'b10; // empty
+  assign isu_sc_cacheline_dirty_offset1_o[1:0] = 'b10; // empty
 
 
   assign isu_sc_set_way_offset_o = set_way_offset;
