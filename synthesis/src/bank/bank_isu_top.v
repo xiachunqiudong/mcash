@@ -144,7 +144,9 @@ module bank_isu_top (
     .req_set_way_offset_i         (htu_isu_set_way_offset_i[6:0]         ),
     .req_wbuffer_id_i             (htu_isu_wbuffer_id_i[7:0]             ),
     .req_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state_i[1:0]),
-    .req_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state_i[1:0])
+    .req_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state_i[1:0]),
+    .biu_isu_rvalid_i             (biu_isu_rvalid_i                      ),
+    .biu_isu_rid_i                (biu_isu_rid_i[5:0]                    )
   );
 
 
