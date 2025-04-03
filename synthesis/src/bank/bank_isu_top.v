@@ -130,7 +130,7 @@ module bank_isu_top (
   );
 
   bank_isu_iq #(
-    .PTR_WIDH(4)
+    .PTR_WIDTH(4)
   ) u_isu_iq (
     .clk_i                        (clk_i                                 ),
     .rst_i                        (rst_i                                 ),

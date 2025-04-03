@@ -1,5 +1,5 @@
 module bank_isu_iq #(
-  parameter PTR_WIDH = 6
+  parameter PTR_WIDTH = 6
 )(
   input  wire       clk_i,
   input  wire       rst_i,
@@ -18,15 +18,15 @@ module bank_isu_iq #(
   input  wire [5:0] biu_isu_rid_i
 );
 
-  parameter DEPTH = 1 << PTR_WIDH;
+  parameter DEPTH = 1 << PTR_WIDTH;
 
-  reg  [PTR_WIDH:0]   queue_size_Q;
-  wire                readPtr_kickoff;
-  wire [PTR_WIDH-1:0] readPtr_In;
-  reg  [PTR_WIDH-1:0] readPtr_Q;
-  wire                writePtr_kickoff;
-  wire [PTR_WIDH-1:0] writePtr_In;
-  reg  [PTR_WIDH-1:0] writePtr_Q;
+  reg  [PTR_WIDTH:0]   queue_size_Q;
+  wire                 readPtr_kickoff;
+  wire [PTR_WIDTH-1:0] readPtr_In;
+  reg  [PTR_WIDTH-1:0] readPtr_Q;
+  wire                 writePtr_kickoff;
+  wire [PTR_WIDTH-1:0] writePtr_In;
+  reg  [PTR_WIDTH-1:0] writePtr_Q;
 
   reg  [DEPTH-1:0]    valid_array_In;
   reg  [DEPTH-1:0]    valid_array_Q;
@@ -51,25 +51,25 @@ module bank_isu_iq #(
   reg [DEPTH-1:0]     credit_allow_array_In;
   reg [DEPTH-1:0]     credit_allow_array_Q;
 
-  assign req_allowIn_o = queue_size_Q[PTR_WIDH:0] != DEPTH[PTR_WIDH:0];
+  assign req_allowIn_o = queue_size_Q[PTR_WIDTH:0] != DEPTH[PTR_WIDTH:0];
 
   assign writePtr_kickoff = req_valid_i & req_allowIn_o;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
-      queue_size_Q[PTR_WIDH:0] <= 'd0;
+      queue_size_Q[PTR_WIDTH:0] <= 'd0;
     end
     else if (writePtr_kickoff) begin
-      queue_size_Q[PTR_WIDH:0] <= queue_size_Q[PTR_WIDH-1:0] + 'd1;
+      queue_size_Q[PTR_WIDTH:0] <= queue_size_Q[PTR_WIDTH-1:0] + 'd1;
     end
   end
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
-      writePtr_Q[PTR_WIDH-1:0] <= 'd0;
+      writePtr_Q[PTR_WIDTH-1:0] <= 'd0;
     end
     else if (writePtr_kickoff) begin
-      writePtr_Q[PTR_WIDH-1:0] <= writePtr_Q[PTR_WIDH-1:0] + 'd1;
+      writePtr_Q[PTR_WIDTH-1:0] <= writePtr_Q[PTR_WIDTH-1:0] + 'd1;
     end
   end
 
@@ -81,6 +81,9 @@ module bank_isu_iq #(
     valid_array_In = valid_array_Q;
     if (writePtr_kickoff) begin
       valid_array_In[writePtr_Q] = 1'b1;
+    end
+    if (readPtr_kickoff) begin
+      valid_array_In[select_ptr] = 1'b0;
     end
   end
 
@@ -152,6 +155,42 @@ module bank_isu_iq #(
     end
     else begin
       mshr_allow_array_Q[DEPTH-1:0] <= mshr_allow_array_In[DEPTH-1:0];
+    end
+  end
+
+//--------------------------------------------------------------
+//                     Dequeue
+//--------------------------------------------------------------
+  reg [PTR_WIDTH-1:0] bottom_ptr_In;
+  reg [PTR_WIDTH-1:0] bottom_ptr_Q;
+
+  reg [PTR_WIDTH-1:0] select_ptr;
+
+  wire [DEPTH-1:0] execute_array;
+  wire [DEPTH-1:0] shift_execute_array;
+  wire [DEPTH-1:0] priority_select_array;
+
+  always @(posedge clk_i or rst_i) begin
+    if (rst_i) begin
+      bottom_ptr_Q[PTR_WIDTH-1:0] <= 'd0;
+    end
+  end
+
+  assign execute_array[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0] & valid_array_Q[DEPTH-1:0];
+
+  assign shift_execute_array[DEPTH-1:0] = execute_array[DEPTH-1:0] >> bottom_ptr_Q[PTR_WIDTH-1:0]
+                                        | execute_array[DEPTH-1:0] << (DEPTH[PTR_WIDTH-1:0] - bottom_ptr_Q[PTR_WIDTH-1:0]);
+
+  assign priority_select_array[DEPTH-1:0] = shift_execute_array[DEPTH-1:0]
+                                          & (~shift_execute_array[DEPTH-1:0] + 1'b1);
+
+  always @(*) begin
+    select_ptr = 'd0;
+    for (int i = 0; i < DEPTH; i++) begin
+      if (shift_execute_array[i] == 1'b1) begin
+        select_ptr = bottom_ptr_Q + i;
+        break;
+      end
     end
   end
 
