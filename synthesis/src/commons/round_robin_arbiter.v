@@ -58,7 +58,7 @@ module round_robin_arbiter #(
                         | grant_masked[N-1:0];
 
   assign higher_prior_reqs_In[N-1:0] = {N{grant_use_masked}}   & higher_prior_reqs_masked[N-1:0]
-                                   | {N{grant_use_unmasked}} & higher_prior_reqs_unmasked[N-1:0];
+                                     | {N{grant_use_unmasked}} & higher_prior_reqs_unmasked[N-1:0];
 
   assign higher_prior_reqs_wen = (|req_i[N-1:0]) & req_can_go_i;
 
