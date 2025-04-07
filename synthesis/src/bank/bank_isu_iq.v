@@ -51,6 +51,13 @@ module bank_isu_iq #(
   reg [DEPTH-1:0]     credit_allow_array_In;
   reg [DEPTH-1:0]     credit_allow_array_Q;
 
+
+  reg  [PTR_WIDTH-1:0]  bottom_ptr_In;
+  reg  [PTR_WIDTH-1:0]  bottom_ptr_Q;
+  wire [PTR_WIDTH-1:0]  select_ptr;
+  wire [DEPTH-1:0]      execute_array;
+
+
   assign req_allowIn_o = queue_size_Q[PTR_WIDTH:0] != DEPTH[PTR_WIDTH:0];
 
   assign writePtr_kickoff = req_valid_i & req_allowIn_o;
@@ -76,6 +83,8 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
 //                    issue queue enqueue
 //--------------------------------------------------------------
+
+  assign readPtr_kickoff = |valid_array_Q[DEPTH-1:0];
 
   always @(*) begin
     valid_array_In = valid_array_Q;
@@ -161,14 +170,6 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
 //                     Dequeue
 //--------------------------------------------------------------
-  reg [PTR_WIDTH-1:0] bottom_ptr_In;
-  reg [PTR_WIDTH-1:0] bottom_ptr_Q;
-
-  reg [PTR_WIDTH-1:0] select_ptr;
-
-  wire [DEPTH-1:0] execute_array;
-  wire [DEPTH-1:0] shift_execute_array;
-  wire [DEPTH-1:0] priority_select_array;
 
   always @(posedge clk_i or rst_i) begin
     if (rst_i) begin
@@ -178,21 +179,12 @@ module bank_isu_iq #(
 
   assign execute_array[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0] & valid_array_Q[DEPTH-1:0];
 
-  assign shift_execute_array[DEPTH-1:0] = execute_array[DEPTH-1:0] >> bottom_ptr_Q[PTR_WIDTH-1:0]
-                                        | execute_array[DEPTH-1:0] << (DEPTH[PTR_WIDTH-1:0] - bottom_ptr_Q[PTR_WIDTH-1:0]);
-
-  assign priority_select_array[DEPTH-1:0] = shift_execute_array[DEPTH-1:0]
-                                          & (~shift_execute_array[DEPTH-1:0] + 1'b1);
-
-  always @(*) begin
-    select_ptr = 'd0;
-    for (int i = 0; i < DEPTH; i++) begin
-      if (shift_execute_array[i] == 1'b1) begin
-        select_ptr = bottom_ptr_Q + i;
-        break;
-      end
-    end
-  end
+  shift_priority_arb
+  u_shift_priority_arb(
+    .valid_array_i(execute_array[DEPTH-1:0]),
+    .bottom_ptr_i(bottom_ptr_Q[PTR_WIDTH-1:0]),
+    .select_ptr_o(select_ptr[PTR_WIDTH-1:0])
+  );
 
 
 endmodule
