@@ -107,11 +107,6 @@ module bank_isu_top (
     .biu_isu_way_dcd_i           (biu_isu_way_dcd[7:0]         )
   );
 
-
-  reg [6:0] set_way_offset;
-
-  reg [127:0] line_fill_data;
-
 //-------------------------------------------------------------------------
 //                            ISU: issue queue
 //-------------------------------------------------------------------------
@@ -132,23 +127,33 @@ module bank_isu_top (
   bank_isu_iq #(
     .PTR_WIDTH(4)
   ) u_isu_iq (
-    .clk_i                        (clk_i                                 ),
-    .rst_i                        (rst_i                                 ),
-    .req_valid_i                  (htu_isu_valid_i                       ),
-    .req_allowIn_o                (htu_isu_allowIn_o                     ),
-    .req_need_linefill_i          (htu_isu_need_linefill_i               ),
-    .req_cacheline_inflight_i     (htu_req_cacheline_inflight            ),
-    .req_rob_id_i                 (isu_rob_id[2:0]                       ),
-    .req_ch_id_i                  (htu_isu_ch_id_i[1:0]                  ),
-    .req_opcode_i                 (htu_isu_opcode_i[1:0]                 ),
-    .req_set_way_offset_i         (htu_isu_set_way_offset_i[6:0]         ),
-    .req_wbuffer_id_i             (htu_isu_wbuffer_id_i[7:0]             ),
-    .req_cacheline_offset0_state_i(htu_isu_cacheline_offset0_state_i[1:0]),
-    .req_cacheline_offset1_state_i(htu_isu_cacheline_offset1_state_i[1:0]),
-    .biu_isu_rvalid_i             (biu_isu_rvalid_i                      ),
-    .biu_isu_rid_i                (biu_isu_rid_i[5:0]                    )
+    .clk_i                          (clk_i                                 ),
+    .rst_i                          (rst_i                                 ),
+    .req_valid_i                    (htu_isu_valid_i                       ),
+    .req_allowIn_o                  (htu_isu_allowIn_o                     ),
+    .req_need_linefill_i            (htu_isu_need_linefill_i               ),
+    .req_cacheline_inflight_i       (htu_req_cacheline_inflight            ),
+    .req_rob_id_i                   (isu_rob_id[2:0]                       ),
+    .req_ch_id_i                    (htu_isu_ch_id_i[1:0]                  ),
+    .req_opcode_i                   (htu_isu_opcode_i[1:0]                 ),
+    .req_set_way_offset_i           (htu_isu_set_way_offset_i[6:0]         ),
+    .req_wbuffer_id_i               (htu_isu_wbuffer_id_i[7:0]             ),
+    .req_cacheline_offset0_state_i  (htu_isu_cacheline_offset0_state_i[1:0]),
+    .req_cacheline_offset1_state_i  (htu_isu_cacheline_offset1_state_i[1:0]),
+    .biu_isu_rvalid_i               (biu_isu_rvalid_i                      ),
+    .biu_isu_rid_i                  (biu_isu_rid_i[5:0]                    ),
+    .iq_sc_valid_o                  (isu_sc_valid_o                        ),
+    .iq_sc_ready_i                  (isu_sc_ready_i                        ),
+    .iq_sc_channel_id_o             (isu_sc_channel_id_o[1:0]              ),
+    .iq_sc_opcode_o                 (isu_sc_opcode_o[2:0]                  ),
+    .iq_sc_set_way_offset_o         (isu_sc_set_way_offset_o[6:0]          ),
+    .iq_sc_wbuffer_id_o             (isu_sc_wbuffer_id_o[7:0]              ),
+    .iq_sc_xbar_rob_num_o           (isu_sc_xbar_rob_num_o[2:0]            ),
+    .iq_sc_cacheline_state_offset0_o(isu_sc_cacheline_dirty_offset0_o[1:0] ),
+    .iq_sc_cacheline_state_offset1_o(isu_sc_cacheline_dirty_offset1_o[1:0] ),
+    .iq_sc_linefill_data_offset0_o  (isu_sc_linefill_data_offset0_o[127:0] ),
+    .iq_sc_linefill_data_offset1_o  (isu_sc_linefill_data_offset1_o[127:0] )
   );
-
 
   bank_isu_linefill_buffer
   isu_linefill_buffer(
@@ -160,45 +165,5 @@ module bank_isu_top (
     .raddr_i(),
     .rdata_o()
   );
-
-//-------------------------------------------------------------------------
-//                              ISU >> SC
-//-------------------------------------------------------------------------
-  // assign isu_sc_valid_o = htu_isu_valid_i;
-  assign isu_sc_valid_o = 1'b1;
-
-  assign isu_sc_channel_id_o[1:0] = htu_isu_ch_id_i[1:0];
-
-  // assign isu_sc_opcode_o[1:0] = htu_isu_opcode_i[1:0];
-  assign isu_sc_opcode_o[2:0] = 3'b011;
-
-  // assign htu_isu_set_way_offset_i[6:0] = htu_isu_set_way_offset_i[6:0];
-
-  assign isu_sc_wbuffer_id_o[7:0] = 8'd0;
-  assign isu_sc_xbar_rob_num_o[2:0] = 'd0;
-
-  assign isu_sc_cacheline_dirty_offset0_o[1:0] = 'b10; // empty
-  assign isu_sc_cacheline_dirty_offset1_o[1:0] = 'b10; // empty
-
-
-  assign isu_sc_set_way_offset_o = set_way_offset;
-
-  assign isu_sc_linefill_data_offset0_o = line_fill_data;
-  assign isu_sc_linefill_data_offset1_o = line_fill_data + 'd1;
-
-
-
-  always @(posedge clk_i or rst_i) begin
-    if (rst_i) begin
-      set_way_offset <= 'd0;
-      line_fill_data <= 'd0;
-    end
-    else begin
-      if (isu_sc_valid_o & isu_sc_ready_i) begin
-        set_way_offset <= set_way_offset + 'd2;
-        line_fill_data <= line_fill_data + 'd100;
-      end
-    end
-  end
 
 endmodule
