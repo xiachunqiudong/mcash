@@ -151,4 +151,9 @@ module cross_bar_top (
   );
 
 
+  assign bank0_sc_xbar_allowIn_o = 1'b1;
+  assign bank1_sc_xbar_allowIn_o = 1'b1;
+  assign bank2_sc_xbar_allowIn_o = 1'b1;
+  assign bank3_sc_xbar_allowIn_o = 1'b1;
+
 endmodule

@@ -238,8 +238,8 @@ module bank_isu_iq #(
 
   assign iq_sc_opcode_o[2] = 1'b0;
 
-  assign iq_sc_valid_o               = |valid_array_Q[DEPTH-1:0];
-  assign iq_sc_channel_id_o[1:0]     = rob_id_array_Q[select_ptr];
+  assign iq_sc_valid_o               = |execute_array[DEPTH-1:0];
+  assign iq_sc_channel_id_o[1:0]     = ch_id_array_Q[select_ptr];
   // assign iq_sc_opcode_o = 
   assign iq_sc_set_way_offset_o[6:0]     = set_way_offset_array_Q[select_ptr];
   assign iq_sc_wbuffer_id_o[7:0]         = wbuffer_id_array_Q[select_ptr];

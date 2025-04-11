@@ -30,6 +30,15 @@ module cross_bar_rob #(
   wire bank1_spw_buffer_wen;
   wire bank2_spw_buffer_wen;
   wire bank3_spw_buffer_wen;
+  wire bank0_spw_buffer_ren;
+  wire bank1_spw_buffer_ren;
+  wire bank2_spw_buffer_ren;
+  wire bank3_spw_buffer_ren;
+  wire [2:0] bank0_spw_buffer_read_ptr;
+  wire [2:0] bank1_spw_buffer_read_ptr;
+  wire [2:0] bank2_spw_buffer_read_ptr;
+  wire [2:0] bank3_spw_buffer_read_ptr;
+
 
   assign bank0_spw_buffer_wen = bank0_sc_xbar_valid_i
                               & bank0_sc_xbar_ch_id_i[1:0] == CHANNEL_ID[1:0];
@@ -41,8 +50,8 @@ module cross_bar_rob #(
     .wr_en_i     (bank0_spw_buffer_wen),
     .write_ptr_i (bank0_sc_xbar_rob_num_i[2:0]),
     .write_data_i(bank0_sc_xbar_data_i[127:0]),
-    .rd_en_i     (),
-    .read_ptr_i  (),
+    .rd_en_i     (bank0_spw_buffer_ren),
+    .read_ptr_i  (bank0_spw_buffer_read_ptr[2:0]),
     .read_data_o ()
   );
 

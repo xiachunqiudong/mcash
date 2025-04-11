@@ -14,8 +14,8 @@ module spw_buffer #(
 
 	parameter DEPTH = 1 << PTR_WIDTH;
 
-	reg                  valid_array_In [DEPTH-1:0];
-	reg                  valid_array_Q  [DEPTH-1:0];
+	reg [DEPTH-1:0]      valid_array_In;
+	reg [DEPTH-1:0]      valid_array_Q;
 	reg [DATA_WIDTH-1:0] data_array_In  [DEPTH-1:0];
 	reg [DATA_WIDTH-1:0] data_array_Q   [DEPTH-1:0];
 
@@ -50,4 +50,4 @@ module spw_buffer #(
 	end
 
 
-endmoudle
+endmodule
