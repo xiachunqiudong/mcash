@@ -39,17 +39,16 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch2_credit
 );
 
-  wire       htu_req_cacheline_inflight;
-  wire       htu_req_need_linefill_WV;
-
-  wire       htu_isu_kickoff;
-  wire [2:0] isu_rob_id;
-
-  wire [7:0] htu_isu_linefill_set_dcd;
-  wire [7:0] htu_isu_linefill_way_dcd;
-
-  wire [7:0] biu_isu_set_dcd;
-  wire [7:0] biu_isu_way_dcd;
+  wire         htu_req_cacheline_inflight;
+  wire         htu_req_need_linefill_WV;
+  wire         htu_isu_kickoff;
+  wire [2:0]   isu_rob_id;
+  wire [7:0]   htu_isu_linefill_set_dcd;
+  wire [7:0]   htu_isu_linefill_way_dcd;
+  wire [7:0]   biu_isu_set_dcd;
+  wire [7:0]   biu_isu_way_dcd;
+  wire [5:0]   linefill_buffer_raddr;
+  wire [255:0] linefill_buffer_rdata;
 
 //-------------------------------------------------------------------------
 //                            In-flight array
@@ -142,6 +141,8 @@ module bank_isu_top (
     .req_cacheline_offset1_state_i  (htu_isu_cacheline_offset1_state_i[1:0]),
     .biu_isu_rvalid_i               (biu_isu_rvalid_i                      ),
     .biu_isu_rid_i                  (biu_isu_rid_i[5:0]                    ),
+    .iq_linefill_buffer_raddr_o     (linefill_buffer_raddr[5:0]            ),
+    .linefill_buffer_data_i         (linefill_buffer_rdata[255:0]          ),
     .iq_sc_valid_o                  (isu_sc_valid_o                        ),
     .iq_sc_ready_i                  (isu_sc_ready_i                        ),
     .iq_sc_channel_id_o             (isu_sc_channel_id_o[1:0]              ),
@@ -156,14 +157,14 @@ module bank_isu_top (
   );
 
   bank_isu_linefill_buffer
-  isu_linefill_buffer(
-    .clk_i  (clk_i),
-    .wen_i  (biu_isu_rvalid_i),
-    .waddr_i(biu_isu_rid_i[5:0]),
-    .wdata_i(biu_isu_rdata_i),
-    .ren_i  (),
-    .raddr_i(),
-    .rdata_o()
+  isu_linefill_buffer (
+    .clk_i  (clk_i                       ),
+    .wen_i  (biu_isu_rvalid_i            ),
+    .waddr_i(biu_isu_rid_i[5:0]          ),
+    .wdata_i(biu_isu_rdata_i             ),
+    .ren_i  (                            ),
+    .raddr_i(linefill_buffer_raddr[5:0]  ),
+    .rdata_o(linefill_buffer_rdata[255:0])
   );
 
 endmodule

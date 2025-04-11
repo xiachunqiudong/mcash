@@ -154,33 +154,50 @@ module mcash_top (
   input  wire [1:0]   bank3_biu_axi3_bresp_i
 );
 
-    wire        xbar_bank0_htu_valid;
-    wire        xbar_bank0_htu_allowIn;
-    wire [1:0]  xbar_bank0_htu_ch_id;
-    wire [1:0]  xbar_bank0_htu_opcode;
-    wire [31:4] xbar_bank0_htu_addr;
-    wire [7:0]  xbar_bank0_htu_wbuffer_id;
-
-    wire        xbar_bank1_htu_valid;
-    wire        xbar_bank1_htu_allowIn;
-    wire [1:0]  xbar_bank1_htu_ch_id;
-    wire [1:0]  xbar_bank1_htu_opcode;
-    wire [31:4] xbar_bank1_htu_addr;
-    wire [7:0]  xbar_bank1_htu_wbuffer_id;
-
-    wire        xbar_bank2_htu_valid;
-    wire        xbar_bank2_htu_allowIn;
-    wire [1:0]  xbar_bank2_htu_ch_id;
-    wire [1:0]  xbar_bank2_htu_opcode;
-    wire [31:4] xbar_bank2_htu_addr;
-    wire [7:0]  xbar_bank2_htu_wbuffer_id;
-
-    wire        xbar_bank3_htu_valid;
-    wire        xbar_bank3_htu_allowIn;
-    wire [1:0]  xbar_bank3_htu_ch_id;
-    wire [1:0]  xbar_bank3_htu_opcode;
-    wire [31:4] xbar_bank3_htu_addr;
-    wire [7:0]  xbar_bank3_htu_wbuffer_id;
+  wire         xbar_bank0_htu_valid;
+  wire         xbar_bank0_htu_allowIn;
+  wire [1:0]   xbar_bank0_htu_ch_id;
+  wire [1:0]   xbar_bank0_htu_opcode;
+  wire [31:4]  xbar_bank0_htu_addr;
+  wire [7:0]   xbar_bank0_htu_wbuffer_id;
+  wire         bank0_sc_xbar_valid;
+  wire         bank0_sc_xbar_allowIn;
+  wire [1:0]   bank0_sc_xbar_ch_id;
+  wire [2:0]   bank0_sc_xbar_rob_num;
+  wire [127:0] bank0_sc_xbar_data;
+  wire         xbar_bank1_htu_valid;
+  wire         xbar_bank1_htu_allowIn;
+  wire [1:0]   xbar_bank1_htu_ch_id;
+  wire [1:0]   xbar_bank1_htu_opcode;
+  wire [31:4]  xbar_bank1_htu_addr;
+  wire [7:0]   xbar_bank1_htu_wbuffer_id;
+  wire         bank1_sc_xbar_valid;
+  wire         bank1_sc_xbar_allowIn;
+  wire [1:0]   bank1_sc_xbar_ch_id;
+  wire [2:0]   bank1_sc_xbar_rob_num;
+  wire [127:0] bank1_sc_xbar_data;
+  wire         xbar_bank2_htu_valid;
+  wire         xbar_bank2_htu_allowIn;
+  wire [1:0]   xbar_bank2_htu_ch_id;
+  wire [1:0]   xbar_bank2_htu_opcode;
+  wire [31:4]  xbar_bank2_htu_addr;
+  wire [7:0]   xbar_bank2_htu_wbuffer_id;
+  wire         bank2_sc_xbar_valid;
+  wire         bank2_sc_xbar_allowIn;
+  wire [1:0]   bank2_sc_xbar_ch_id;
+  wire [2:0]   bank2_sc_xbar_rob_num;
+  wire [127:0] bank2_sc_xbar_data;
+  wire         xbar_bank3_htu_valid;
+  wire         xbar_bank3_htu_allowIn;
+  wire [1:0]   xbar_bank3_htu_ch_id;
+  wire [1:0]   xbar_bank3_htu_opcode;
+  wire [31:4]  xbar_bank3_htu_addr;
+  wire [7:0]   xbar_bank3_htu_wbuffer_id;
+  wire         bank3_sc_xbar_valid;
+  wire         bank3_sc_xbar_allowIn;
+  wire [1:0]   bank3_sc_xbar_ch_id;
+  wire [2:0]   bank3_sc_xbar_rob_num;
+  wire [127:0] bank3_sc_xbar_data;
 
 //------------------------------------------------------------------
 //                        Cross Bar
@@ -188,8 +205,8 @@ module mcash_top (
 //------------------------------------------------------------------
   cross_bar_top
   u_cross_bar_top(
-    .clk_i                  (clk_i),
-    .rst_i                  (rst_i),
+    .clk_i                  (clk_i                      ),
+    .rst_i                  (rst_i                      ),
     // top >> xbar
     // channel0
     .mcash_ch0_req_valid_i  (mcash_ch0_req_valid_i      ),
@@ -270,34 +287,50 @@ module mcash_top (
   u_bank_top_wrapper(
     .clk_i                      (clk_i                         ),
     .rst_i                      (rst_i                         ),
-    // bank 0
     .xbar_bank0_htu_valid_i     (xbar_bank0_htu_valid          ),
     .xbar_bank0_htu_allowIn_o   (xbar_bank0_htu_allowIn        ),
     .xbar_bank0_htu_ch_id_i     (xbar_bank0_htu_ch_id[1:0]     ),
     .xbar_bank0_htu_opcode_i    (xbar_bank0_htu_opcode[1:0]    ),
     .xbar_bank0_htu_addr_i      (xbar_bank0_htu_addr[31:4]     ),
     .xbar_bank0_htu_wbuffer_id_i(xbar_bank0_htu_wbuffer_id[7:0]),
-    // bank 1
+    .bank0_sc_xbar_valid_o      (bank0_sc_xbar_valid           ),
+    .bank0_sc_xbar_allowIn_i    (bank0_sc_xbar_allowIn         ),
+    .bank0_sc_xbar_ch_id_o      (bank0_sc_xbar_ch_id[1:0]      ),
+    .bank0_sc_xbar_rob_num_o    (bank0_sc_xbar_rob_num[2:0]    ),
+    .bank0_sc_xbar_data_o       (bank0_sc_xbar_data[127:0]     ),
     .xbar_bank1_htu_valid_i     (xbar_bank1_htu_valid          ),
     .xbar_bank1_htu_allowIn_o   (xbar_bank1_htu_allowIn        ),
     .xbar_bank1_htu_ch_id_i     (xbar_bank1_htu_ch_id[1:0]     ),
     .xbar_bank1_htu_opcode_i    (xbar_bank1_htu_opcode[1:0]    ),
     .xbar_bank1_htu_addr_i      (xbar_bank1_htu_addr[31:4]     ),
     .xbar_bank1_htu_wbuffer_id_i(xbar_bank1_htu_wbuffer_id[7:0]),
-    // bank 2
+    .bank1_sc_xbar_valid_o      (bank1_sc_xbar_valid           ),
+    .bank1_sc_xbar_allowIn_i    (bank1_sc_xbar_allowIn         ),
+    .bank1_sc_xbar_ch_id_o      (bank1_sc_xbar_ch_id[1:0]      ),
+    .bank1_sc_xbar_rob_num_o    (bank1_sc_xbar_rob_num[2:0]    ),
+    .bank1_sc_xbar_data_o       (bank1_sc_xbar_data[127:0]     ),
     .xbar_bank2_htu_valid_i     (xbar_bank2_htu_valid          ),
     .xbar_bank2_htu_allowIn_o   (xbar_bank2_htu_allowIn        ),
     .xbar_bank2_htu_ch_id_i     (xbar_bank2_htu_ch_id[1:0]     ),
     .xbar_bank2_htu_opcode_i    (xbar_bank2_htu_opcode[1:0]    ),
     .xbar_bank2_htu_addr_i      (xbar_bank2_htu_addr[31:4]     ),
     .xbar_bank2_htu_wbuffer_id_i(xbar_bank2_htu_wbuffer_id[7:0]),
-    // bank 3
+    .bank2_sc_xbar_valid_o      (bank2_sc_xbar_valid           ),
+    .bank2_sc_xbar_allowIn_i    (bank2_sc_xbar_allowIn         ),
+    .bank2_sc_xbar_ch_id_o      (bank2_sc_xbar_ch_id[1:0]      ),
+    .bank2_sc_xbar_rob_num_o    (bank2_sc_xbar_rob_num[2:0]    ),
+    .bank2_sc_xbar_data_o       (bank2_sc_xbar_data[127:0]     ),
     .xbar_bank3_htu_valid_i     (xbar_bank3_htu_valid          ),
     .xbar_bank3_htu_allowIn_o   (xbar_bank3_htu_allowIn        ),
     .xbar_bank3_htu_ch_id_i     (xbar_bank3_htu_ch_id[1:0]     ),
     .xbar_bank3_htu_opcode_i    (xbar_bank3_htu_opcode[1:0]    ),
     .xbar_bank3_htu_addr_i      (xbar_bank3_htu_addr[31:4]     ),
     .xbar_bank3_htu_wbuffer_id_i(xbar_bank3_htu_wbuffer_id[7:0]),
+    .bank3_sc_xbar_valid_o      (bank3_sc_xbar_valid           ),
+    .bank3_sc_xbar_allowIn_i    (bank3_sc_xbar_allowIn         ),
+    .bank3_sc_xbar_ch_id_o      (bank3_sc_xbar_ch_id[1:0]      ),
+    .bank3_sc_xbar_rob_num_o    (bank3_sc_xbar_rob_num[2:0]    ),
+    .bank3_sc_xbar_data_o       (bank3_sc_xbar_data[127:0]     ),
     // bank0 AXI3 
     .bank0_biu_axi3_arvalid_o   (bank0_biu_axi3_arvalid_o      ),
     .bank0_biu_axi3_arready_i   (bank0_biu_axi3_arready_i      ),

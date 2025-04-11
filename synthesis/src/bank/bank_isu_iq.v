@@ -16,6 +16,8 @@ module bank_isu_iq #(
   input  wire [1:0]   req_cacheline_offset1_state_i,
   input  wire         biu_isu_rvalid_i,
   input  wire [5:0]   biu_isu_rid_i,
+  output wire [5:0]   iq_linefill_buffer_raddr_o,
+  input  wire [255:0] linefill_buffer_data_i,
   output wire         iq_sc_valid_o,
   input  wire         iq_sc_ready_i,
   output wire [1:0]   iq_sc_channel_id_o,
@@ -32,7 +34,7 @@ module bank_isu_iq #(
   parameter DEPTH = 1 << PTR_WIDTH;
 
   reg  [PTR_WIDTH:0]   queue_size_Q;
-  wire                 readPtr_kickoff;
+  wire                 issue_kickoff;
   wire [PTR_WIDTH-1:0] readPtr_In;
   reg  [PTR_WIDTH-1:0] readPtr_Q;
   wire                 writePtr_kickoff;
@@ -93,16 +95,16 @@ module bank_isu_iq #(
   end
 
 //--------------------------------------------------------------
-//                    issue queue enqueue
+//                    iq valid array
 //--------------------------------------------------------------
-  assign readPtr_kickoff = |valid_array_Q[DEPTH-1:0];
+  assign issue_kickoff = iq_sc_valid_o & iq_sc_ready_i;
 
   always @(*) begin
     valid_array_In = valid_array_Q;
     if (writePtr_kickoff) begin
       valid_array_In[writePtr_Q] = 1'b1;
     end
-    if (readPtr_kickoff) begin
+    if (issue_kickoff) begin
       valid_array_In[select_ptr] = 1'b0;
     end
   end
@@ -247,6 +249,9 @@ module bank_isu_iq #(
   // assign iq_sc_linefill_data_offset0_o 
   // assign iq_sc_linefill_data_offset1_o
 
+  assign iq_linefill_buffer_raddr_o[5:0] = set_way_offset_array_Q[select_ptr][6:1];
+  assign iq_sc_linefill_data_offset0_o[127:0] = linefill_buffer_data_i[127:0];
+  assign iq_sc_linefill_data_offset1_o[127:0] = linefill_buffer_data_i[255:128];
 
 
 endmodule

@@ -7,11 +7,11 @@ module bank_top(
   input  wire [1:0]   xbar_bank_htu_opcode_i,
   input  wire [31:4]  xbar_bank_htu_addr_i,
   input  wire [7:0]   xbar_bank_htu_wbuffer_id_i,
-  output wire         bank_rc_xbar_valid_o,
-  input  wire         bank_rc_xbar_allowIn_i,
-  output wire [1:0]   bank_rc_xbar_ch_id_o,
-  output wire [2:0]   bank_rc_xbar_rob_num_o,
-  output wire [127:0] bank_rc_xbar_data_o,
+  output wire         bank_sc_xbar_valid_o,
+  input  wire         bank_sc_xbar_allowIn_i,
+  output wire [1:0]   bank_sc_xbar_ch_id_o,
+  output wire [2:0]   bank_sc_xbar_rob_num_o,
+  output wire [127:0] bank_sc_xbar_data_o,
   output wire         biu_axi3_arvalid_o,
   input  wire         biu_axi3_arready_i,
   output wire [5:0]   biu_axi3_arid_o,
@@ -76,11 +76,6 @@ module bank_top(
   wire [127:0] isu_sc_linefill_data_offset0;
   wire [127:0] isu_sc_linefill_data_offset1;
 
-  wire         sc_xbar_valid;
-  wire         sc_xbar_ready;
-  wire [1:0]   sc_xbar_channel_id;
-  wire [2:0]   sc_xbar_rob_num;
-  wire [127:0] sc_xbar_data;
   wire         sc_biu_valid;
   wire         sc_biu_ready;
   wire [127:0] sc_biu_data;
@@ -253,11 +248,11 @@ module bank_top(
     .isu_sc_cacheline_dirty_offset1_i(isu_sc_cacheline_dirty_offset1[1:0]),
     .isu_sc_linefill_data_offset0_i  (isu_sc_linefill_data_offset0[127:0]),
     .isu_sc_linefill_data_offset1_i  (isu_sc_linefill_data_offset1[127:0]),
-    .sc_xbar_valid_o                 (sc_xbar_valid                      ),
-    .sc_xbar_ready_i                 (sc_xbar_ready                      ),
-    .sc_xbar_channel_id_o            (sc_xbar_channel_id[1:0]            ),
-    .sc_xbar_rob_num_o               (sc_xbar_rob_num[2:0]               ),
-    .sc_xbar_data_o                  (sc_xbar_data[127:0]                ),
+    .sc_xbar_valid_o                 (bank_sc_xbar_valid_o               ),
+    .sc_xbar_allowIn_i               (bank_sc_xbar_allowIn_i             ),
+    .sc_xbar_channel_id_o            (bank_sc_xbar_ch_id_o[1:0]          ),
+    .sc_xbar_rob_num_o               (bank_sc_xbar_rob_num_o[2:0]        ),
+    .sc_xbar_data_o                  (bank_sc_xbar_data_o[127:0]         ),
     .sc_biu_valid_o                  (sc_biu_valid                       ),
     .sc_biu_ready_i                  (sc_biu_ready                       ),
     .sc_biu_data_o                   (sc_biu_data[127:0]                 ),
@@ -288,25 +283,5 @@ module bank_top(
     .sc_wbuf_rtn_ready_i     (sc_wbuf_rtn_ready          ),
     .sc_wbuf_rtn_data_o      (sc_wbuf_rtn_data[127:0]    )
   );
-
-
-// xbra fake model
-  reg [1:0] xbar_cnt;
-
-  assign sc_xbar_ready = xbar_cnt == 'd2;
-
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      xbar_cnt <= 'd0;
-    end
-    else begin
-      if (xbar_cnt == 'd2) begin
-        xbar_cnt <= 'd0;
-      end
-      else if (sc_xbar_valid) begin
-        xbar_cnt <= xbar_cnt + 'd1;
-      end
-    end
-  end
 
 endmodule

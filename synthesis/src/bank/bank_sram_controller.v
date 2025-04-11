@@ -15,7 +15,7 @@ module bank_sram_controller(
   input  wire [127:0]  isu_sc_linefill_data_offset1_i,
   // sc >> xbar
   output wire          sc_xbar_valid_o,
-  input  wire          sc_xbar_ready_i,
+  input  wire          sc_xbar_allowIn_i,
   output wire [1:0]    sc_xbar_channel_id_o,
   output wire [2:0]    sc_xbar_rob_num_o,
   output wire [127:0]  sc_xbar_data_o,
@@ -153,7 +153,7 @@ module bank_sram_controller(
                              | (isu_op_is_read_linefill & ~sc_send_data_to_xbar_done_Q)
                            );
 
-  assign sc_xbar_kickoff = sc_xbar_valid_o & sc_xbar_ready_i;
+  assign sc_xbar_kickoff = sc_xbar_valid_o & sc_xbar_allowIn_i;
 
   assign sc_send_data_to_xbar_done_wen = isu_op_is_read_linefill & sc_xbar_kickoff
                                        | isu_sc_req_done;
