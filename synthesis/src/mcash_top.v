@@ -201,7 +201,11 @@ module mcash_top (
 
 //------------------------------------------------------------------
 //                        Cross Bar
-// Receive channel request and router to different bank
+// 
+//  ch0 ---|++++| -- bank0
+//  ch1 ---|    | -- bank1
+//  ch2 ---|++++| -- bank2
+//         |++++| -- bank3
 //------------------------------------------------------------------
   cross_bar_top
   u_cross_bar_top(
@@ -243,6 +247,11 @@ module mcash_top (
     .xbar_bank0_htu_opcode_o    (xbar_bank0_htu_opcode[1:0]    ),
     .xbar_bank0_htu_addr_o      (xbar_bank0_htu_addr[31:4]     ),
     .xbar_bank0_htu_wbuffer_id_o(xbar_bank0_htu_wbuffer_id[7:0]),
+    .bank0_sc_xbar_valid_i      (bank0_sc_xbar_valid           ),
+    .bank0_sc_xbar_allowIn_o    (bank0_sc_xbar_allowIn         ),
+    .bank0_sc_xbar_ch_id_i      (bank0_sc_xbar_ch_id[1:0]      ),
+    .bank0_sc_xbar_rob_num_i    (bank0_sc_xbar_rob_num[2:0]    ),
+    .bank0_sc_xbar_data_i       (bank0_sc_xbar_data[127:0]     ),
     // bank 1
     .xbar_bank1_htu_valid_o     (xbar_bank1_htu_valid          ),
     .xbar_bank1_htu_allowIn_i   (xbar_bank1_htu_allowIn        ),
@@ -250,6 +259,11 @@ module mcash_top (
     .xbar_bank1_htu_opcode_o    (xbar_bank1_htu_opcode[1:0]    ),
     .xbar_bank1_htu_addr_o      (xbar_bank1_htu_addr[31:4]     ),
     .xbar_bank1_htu_wbuffer_id_o(xbar_bank1_htu_wbuffer_id[7:0]),
+    .bank1_sc_xbar_valid_i      (bank1_sc_xbar_valid           ),
+    .bank1_sc_xbar_allowIn_o    (bank1_sc_xbar_allowIn         ),
+    .bank1_sc_xbar_ch_id_i      (bank1_sc_xbar_ch_id[1:0]      ),
+    .bank1_sc_xbar_rob_num_i    (bank1_sc_xbar_rob_num[2:0]    ),
+    .bank1_sc_xbar_data_i       (bank1_sc_xbar_data[127:0]     ),
     // bank 2
     .xbar_bank2_htu_valid_o     (xbar_bank2_htu_valid          ),
     .xbar_bank2_htu_allowIn_i   (xbar_bank2_htu_allowIn        ),
@@ -257,6 +271,11 @@ module mcash_top (
     .xbar_bank2_htu_opcode_o    (xbar_bank2_htu_opcode[1:0]    ),
     .xbar_bank2_htu_addr_o      (xbar_bank2_htu_addr[31:4]     ),
     .xbar_bank2_htu_wbuffer_id_o(xbar_bank2_htu_wbuffer_id[7:0]),
+    .bank2_sc_xbar_valid_i      (bank2_sc_xbar_valid           ),
+    .bank2_sc_xbar_allowIn_o    (bank2_sc_xbar_allowIn         ),
+    .bank2_sc_xbar_ch_id_i      (bank2_sc_xbar_ch_id[1:0]      ),
+    .bank2_sc_xbar_rob_num_i    (bank2_sc_xbar_rob_num[2:0]    ),
+    .bank2_sc_xbar_data_i       (bank2_sc_xbar_data[127:0]     ),
     // bank 3
     .xbar_bank3_htu_valid_o     (xbar_bank3_htu_valid          ),
     .xbar_bank3_htu_allowIn_i   (xbar_bank3_htu_allowIn        ),
@@ -264,19 +283,11 @@ module mcash_top (
     .xbar_bank3_htu_opcode_o    (xbar_bank3_htu_opcode[1:0]    ),
     .xbar_bank3_htu_addr_o      (xbar_bank3_htu_addr[31:4]     ),
     .xbar_bank3_htu_wbuffer_id_o(xbar_bank3_htu_wbuffer_id[7:0]),
-    // sc >> xbar
-    .sc_xbar_valid_i(),
-    .sc_xbar_ready_o(),
-    .sc_xbar_ch_id_i(),
-    .sc_xbar_rob_num_i(),
-    .sc_xbar_data_i(),
-    // xbra >> wbuffer
-    .xbar_wbuf_req_valid_o(),
-    .xbar_wbuf_req_ready_i(),
-    .xbar_wbuf_req_ch_id_o(),
-    .xbar_wbuf_req_data_o(),
-    .xbar_wbuf_req_wbuffer_id_o(),
-    .xbar_wbuf_rtn_free_id_i()
+    .bank3_sc_xbar_valid_i      (bank3_sc_xbar_valid           ),
+    .bank3_sc_xbar_allowIn_o    (bank3_sc_xbar_allowIn         ),
+    .bank3_sc_xbar_ch_id_i      (bank3_sc_xbar_ch_id[1:0]      ),
+    .bank3_sc_xbar_rob_num_i    (bank3_sc_xbar_rob_num[2:0]    ),
+    .bank3_sc_xbar_data_i       (bank3_sc_xbar_data[127:0]     )
   );
 
 //------------------------------------------------------------------
