@@ -6,7 +6,7 @@ CASE_NAME ?= ruike
 build:
 	make -C $(MCASH_SIM_PATH) vcs
 
-gen_code:
+gen_code: build
 	make -C $(MCASH_SIM_PATH) gen_code \
 	CASE_PATH=$(CASE_PATH) \
 	CASE_NAME=$(CASE_NAME)

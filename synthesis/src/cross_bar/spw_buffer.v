@@ -9,6 +9,7 @@ module spw_buffer #(
 	input  wire [DATA_WIDTH-1:0] write_data_i,
 	input  wire                  rd_en_i,
 	input  wire [PTR_WIDTH-1:0]  read_ptr_i,
+	output  wire                 read_data_valid_o,
 	output wire [DATA_WIDTH-1:0] read_data_o
 );
 
@@ -49,5 +50,7 @@ module spw_buffer #(
 		end
 	end
 
+	assign read_data_valid_o = valid_array_Q[read_ptr_i];
+	assign read_data_o       = data_array_Q[read_ptr_i];
 
 endmodule

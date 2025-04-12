@@ -141,8 +141,8 @@ module cross_bar_core_buffer(
 
 // channel entry num
   assign ch_used_entry_In[2:0] =  ch_wr_ptr_kickoff & ~ch_rd_ptr_kickoff ? ch_used_entry_Q[2:0] + 3'd1
-                                : ~ch_wr_ptr_kickoff &  ch_rd_ptr_kickoff ? ch_used_entry_Q[2:0] - 3'd1
-                                :                                             ch_used_entry_Q[2:0];
+                               : ~ch_wr_ptr_kickoff &  ch_rd_ptr_kickoff ? ch_used_entry_Q[2:0] - 3'd1
+                               :                                           ch_used_entry_Q[2:0];
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
