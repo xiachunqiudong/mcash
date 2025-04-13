@@ -286,6 +286,88 @@ u_cross_bar_core_buffer_ch2(
     .grant_o     (bank3_channel_grant[2:0]   )
   );
 
+//-------------------------------------------------------------------------
+//                            Wbuffer freelist
+//-------------------------------------------------------------------------
+  wire       bank0_allocate_req;
+  wire       bank0_allocate_allowIn;
+  wire [4:0] bank0_allocate_wbufferID;
+  wire       bank1_allocate_req;
+  wire       bank1_allocate_allowIn;
+  wire [4:0] bank1_allocate_wbufferID;
+  wire       bank2_allocate_req;
+  wire       bank2_allocate_allowIn;
+  wire [4:0] bank2_allocate_wbufferID;
+  wire       bank3_allocate_req;
+  wire       bank3_allocate_allowIn;
+  wire [4:0] bank3_allocate_wbufferID;
+
+  assign bank0_allocate_req = xbar_bank0_htu_valid_o & xbar_bank0_htu_allowIn_i
+                            & xbar_bank0_htu_opcode_o[1:0] == 2'b01;
+
+  assign bank1_allocate_req = xbar_bank1_htu_valid_o & xbar_bank1_htu_allowIn_i
+                            & xbar_bank1_htu_opcode_o[1:0] == 2'b01;
+
+  assign bank2_allocate_req = xbar_bank2_htu_valid_o & xbar_bank2_htu_allowIn_i
+                            & xbar_bank2_htu_opcode_o[1:0] == 2'b01;
+
+  assign bank3_allocate_req = xbar_bank3_htu_valid_o & xbar_bank3_htu_allowIn_i
+                            & xbar_bank3_htu_opcode_o[1:0] == 2'b01;
+
+
+  wbuffer_freelist#(
+    .WBUFFER_AW (5)
+  ) bank0_wbuffer_freelist(
+      .clk               (clk_i                   ),
+      .rst               (rst_i                   ),
+      .allocate_req      (bank0_allocate_req      ),
+      .allocate_allowIn  (bank0_allocate_allowIn  ),
+      .allocate_wbufferID(bank0_allocate_wbufferID),
+      .free_req          (1'b0),
+      .free_wbufferID    ()
+  );
+
+  wbuffer_freelist#(
+    .WBUFFER_AW (5)
+  ) bank1_wbuffer_freelist(
+      .clk               (clk_i                   ),
+      .rst               (rst_i                   ),
+      .allocate_req      (bank1_allocate_req      ),
+      .allocate_allowIn  (bank1_allocate_allowIn  ),
+      .allocate_wbufferID(bank1_allocate_wbufferID),
+      .free_req          (1'b0),
+      .free_wbufferID    ()
+  );
+
+  wbuffer_freelist#(
+    .WBUFFER_AW (5)
+  ) bank2_wbuffer_freelist(
+      .clk               (clk_i                   ),
+      .rst               (rst_i                   ),
+      .allocate_req      (bank2_allocate_req      ),
+      .allocate_allowIn  (bank2_allocate_allowIn  ),
+      .allocate_wbufferID(bank2_allocate_wbufferID),
+      .free_req          (1'b0),
+      .free_wbufferID    ()
+  );
+
+  wbuffer_freelist#(
+    .WBUFFER_AW (5)
+  ) bank3_wbuffer_freelist(
+      .clk               (clk_i                   ),
+      .rst               (rst_i                   ),
+      .allocate_req      (bank3_allocate_req      ),
+      .allocate_allowIn  (bank3_allocate_allowIn  ),
+      .allocate_wbufferID(bank3_allocate_wbufferID),
+      .free_req          (1'b0),
+      .free_wbufferID    ()
+  );
+
+  assign xbar_bank0_htu_wbuffer_id_o[7:0] = {3'b0, bank0_allocate_wbufferID[4:0]};
+  assign xbar_bank1_htu_wbuffer_id_o[7:0] = {3'b0, bank1_allocate_wbufferID[4:0]};
+  assign xbar_bank2_htu_wbuffer_id_o[7:0] = {3'b0, bank2_allocate_wbufferID[4:0]};
+  assign xbar_bank3_htu_wbuffer_id_o[7:0] = {3'b0, bank3_allocate_wbufferID[4:0]};
+
 //--------------------------------------------------------------
 //           Corss Bar send request to Bank
 //--------------------------------------------------------------

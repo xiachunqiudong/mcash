@@ -1,0 +1,2 @@
+`define WBUFFER_AW
+`define FREELIST_WIDTH 1 << WBUFFER_AW
