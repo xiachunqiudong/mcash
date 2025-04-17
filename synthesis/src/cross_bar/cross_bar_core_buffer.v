@@ -5,6 +5,7 @@ module cross_bar_core_buffer(
   input  wire         mcash_ch_req_allowIn_o,
   input  wire [1:0]   mcash_ch_req_op_i,
   input  wire [31:4]  mcash_ch_req_addr_i,
+  input  wire [127:0] mcash_ch_req_data_i,
   output wire         ch_has_entry_want_send_to_bank0_o,
   output wire         ch_has_entry_want_send_to_bank1_o,
   output wire         ch_has_entry_want_send_to_bank2_o,
@@ -24,7 +25,11 @@ module cross_bar_core_buffer(
   output wire [31:4]  ch_send_to_bank0_addr_o,
   output wire [31:4]  ch_send_to_bank1_addr_o,
   output wire [31:4]  ch_send_to_bank2_addr_o,
-  output wire [31:4]  ch_send_to_bank3_addr_o
+  output wire [31:4]  ch_send_to_bank3_addr_o,
+  output wire [127:0] ch_send_to_bank0_data_o,
+  output wire [127:0] ch_send_to_bank1_data_o,
+  output wire [127:0] ch_send_to_bank2_data_o,
+  output wire [127:0] ch_send_to_bank3_data_o
 );
 
   wire       ch_wr_ptr_kickoff;
@@ -43,6 +48,12 @@ module cross_bar_core_buffer(
   reg  [31:4] ch_addr_array_entry2_Q;
   reg  [31:4] ch_addr_array_entry3_Q;
   reg  [31:4] ch_addr_array_entry4_Q;
+
+  reg  [127:0] ch_data_array_entry0_Q;
+  reg  [127:0] ch_data_array_entry1_Q;
+  reg  [127:0] ch_data_array_entry2_Q;
+  reg  [127:0] ch_data_array_entry3_Q;
+  reg  [127:0] ch_data_array_entry4_Q;
 
   reg  [1:0] ch_op_array_entry0_Q;
   reg  [1:0] ch_op_array_entry1_Q;
@@ -222,24 +233,29 @@ module cross_bar_core_buffer(
 //--------------------------------------------------------------
   always @(posedge clk_i) begin
     if (ch_wr_ptr_kickoff & ch_wr_ptr_dcd[0]) begin
-      ch_addr_array_entry0_Q[31:4] <= mcash_ch_req_addr_i[31:4];
-      ch_op_array_entry0_Q[1:0]    <= mcash_ch_req_op_i[1:0];
+      ch_addr_array_entry0_Q[31:4]  <= mcash_ch_req_addr_i[31:4];
+      ch_data_array_entry0_Q[127:0] <= mcash_ch_req_data_i[127:0];
+      ch_op_array_entry0_Q[1:0]     <= mcash_ch_req_op_i[1:0];
     end
     if (ch_wr_ptr_kickoff & ch_wr_ptr_dcd[1]) begin
-      ch_addr_array_entry1_Q[31:4] <= mcash_ch_req_addr_i[31:4];
-      ch_op_array_entry1_Q[1:0]    <= mcash_ch_req_op_i[1:0];
+      ch_addr_array_entry1_Q[31:4]  <= mcash_ch_req_addr_i[31:4];
+      ch_data_array_entry1_Q[127:0] <= mcash_ch_req_data_i[127:0];
+      ch_op_array_entry1_Q[1:0]     <= mcash_ch_req_op_i[1:0];
     end
     if (ch_wr_ptr_kickoff & ch_wr_ptr_dcd[2]) begin
-      ch_addr_array_entry2_Q[31:4] <= mcash_ch_req_addr_i[31:4];
-      ch_op_array_entry2_Q[1:0]    <= mcash_ch_req_op_i[1:0];
+      ch_addr_array_entry2_Q[31:4]  <= mcash_ch_req_addr_i[31:4];
+      ch_data_array_entry2_Q[127:0] <= mcash_ch_req_data_i[127:0];
+      ch_op_array_entry2_Q[1:0]     <= mcash_ch_req_op_i[1:0];
     end
     if (ch_wr_ptr_kickoff & ch_wr_ptr_dcd[3]) begin
-      ch_addr_array_entry3_Q[31:4] <= mcash_ch_req_addr_i[31:4];
-      ch_op_array_entry3_Q[1:0]    <= mcash_ch_req_op_i[1:0];
+      ch_addr_array_entry3_Q[31:4]  <= mcash_ch_req_addr_i[31:4];
+      ch_data_array_entry3_Q[127:0] <= mcash_ch_req_data_i[127:0];
+      ch_op_array_entry3_Q[1:0]     <= mcash_ch_req_op_i[1:0];
     end
     if (ch_wr_ptr_kickoff & ch_wr_ptr_dcd[4]) begin
-      ch_addr_array_entry4_Q[31:4] <= mcash_ch_req_addr_i[31:4];
-      ch_op_array_entry4_Q[1:0]    <= mcash_ch_req_op_i[1:0];
+      ch_addr_array_entry4_Q[31:4]  <= mcash_ch_req_addr_i[31:4];
+      ch_data_array_entry4_Q[127:0] <= mcash_ch_req_data_i[127:0];
+      ch_op_array_entry4_Q[1:0]     <= mcash_ch_req_op_i[1:0];
     end
   end
 
@@ -366,4 +382,27 @@ module cross_bar_core_buffer(
                                        | {28{ch_entryID_send_to_bank3_dcd[3]}} & ch_addr_array_entry3_Q[31:4]
                                        | {28{ch_entryID_send_to_bank3_dcd[4]}} & ch_addr_array_entry4_Q[31:4];
 
+  assign ch_send_to_bank0_data_o[127:0] = {128{ch_entryID_send_to_bank0_dcd[0]}} & ch_data_array_entry0_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank0_dcd[1]}} & ch_data_array_entry1_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank0_dcd[2]}} & ch_data_array_entry2_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank0_dcd[3]}} & ch_data_array_entry3_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank0_dcd[4]}} & ch_data_array_entry4_Q[127:0];
+
+  assign ch_send_to_bank1_data_o[127:0] = {128{ch_entryID_send_to_bank1_dcd[0]}} & ch_data_array_entry0_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank1_dcd[1]}} & ch_data_array_entry1_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank1_dcd[2]}} & ch_data_array_entry2_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank1_dcd[3]}} & ch_data_array_entry3_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank1_dcd[4]}} & ch_data_array_entry4_Q[127:0];
+
+  assign ch_send_to_bank2_data_o[127:0] = {128{ch_entryID_send_to_bank2_dcd[0]}} & ch_data_array_entry0_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank2_dcd[1]}} & ch_data_array_entry1_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank2_dcd[2]}} & ch_data_array_entry2_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank2_dcd[3]}} & ch_data_array_entry3_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank2_dcd[4]}} & ch_data_array_entry4_Q[127:0];
+
+  assign ch_send_to_bank3_data_o[127:0] = {128{ch_entryID_send_to_bank3_dcd[0]}} & ch_data_array_entry0_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank3_dcd[1]}} & ch_data_array_entry1_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank3_dcd[2]}} & ch_data_array_entry2_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank3_dcd[3]}} & ch_data_array_entry3_Q[127:0]
+                                        | {128{ch_entryID_send_to_bank3_dcd[4]}} & ch_data_array_entry4_Q[127:0];
 endmodule

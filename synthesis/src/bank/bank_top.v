@@ -6,6 +6,7 @@ module bank_top(
   input  wire [1:0]   xbar_bank_htu_ch_id_i,
   input  wire [1:0]   xbar_bank_htu_opcode_i,
   input  wire [31:4]  xbar_bank_htu_addr_i,
+  input  wire [127:0] xbar_bank_htu_data_i,
   input  wire [7:0]   xbar_bank_htu_wbuffer_id_i,
   output wire         bank_sc_xbar_valid_o,
   input  wire         bank_sc_xbar_allowIn_i,

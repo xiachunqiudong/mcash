@@ -2,26 +2,30 @@ module cross_bar_core(
   input wire          clk_i,
   input wire          rst_i,
   // channel0
-  input wire          mcash_ch0_req_valid_i,
-  input wire          mcash_ch0_req_allowIn_o,
+  input  wire         mcash_ch0_req_valid_i,
+  input  wire         mcash_ch0_req_allowIn_o,
   input  wire [1:0]   mcash_ch0_req_op_i,
-  input wire [31:4]   mcash_ch0_req_addr_i,
+  input  wire [31:4]  mcash_ch0_req_addr_i,
+  input  wire [127:0] mcash_ch0_req_data_i,
   // channel1
-  input wire          mcash_ch1_req_valid_i,
-  input wire          mcash_ch1_req_allowIn_o,
+  input  wire         mcash_ch1_req_valid_i,
+  input  wire         mcash_ch1_req_allowIn_o,
   input  wire [1:0]   mcash_ch1_req_op_i,
-  input wire [31:4]   mcash_ch1_req_addr_i,
+  input  wire [31:4]  mcash_ch1_req_addr_i,
+  input  wire [127:0] mcash_ch1_req_data_i,
   // channel2
-  input wire          mcash_ch2_req_valid_i,
-  input wire          mcash_ch2_req_allowIn_o,
+  input  wire         mcash_ch2_req_valid_i,
+  input  wire         mcash_ch2_req_allowIn_o,
   input  wire [1:0]   mcash_ch2_req_op_i,
-  input wire [31:4]   mcash_ch2_req_addr_i,
+  input  wire [31:4]  mcash_ch2_req_addr_i,
+  input  wire [127:0] mcash_ch2_req_data_i,
   // xbar >> bank0 htu
   output wire         xbar_bank0_htu_valid_o,
   input  wire         xbar_bank0_htu_allowIn_i,
   output wire [1:0]   xbar_bank0_htu_ch_id_o,
   output wire [1:0]   xbar_bank0_htu_opcode_o,
   output wire [31:4]  xbar_bank0_htu_addr_o,
+  output wire [127:0] xbar_bank0_htu_data_o,
   output wire [7:0]   xbar_bank0_htu_wbuffer_id_o,
   // xbar >> bank1 htu
   output wire         xbar_bank1_htu_valid_o,
@@ -29,6 +33,7 @@ module cross_bar_core(
   output wire [1:0]   xbar_bank1_htu_ch_id_o,
   output wire [1:0]   xbar_bank1_htu_opcode_o,
   output wire [31:4]  xbar_bank1_htu_addr_o,
+  output wire [127:0] xbar_bank1_htu_data_o,
   output wire [7:0]   xbar_bank1_htu_wbuffer_id_o,
   // xbar >> bank2 htu
   output wire         xbar_bank2_htu_valid_o,
@@ -36,6 +41,7 @@ module cross_bar_core(
   output wire [1:0]   xbar_bank2_htu_ch_id_o,
   output wire [1:0]   xbar_bank2_htu_opcode_o,
   output wire [31:4]  xbar_bank2_htu_addr_o,
+  output wire [127:0] xbar_bank2_htu_data_o,
   output wire [7:0]   xbar_bank2_htu_wbuffer_id_o,
   // xbar >> bank3 htu
   output wire         xbar_bank3_htu_valid_o,
@@ -43,57 +49,70 @@ module cross_bar_core(
   output wire [1:0]   xbar_bank3_htu_ch_id_o,
   output wire [1:0]   xbar_bank3_htu_opcode_o,
   output wire [31:4]  xbar_bank3_htu_addr_o,
+  output wire [127:0] xbar_bank3_htu_data_o,
   output wire [7:0]   xbar_bank3_htu_wbuffer_id_o
 );
 
-  wire        ch0_has_entry_want_send_to_bank0;
-  wire        ch1_has_entry_want_send_to_bank0;
-  wire        ch2_has_entry_want_send_to_bank0;
-  wire        ch0_has_entry_want_send_to_bank1;
-  wire        ch1_has_entry_want_send_to_bank1;
-  wire        ch2_has_entry_want_send_to_bank1;
-  wire        ch0_has_entry_want_send_to_bank2;
-  wire        ch1_has_entry_want_send_to_bank2;
-  wire        ch2_has_entry_want_send_to_bank2;
-  wire        ch0_has_entry_want_send_to_bank3;
-  wire        ch1_has_entry_want_send_to_bank3;
-  wire        ch2_has_entry_want_send_to_bank3;
-  wire        bank0_req_can_go;
-  wire        bank1_req_can_go;
-  wire        bank2_req_can_go;
-  wire        bank3_req_can_go;
-  wire [2:0]  bank0_ch0to2_req_valid;
-  wire [2:0]  bank0_channel_grant;
-  wire [2:0]  bank1_ch0to2_req_valid;
-  wire [2:0]  bank1_channel_grant;
-  wire [2:0]  bank2_ch0to2_req_valid;
-  wire [2:0]  bank2_channel_grant;
-  wire [2:0]  bank3_ch0to2_req_valid;
-  wire [2:0]  bank3_channel_grant;
-  wire [1:0]  ch0_send_to_bank0_op;
-  wire [1:0]  ch0_send_to_bank1_op;
-  wire [1:0]  ch0_send_to_bank2_op;
-  wire [1:0]  ch0_send_to_bank3_op;
-  wire [31:4] ch0_send_to_bank0_addr;
-  wire [31:4] ch0_send_to_bank1_addr;
-  wire [31:4] ch0_send_to_bank2_addr;
-  wire [31:4] ch0_send_to_bank3_addr;
-  wire [1:0]  ch1_send_to_bank0_op;
-  wire [1:0]  ch1_send_to_bank1_op;
-  wire [1:0]  ch1_send_to_bank2_op;
-  wire [1:0]  ch1_send_to_bank3_op;
-  wire [31:4] ch1_send_to_bank0_addr;
-  wire [31:4] ch1_send_to_bank1_addr;
-  wire [31:4] ch1_send_to_bank2_addr;
-  wire [31:4] ch1_send_to_bank3_addr;
-  wire [1:0]  ch2_send_to_bank0_op;
-  wire [1:0]  ch2_send_to_bank1_op;
-  wire [1:0]  ch2_send_to_bank2_op;
-  wire [1:0]  ch2_send_to_bank3_op;
-  wire [31:4] ch2_send_to_bank0_addr;
-  wire [31:4] ch2_send_to_bank1_addr;
-  wire [31:4] ch2_send_to_bank2_addr;
-  wire [31:4] ch2_send_to_bank3_addr;
+  wire         ch0_has_entry_want_send_to_bank0;
+  wire         ch1_has_entry_want_send_to_bank0;
+  wire         ch2_has_entry_want_send_to_bank0;
+  wire         ch0_has_entry_want_send_to_bank1;
+  wire         ch1_has_entry_want_send_to_bank1;
+  wire         ch2_has_entry_want_send_to_bank1;
+  wire         ch0_has_entry_want_send_to_bank2;
+  wire         ch1_has_entry_want_send_to_bank2;
+  wire         ch2_has_entry_want_send_to_bank2;
+  wire         ch0_has_entry_want_send_to_bank3;
+  wire         ch1_has_entry_want_send_to_bank3;
+  wire         ch2_has_entry_want_send_to_bank3;
+  wire         bank0_req_can_go;
+  wire         bank1_req_can_go;
+  wire         bank2_req_can_go;
+  wire         bank3_req_can_go;
+  wire [2:0]   bank0_ch0to2_req_valid;
+  wire [2:0]   bank0_channel_grant;
+  wire [2:0]   bank1_ch0to2_req_valid;
+  wire [2:0]   bank1_channel_grant;
+  wire [2:0]   bank2_ch0to2_req_valid;
+  wire [2:0]   bank2_channel_grant;
+  wire [2:0]   bank3_ch0to2_req_valid;
+  wire [2:0]   bank3_channel_grant;
+  wire [1:0]   ch0_send_to_bank0_op;
+  wire [1:0]   ch0_send_to_bank1_op;
+  wire [1:0]   ch0_send_to_bank2_op;
+  wire [1:0]   ch0_send_to_bank3_op;
+  wire [31:4]  ch0_send_to_bank0_addr;
+  wire [31:4]  ch0_send_to_bank1_addr;
+  wire [31:4]  ch0_send_to_bank2_addr;
+  wire [31:4]  ch0_send_to_bank3_addr;
+  wire [127:0] ch0_send_to_bank0_data;
+  wire [127:0] ch0_send_to_bank1_data;
+  wire [127:0] ch0_send_to_bank2_data;
+  wire [127:0] ch0_send_to_bank3_data;
+  wire [1:0]   ch1_send_to_bank0_op;
+  wire [1:0]   ch1_send_to_bank1_op;
+  wire [1:0]   ch1_send_to_bank2_op;
+  wire [1:0]   ch1_send_to_bank3_op;
+  wire [31:4]  ch1_send_to_bank0_addr;
+  wire [31:4]  ch1_send_to_bank1_addr;
+  wire [31:4]  ch1_send_to_bank2_addr;
+  wire [31:4]  ch1_send_to_bank3_addr;
+  wire [127:0] ch1_send_to_bank0_data;
+  wire [127:0] ch1_send_to_bank1_data;
+  wire [127:0] ch1_send_to_bank2_data;
+  wire [127:0] ch1_send_to_bank3_data;
+  wire [1:0]   ch2_send_to_bank0_op;
+  wire [1:0]   ch2_send_to_bank1_op;
+  wire [1:0]   ch2_send_to_bank2_op;
+  wire [1:0]   ch2_send_to_bank3_op;
+  wire [31:4]  ch2_send_to_bank0_addr;
+  wire [31:4]  ch2_send_to_bank1_addr;
+  wire [31:4]  ch2_send_to_bank2_addr;
+  wire [31:4]  ch2_send_to_bank3_addr;
+  wire [127:0] ch2_send_to_bank0_data;
+  wire [127:0] ch2_send_to_bank1_data;
+  wire [127:0] ch2_send_to_bank2_data;
+  wire [127:0] ch2_send_to_bank3_data;
 
 //--------------------------------------------------------------
 //                    channel0 Buffer
@@ -106,6 +125,7 @@ u_cross_bar_core_buffer_ch0(
   .mcash_ch_req_allowIn_o           (mcash_ch0_req_allowIn_o         ),
   .mcash_ch_req_op_i                (mcash_ch0_req_op_i[1:0]         ),
   .mcash_ch_req_addr_i              (mcash_ch0_req_addr_i[31:4]      ),
+  .mcash_ch_req_data_i              (mcash_ch0_req_data_i[127:0]     ),
   .ch_has_entry_want_send_to_bank0_o(ch0_has_entry_want_send_to_bank0),
   .ch_has_entry_want_send_to_bank1_o(ch0_has_entry_want_send_to_bank1),
   .ch_has_entry_want_send_to_bank2_o(ch0_has_entry_want_send_to_bank2),
@@ -125,7 +145,11 @@ u_cross_bar_core_buffer_ch0(
   .ch_send_to_bank0_addr_o          (ch0_send_to_bank0_addr[31:4]    ),
   .ch_send_to_bank1_addr_o          (ch0_send_to_bank1_addr[31:4]    ),
   .ch_send_to_bank2_addr_o          (ch0_send_to_bank2_addr[31:4]    ),
-  .ch_send_to_bank3_addr_o          (ch0_send_to_bank3_addr[31:4]    )
+  .ch_send_to_bank3_addr_o          (ch0_send_to_bank3_addr[31:4]    ),
+  .ch_send_to_bank0_data_o          (ch0_send_to_bank0_data[127:0]   ),
+  .ch_send_to_bank1_data_o          (ch0_send_to_bank1_data[127:0]   ),
+  .ch_send_to_bank2_data_o          (ch0_send_to_bank2_data[127:0]   ),
+  .ch_send_to_bank3_data_o          (ch0_send_to_bank3_data[127:0]   )
 );
 
 //--------------------------------------------------------------
@@ -139,6 +163,7 @@ u_cross_bar_core_buffer_ch1(
   .mcash_ch_req_allowIn_o           (mcash_ch1_req_allowIn_o         ),
   .mcash_ch_req_op_i                (mcash_ch1_req_op_i[1:0]         ),
   .mcash_ch_req_addr_i              (mcash_ch1_req_addr_i[31:4]      ),
+  .mcash_ch_req_data_i              (mcash_ch1_req_data_i[127:0]     ),
   .ch_has_entry_want_send_to_bank0_o(ch1_has_entry_want_send_to_bank0),
   .ch_has_entry_want_send_to_bank1_o(ch1_has_entry_want_send_to_bank1),
   .ch_has_entry_want_send_to_bank2_o(ch1_has_entry_want_send_to_bank2),
@@ -158,7 +183,11 @@ u_cross_bar_core_buffer_ch1(
   .ch_send_to_bank0_addr_o          (ch1_send_to_bank0_addr[31:4]    ),
   .ch_send_to_bank1_addr_o          (ch1_send_to_bank1_addr[31:4]    ),
   .ch_send_to_bank2_addr_o          (ch1_send_to_bank2_addr[31:4]    ),
-  .ch_send_to_bank3_addr_o          (ch1_send_to_bank3_addr[31:4]    )
+  .ch_send_to_bank3_addr_o          (ch1_send_to_bank3_addr[31:4]    ),
+  .ch_send_to_bank0_data_o          (ch1_send_to_bank0_data[127:0]   ),
+  .ch_send_to_bank1_data_o          (ch1_send_to_bank1_data[127:0]   ),
+  .ch_send_to_bank2_data_o          (ch1_send_to_bank2_data[127:0]   ),
+  .ch_send_to_bank3_data_o          (ch1_send_to_bank3_data[127:0]   )
 );
 
 //--------------------------------------------------------------
@@ -172,6 +201,7 @@ u_cross_bar_core_buffer_ch2(
   .mcash_ch_req_allowIn_o           (mcash_ch2_req_allowIn_o         ),
   .mcash_ch_req_op_i                (mcash_ch2_req_op_i[1:0]         ),
   .mcash_ch_req_addr_i              (mcash_ch2_req_addr_i[31:4]      ),
+  .mcash_ch_req_data_i              (mcash_ch2_req_data_i[127:0]     ),
   .ch_has_entry_want_send_to_bank0_o(ch2_has_entry_want_send_to_bank0),
   .ch_has_entry_want_send_to_bank1_o(ch2_has_entry_want_send_to_bank1),
   .ch_has_entry_want_send_to_bank2_o(ch2_has_entry_want_send_to_bank2),
@@ -191,7 +221,11 @@ u_cross_bar_core_buffer_ch2(
   .ch_send_to_bank0_addr_o          (ch2_send_to_bank0_addr[31:4]    ),
   .ch_send_to_bank1_addr_o          (ch2_send_to_bank1_addr[31:4]    ),
   .ch_send_to_bank2_addr_o          (ch2_send_to_bank2_addr[31:4]    ),
-  .ch_send_to_bank3_addr_o          (ch2_send_to_bank3_addr[31:4]    )
+  .ch_send_to_bank3_addr_o          (ch2_send_to_bank3_addr[31:4]    ),
+  .ch_send_to_bank0_data_o          (ch2_send_to_bank0_data[127:0]   ),
+  .ch_send_to_bank1_data_o          (ch2_send_to_bank1_data[127:0]   ),
+  .ch_send_to_bank2_data_o          (ch2_send_to_bank2_data[127:0]   ),
+  .ch_send_to_bank3_data_o          (ch2_send_to_bank3_data[127:0]   )
 );
 
 //--------------------------------------------------------------
@@ -387,6 +421,10 @@ u_cross_bar_core_buffer_ch2(
                                      | {28{bank0_channel_grant[1]}} & ch1_send_to_bank0_addr[31:4]
                                      | {28{bank0_channel_grant[2]}} & ch2_send_to_bank0_addr[31:4];
 
+  assign xbar_bank0_htu_data_o[127:0] = {128{bank0_channel_grant[0]}} & ch0_send_to_bank0_data[127:0]
+                                      | {128{bank0_channel_grant[1]}} & ch1_send_to_bank0_data[127:0]
+                                      | {128{bank0_channel_grant[2]}} & ch2_send_to_bank0_data[127:0];
+
 // send request to bank1
   assign xbar_bank1_htu_valid_o      = |bank1_ch0to2_req_valid[2:0];
 
@@ -401,6 +439,10 @@ u_cross_bar_core_buffer_ch2(
   assign xbar_bank1_htu_addr_o[31:4] = {28{bank1_channel_grant[0]}} & ch0_send_to_bank1_addr[31:4]
                                      | {28{bank1_channel_grant[1]}} & ch1_send_to_bank1_addr[31:4]
                                      | {28{bank1_channel_grant[2]}} & ch2_send_to_bank1_addr[31:4];
+
+  assign xbar_bank1_htu_data_o[127:0] = {128{bank0_channel_grant[0]}} & ch0_send_to_bank1_data[127:0]
+                                      | {128{bank0_channel_grant[1]}} & ch1_send_to_bank1_data[127:0]
+                                      | {128{bank0_channel_grant[2]}} & ch2_send_to_bank1_data[127:0];
 
 // send request to bank2
   assign xbar_bank2_htu_valid_o      = |bank2_ch0to2_req_valid[2:0];
@@ -417,6 +459,10 @@ u_cross_bar_core_buffer_ch2(
                                      | {28{bank2_channel_grant[1]}} & ch1_send_to_bank2_addr[31:4]
                                      | {28{bank2_channel_grant[2]}} & ch2_send_to_bank2_addr[31:4];
 
+  assign xbar_bank2_htu_data_o[127:0] = {128{bank0_channel_grant[0]}} & ch0_send_to_bank2_data[127:0]
+                                      | {128{bank0_channel_grant[1]}} & ch1_send_to_bank2_data[127:0]
+                                      | {128{bank0_channel_grant[2]}} & ch2_send_to_bank2_data[127:0];
+
 // send request to bank3
   assign xbar_bank3_htu_valid_o      = |bank3_ch0to2_req_valid[2:0];
 
@@ -431,5 +477,9 @@ u_cross_bar_core_buffer_ch2(
   assign xbar_bank3_htu_addr_o[31:4] = {28{bank3_channel_grant[0]}} & ch0_send_to_bank3_addr[31:4]
                                      | {28{bank3_channel_grant[1]}} & ch1_send_to_bank3_addr[31:4]
                                      | {28{bank3_channel_grant[2]}} & ch2_send_to_bank3_addr[31:4];
+
+  assign xbar_bank3_htu_data_o[127:0] = {128{bank0_channel_grant[0]}} & ch0_send_to_bank3_data[127:0]
+                                      | {128{bank0_channel_grant[1]}} & ch1_send_to_bank3_data[127:0]
+                                      | {128{bank0_channel_grant[2]}} & ch2_send_to_bank3_data[127:0];
 
 endmodule
