@@ -4,6 +4,6 @@
 *.fsdb
 *.key
 /simulation/sim/*
-/simulation/Makefile
+!/simulation/Makefile
 
 
