@@ -1,56 +1,57 @@
-module bank_wbuffer(
-  input  wire         clk_i,
-  input  wire         rst_i,
-  // sc >> Wbuf
-  input  wire         sc_wbuf_req_valid_i,
-  output wire         sc_wbuf_req_ready_o,
-  input  wire [1:0]   sc_wbuf_req_channel_id_i,
-  input  wire [7:0]   sc_wbuf_req_wbuffer_id_i,
-  // Wbuf >> sc
-  output wire         sc_wbuf_rtn_valid_o,
-  input  wire         sc_wbuf_rtn_ready_i,
-  input  wire [127:0] sc_wbuf_rtn_data_o
+module bank_wbuffer #(
+  parameter AW = 5,
+  parameter DW = 128
+)(
+  input  wire          clk_i,
+  input  wire          rst_i,
+  input  wire          wbuf_wr_req_i,
+  input  wire [AW-1:0] wbuf_wr_id_i,
+  input  wire [DW-1:0] wbuf_wdata_i,
+  input  wire          wbuf_rd_req_i,
+  input  wire [AW-1:0] wbuf_rd_id_i,
+  output wire          wbuf_rd_data_valid_o,
+  output wire [DW-1:0] wbuf_rd_data_o
 );
 
-  wire         return_data_buffer_push;
-  wire         return_data_buffer_pop;
-  wire         return_data_buffer_valid_In;
-  reg          return_data_buffer_valid_Q;
-  wire [127:0] return_data_buffer_In;
-  reg  [127:0] return_data_buffer_Q;
+//------------------------------------------------------------
+//                     Write data buffer
+// Entry size : 128 bit
+// Entry num  : 32
+// Total size : 512B
+//------------------------------------------------------------
+  parameter DEPTH = 1 << AW;
 
-  assign sc_wbuf_req_ready_o = ~return_data_buffer_valid_Q
-                             | return_data_buffer_pop;
-
-  assign return_data_buffer_push = sc_wbuf_req_valid_i & sc_wbuf_req_ready_o;
-
-  assign return_data_buffer_pop = sc_wbuf_rtn_valid_o & sc_wbuf_rtn_ready_i;
-
-  assign return_data_buffer_valid_In = return_data_buffer_push ? 1'b1
-                                     : return_data_buffer_pop  ? 1'b0
-                                     :                           return_data_buffer_valid_Q;
+  reg           read_data_valid_Q;
+  reg  [DW-1:0] data_array_Q [DEPTH-1:0];
+  wire [DW-1:0] read_data_In;
+  reg  [DW-1:0] read_data_Q;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
-      return_data_buffer_valid_Q <= 1'b0;
+      read_data_valid_Q <= 1'b0;
     end
     else begin
-      return_data_buffer_valid_Q <= return_data_buffer_valid_In;
+      read_data_valid_Q <= wbuf_rd_req_i;
     end
   end
 
-  assign return_data_buffer_In[127:0] = 1'b1;
+  assign read_data_In = data_array_Q[wbuf_rd_id_i];
 
-  
   always @(posedge clk_i) begin
-    if (return_data_buffer_push) begin
-      return_data_buffer_Q[127:0] <= return_data_buffer_In[127:0];
-    end
+    read_data_Q <= read_data_In;
   end
 
-// data output
-  assign sc_wbuf_rtn_valid_o = return_data_buffer_valid_Q;
+  assign wbuf_rd_data_valid_o = read_data_valid_Q;
 
-  assign sc_wbuf_rtn_data_o[127:0] = return_data_buffer_Q[127:0];
+  assign wbuf_rd_data_o = read_data_Q;
+
+//------------------------------------------------------------------
+//                         write buffer
+//------------------------------------------------------------------
+  always @(posedge clk_i) begin
+    if (wbuf_wr_req_i) begin
+      data_array_Q[wbuf_wr_id_i] <= wbuf_wdata_i;
+    end
+  end
 
 endmodule 

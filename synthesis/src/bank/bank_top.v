@@ -45,6 +45,7 @@ module bank_top(
   input  wire [1:0]   biu_axi3_bresp_i
 );
 
+  wire        xbar_bank_htu_kickoff;
   wire        htu_isu_need_linefill;
   wire [2:0]  htu_isu_linefill_set;
   wire [2:0]  htu_isu_linefill_way;
@@ -100,6 +101,8 @@ module bank_top(
 //---------------------------------------------------------------------------------
 //                            HTU (Hit test unit)
 //---------------------------------------------------------------------------------
+  assign xbar_bank_htu_kickoff = xbar_bank_htu_valid_i & xbar_bank_htu_allowIn_o;
+
   bank_htu_top
   htu_top (
     .clk_i                            (clk_i                               ),
@@ -274,15 +277,14 @@ module bank_top(
 //---------------------------------------------------------------------------------
   bank_wbuffer
   wbuffer (
-    .clk_i                   (clk_i                      ),
-    .rst_i                   (rst_i                      ),
-    .sc_wbuf_req_valid_i     (sc_wbuf_req_valid          ),
-    .sc_wbuf_req_ready_o     (sc_wbuf_req_ready          ),
-    .sc_wbuf_req_channel_id_i(sc_wbuf_req_channel_id[1:0]),
-    .sc_wbuf_req_wbuffer_id_i(sc_wbuf_req_wbuffer_id[7:0]),
-    .sc_wbuf_rtn_valid_o     (sc_wbuf_rtn_valid          ),
-    .sc_wbuf_rtn_ready_i     (sc_wbuf_rtn_ready          ),
-    .sc_wbuf_rtn_data_o      (sc_wbuf_rtn_data[127:0]    )
+    .clk_i          (clk_i                          ),
+    .rst_i          (rst_i                          ),
+    .wbuf_wr_req_i  (xbar_bank_htu_kickoff          ),
+    .wbuf_wr_id_i   (xbar_bank_htu_wbuffer_id_i[4:0]),
+    .wbuf_wdata_i   (xbar_bank_htu_data_i[127:0]    ),
+    .wbuf_rd_req_i  (),
+    .wbuf_rd_id_i   (),
+    .wbuf_rd_data_o ()
   );
 
 endmodule
