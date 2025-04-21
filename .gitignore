@@ -3,5 +3,7 @@
 *.rc
 *.fsdb
 *.key
-/simulation/sim/verdiLog
-/simulation/sim/build
+/simulation/sim/*
+/simulation/Makefile
+
+
