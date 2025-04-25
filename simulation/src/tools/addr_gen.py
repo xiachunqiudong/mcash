@@ -19,7 +19,7 @@ def main():
   for i in range(max_offset_num):
     # tag loop
     for j in range(max_way_num):
-      hex = mcash_req_hex(tag, 0, 0, offset, i*j, 1)
+      hex = mcash_req_hex(tag, 0, 0, offset, (i+1)*j, 1)
       print(hex)
       tag = tag + 1
 

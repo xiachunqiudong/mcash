@@ -154,11 +154,14 @@ module bank_htu_top (
 
   assign htu_isu_ch_id_o[1:0] = xbar_bank_htu_ch_id_i[1:0];
 
-  assign cacheline_need_evit = |(htu_cacheline_index_dcd[7:0] & cacheline_evit_array[7:0]);
+  assign cacheline_need_evit = |(htu_cacheline_index_dcd[7:0] & cacheline_evit_array[7:0])
+                             & ~cacheline_hit;
 
   assign htu_isu_set_way_offset_o[6:0] = {htu_cacheline_index[2:0],
                                           htu_access_way[2:0],
                                           htu_cacheline_offset};
+
+  assign htu_isu_wbuffer_id_o[7:0] = xbar_bank_htu_wbuffer_id_i[7:0];
 
   assign htu_isu_cacheline_offset0_state_o[1:0] = {2{htu_cacheline_index_dcd[0]}} & set0_cacheline_offset0_state[1:0]
                                                 | {2{htu_cacheline_index_dcd[1]}} & set1_cacheline_offset0_state[1:0]

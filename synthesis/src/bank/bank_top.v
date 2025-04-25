@@ -86,7 +86,6 @@ module bank_top(
   wire [6:0]   sc_biu_set_way_offset;
   wire         sc_wbuf_req_valid;
   wire         sc_wbuf_req_ready;
-  wire [1:0]   sc_wbuf_req_channel_id;
   wire [7:0]   sc_wbuf_req_wbuffer_id;
   wire         sc_wbuf_rtn_valid;
   wire         sc_wbuf_rtn_ready;
@@ -264,11 +263,8 @@ module bank_top(
     .sc_biu_all_offset_o             (sc_biu_all_offset                  ),
     .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]         ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
-    .sc_wbuf_req_ready_i             (sc_wbuf_req_ready                  ),
-    .sc_wbuf_req_channel_id_o        (sc_wbuf_req_channel_id[1:0]        ),
     .sc_wbuf_req_wbuffer_id_o        (sc_wbuf_req_wbuffer_id[7:0]        ),
     .sc_wbuf_rtn_valid_i             (sc_wbuf_rtn_valid                  ),
-    .sc_wbuf_rtn_ready_o             (sc_wbuf_rtn_ready                  ),
     .sc_wbuf_rtn_data_i              (sc_wbuf_rtn_data[127:0]            )
   );
 
@@ -277,14 +273,15 @@ module bank_top(
 //---------------------------------------------------------------------------------
   bank_wbuffer
   wbuffer (
-    .clk_i          (clk_i                          ),
-    .rst_i          (rst_i                          ),
-    .wbuf_wr_req_i  (xbar_bank_htu_kickoff          ),
-    .wbuf_wr_id_i   (xbar_bank_htu_wbuffer_id_i[4:0]),
-    .wbuf_wdata_i   (xbar_bank_htu_data_i[127:0]    ),
-    .wbuf_rd_req_i  (),
-    .wbuf_rd_id_i   (),
-    .wbuf_rd_data_o ()
+    .clk_i                (clk_i                          ),
+    .rst_i                (rst_i                          ),
+    .wbuf_wr_req_i        (xbar_bank_htu_kickoff          ),
+    .wbuf_wr_id_i         (xbar_bank_htu_wbuffer_id_i[4:0]),
+    .wbuf_wdata_i         (xbar_bank_htu_data_i[127:0]    ),
+    .wbuf_rd_req_i        (sc_wbuf_req_valid              ),
+    .wbuf_rd_id_i         (sc_wbuf_req_wbuffer_id[4:0]    ),
+    .wbuf_rd_data_valid_o (sc_wbuf_rtn_valid              ),
+    .wbuf_rd_data_o       (sc_wbuf_rtn_data[127:0]        )
   );
 
 endmodule

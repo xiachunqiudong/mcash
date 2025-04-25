@@ -28,12 +28,9 @@ module bank_sram_controller(
   output wire [6:0]    sc_biu_set_way_offset_o,
   // sc >> Wbuf
   output wire          sc_wbuf_req_valid_o,
-  input  wire          sc_wbuf_req_ready_i,
-  output wire [1:0]    sc_wbuf_req_channel_id_o,
   output wire [7:0]    sc_wbuf_req_wbuffer_id_o,
   // Wbuf >> sc
   input  wire          sc_wbuf_rtn_valid_i,
-  output wire          sc_wbuf_rtn_ready_o,
   output wire [127:0]  sc_wbuf_rtn_data_i
 );
 
@@ -186,12 +183,12 @@ module bank_sram_controller(
                              & isu_op_is_write
                              & (sc_counter_Q[1:0] == 2'b00);
 
-  assign sc_wbuf_rtn_ready_o = 1'b1;
+  assign sc_wbuf_req_wbuffer_id_o[7:0] = isu_sc_wbuffer_id_i[7:0];
 
 //=========================================================
 //                    SC Ctrl flow
 //=========================================================
-  assign sc_counter_incr = sc_wbuf_req_valid_o & sc_wbuf_req_ready_i         // incr because of write
+  assign sc_counter_incr = sc_wbuf_req_valid_o /*& sc_wbuf_req_ready_i*/         // incr because of write
                          | (isu_sc_valid_i & sram_write_cnt_Q[1:0] <= 2'b01)
                            & ( isu_op_is_read                                // incr because of read
                              | isu_op_is_write_back);                        // incr because of write back
