@@ -15,6 +15,7 @@ def main():
   offset = 0
   tag = 0
   op = 1
+  data = 0
 
   for k in range(2):
     #write and read
@@ -23,8 +24,9 @@ def main():
     for i in range(max_offset_num):
       # tag loop
       for j in range(max_way_num):
-        hex = mcash_req_hex(tag, 0, 0, offset, (i+1)*j, op)
+        hex = mcash_req_hex(tag, 0, 0, offset, data, op)
         print(hex)
+        data = data + 1
         tag = tag + 1
       tag = 0
       offset = offset + 1

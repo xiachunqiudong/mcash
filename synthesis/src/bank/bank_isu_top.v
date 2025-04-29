@@ -41,7 +41,7 @@ module bank_isu_top (
 
   wire         htu_req_cacheline_inflight;
   wire         htu_req_need_linefill_WV;
-  wire         htu_isu_kickoff;
+  wire         rob_id_gen_kickoff;
   wire [2:0]   isu_rob_id;
   wire [7:0]   htu_isu_linefill_set_dcd;
   wire [7:0]   htu_isu_linefill_way_dcd;
@@ -110,8 +110,9 @@ module bank_isu_top (
 //                            ISU: issue queue
 //-------------------------------------------------------------------------
 
-  // push req into issue queue
-  assign htu_isu_kickoff = htu_isu_valid_i & htu_isu_allowIn_o;
+// generate rob num:
+// only need generate rob id when operand is read.
+  assign rob_id_gen_kickoff = htu_isu_valid_i & htu_isu_allowIn_o & ~htu_isu_opcode_i[0];
 
   rob_id_gen #(
     .ID_WIDTH(3)
@@ -119,7 +120,7 @@ module bank_isu_top (
     .clk_i    (clk_i               ),
     .rst_i    (rst_i               ),
     .ch_id_i  (htu_isu_ch_id_i[1:0]),
-    .kickoff_i(htu_isu_kickoff     ),
+    .kickoff_i(rob_id_gen_kickoff  ),
     .rob_id_o (isu_rob_id[2:0]     )
   );
 
