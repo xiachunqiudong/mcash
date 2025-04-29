@@ -1,6 +1,6 @@
 
 
-PTR_WIDTH = 4
+PTR_WIDTH = 8
 DEPTH = 1 << PTR_WIDTH
 
 def main():
@@ -41,7 +41,7 @@ def main():
         if (i == 0):
             print(f"  assign shift_valid_array[{DEPTH-1}:0] = {{{DEPTH}{{bottom_ptr_i[{PTR_WIDTH-1}:0] == {PTR_WIDTH}'d{i}}}}} & valid_array_i[{DEPTH-1}:0]")
         else:
-            print(f"                                 | {{{DEPTH}{{bottom_ptr_i[{PTR_WIDTH-1}:0] == {PTR_WIDTH}'d{i}}}}} & " + expr_list[i])
+            print(f"                                  | {{{DEPTH}{{bottom_ptr_i[{PTR_WIDTH-1}:0] == {PTR_WIDTH}'d{i}}}}} & " + expr_list[i])
 
 
     print("")

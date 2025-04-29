@@ -33,6 +33,8 @@ module bank_isu_iq #(
 
   parameter DEPTH = 1 << PTR_WIDTH;
 
+  wire                 queue_size_wen;
+  wire [PTR_WIDTH:0]   queue_size_In;
   reg  [PTR_WIDTH:0]   queue_size_Q;
   wire                 issue_kickoff;
   wire [PTR_WIDTH-1:0] readPtr_In;
@@ -61,9 +63,8 @@ module bank_isu_iq #(
   reg [DEPTH-1:0]      mshr_allow_array_validate;
   reg [DEPTH-1:0]      mshr_allow_array_In;
   reg [DEPTH-1:0]      mshr_allow_array_Q;
-  reg [DEPTH-1:0]      credit_allow_array_In;
-  reg [DEPTH-1:0]      credit_allow_array_Q;
   wire [DEPTH-1:0]     execute_array;
+  wire                 bottom_ptr_kickoff;
   reg  [PTR_WIDTH-1:0] bottom_ptr_In;
   reg  [PTR_WIDTH-1:0] bottom_ptr_Q;
   wire [PTR_WIDTH-1:0] select_ptr;
@@ -72,18 +73,28 @@ module bank_isu_iq #(
   wire                 select_is_write;
 
 
-  assign req_allowIn_o = queue_size_Q[PTR_WIDTH:0] != DEPTH[PTR_WIDTH:0];
+// queue size
+  assign queue_size_wen = writePtr_kickoff | bottom_ptr_kickoff;
 
-  assign writePtr_kickoff = req_valid_i & req_allowIn_o;
+  assign queue_size_In[PTR_WIDTH:0] =  writePtr_kickoff & ~bottom_ptr_kickoff ? queue_size_Q[PTR_WIDTH:0] + 'd1
+                                    : ~writePtr_kickoff &  bottom_ptr_kickoff ? queue_size_Q[PTR_WIDTH:0] - 'd1
+                                    :                                           queue_size_Q[PTR_WIDTH:0];
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
       queue_size_Q[PTR_WIDTH:0] <= 'd0;
     end
-    else if (writePtr_kickoff) begin
-      queue_size_Q[PTR_WIDTH:0] <= queue_size_Q[PTR_WIDTH-1:0] + 'd1;
+    else if (queue_size_wen) begin
+      queue_size_Q[PTR_WIDTH:0] <= queue_size_In[PTR_WIDTH:0];
     end
   end
+
+  assign req_allowIn_o = queue_size_Q[PTR_WIDTH:0] != DEPTH[PTR_WIDTH:0];
+
+//-----------------------------------------------------------------
+//                   issue queue enqueue
+//-----------------------------------------------------------------
+  assign writePtr_kickoff = req_valid_i & req_allowIn_o;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
@@ -141,7 +152,6 @@ module bank_isu_iq #(
     // update value
     iq_op_is_write_array_In[writePtr_Q]   = req_opcode_i[0];
     iq_need_linefill_array_In[writePtr_Q] = req_need_linefill_i;
-    
   end
 
   always @(*) begin
@@ -204,10 +214,15 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
 //                     Dequeue
 //--------------------------------------------------------------
+  assign bottom_ptr_kickoff = queue_size_Q != 'd0
+                            & ~valid_array_Q[bottom_ptr_Q];
 
   always @(posedge clk_i or rst_i) begin
     if (rst_i) begin
       bottom_ptr_Q[PTR_WIDTH-1:0] <= 'd0;
+    end
+    else if (bottom_ptr_kickoff) begin
+      bottom_ptr_Q[PTR_WIDTH-1:0] <= bottom_ptr_Q[PTR_WIDTH-1:0] + 'd1;
     end
   end
 
