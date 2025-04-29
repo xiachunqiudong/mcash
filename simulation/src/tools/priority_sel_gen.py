@@ -50,9 +50,9 @@ def main():
         if (i == 0):
             print(f"  assign select_ptr_o[{PTR_WIDTH-1}:0] = shift_valid_array[0] ? bottom_ptr_i[{PTR_WIDTH-1}:0]")
         elif (i <= DEPTH - 1):
-            print(f"                           : shift_valid_array[{i}] ? bottom_ptr_i[{PTR_WIDTH-1}:0] + {DEPTH}'d{i}")
+            print(f"                           : shift_valid_array[{i}] ? bottom_ptr_i[{PTR_WIDTH-1}:0] + {PTR_WIDTH}'d{i}")
         else:
-            print(f"                           : {DEPTH}'d0;")
+            print(f"                           : {PTR_WIDTH}'d0;")
 
     print("endmodule")
 

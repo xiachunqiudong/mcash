@@ -39,3 +39,4 @@ $MCASH_HOME/synthesis/src/cross_bar/cross_bar_top.v
 $MCASH_HOME/synthesis/src/commons/amba_axi_m4s4.v
 $MCASH_HOME/synthesis/src/commons/priority_aribiter.v
 $MCASH_HOME/synthesis/src/commons/shift_priority_arb.v
+$MCASH_HOME/synthesis/src/commons/shift_priority_arb_256.v
