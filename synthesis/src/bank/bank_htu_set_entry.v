@@ -18,6 +18,7 @@ module bank_htu_set_entry (
 
   wire [7:0]   cacheline_hit_array;
   wire [7:0]   cacheline_allocate_array;
+  wire [7:0]   cacheline_allocate_array_WV;
   wire [7:0]   access_way_array;
   wire [7:0]   cacheline_valid_array;
   wire [1:0]   allocate_cacheline_offset0_state;
@@ -113,6 +114,9 @@ module bank_htu_set_entry (
                            | {3{access_way_array[6]}} & 3'd6
                            | {3{access_way_array[7]}} & 3'd7;
 
+  assign cacheline_allocate_array_WV[7:0] = cacheline_allocate_array[7:0] & {8{~cacheline_hit_o & set_hit_WV_i}};
+
+
 //--------------------------------------------------------------
 //                     Cache line state
 //--------------------------------------------------------------
@@ -131,7 +135,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[0]     ),
     .cacheline_tag_o     (cacheline0_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[0]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[0]  ),
     .cacheline_hit_o     (cacheline_hit_array[0]       ),
     .offset0_state_o     (cacheline0_offset0_state[1:0]),
     .offset1_state_o     (cacheline0_offset1_state[1:0])
@@ -151,7 +155,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[1]     ),
     .cacheline_tag_o     (cacheline1_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[1]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[1]  ),
     .cacheline_hit_o     (cacheline_hit_array[1]       ),
     .offset0_state_o     (cacheline1_offset0_state[1:0]),
     .offset1_state_o     (cacheline1_offset1_state[1:0])
@@ -171,7 +175,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[2]     ),
     .cacheline_tag_o     (cacheline2_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[2]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[2]  ),
     .cacheline_hit_o     (cacheline_hit_array[2]       ),
     .offset0_state_o     (cacheline2_offset0_state[1:0]),
     .offset1_state_o     (cacheline2_offset1_state[1:0])
@@ -191,7 +195,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[3]     ),
     .cacheline_tag_o     (cacheline3_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[3]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[3]  ),
     .cacheline_hit_o     (cacheline_hit_array[3]       ),
     .offset0_state_o     (cacheline3_offset0_state[1:0]),
     .offset1_state_o     (cacheline3_offset1_state[1:0])
@@ -211,7 +215,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[4]     ),
     .cacheline_tag_o     (cacheline4_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[4]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[4]  ),
     .cacheline_hit_o     (cacheline_hit_array[4]       ),
     .offset0_state_o     (cacheline4_offset0_state[1:0]),
     .offset1_state_o     (cacheline4_offset1_state[1:0])
@@ -231,7 +235,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[5]     ),
     .cacheline_tag_o     (cacheline5_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[5]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[5]  ),
     .cacheline_hit_o     (cacheline_hit_array[5]       ),
     .offset0_state_o     (cacheline5_offset0_state[1:0]),
     .offset1_state_o     (cacheline5_offset1_state[1:0])
@@ -251,7 +255,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[6]     ),
     .cacheline_tag_o     (cacheline6_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[6]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[6]  ),
     .cacheline_hit_o     (cacheline_hit_array[6]       ),
     .offset0_state_o     (cacheline6_offset0_state[1:0]),
     .offset1_state_o     (cacheline6_offset1_state[1:0])
@@ -271,7 +275,7 @@ module bank_htu_set_entry (
     .access_tag_i        (access_tag_i[31:10]          ),
     .cacheline_valid_o   (cacheline_valid_array[7]     ),
     .cacheline_tag_o     (cacheline7_tag[31:10]        ),
-    .cacheline_allocate_i(cacheline_allocate_array[7]  ),
+    .cacheline_allocate_i(cacheline_allocate_array_WV[7]  ),
     .cacheline_hit_o     (cacheline_hit_array[7]       ),
     .offset0_state_o     (cacheline7_offset0_state[1:0]),
     .offset1_state_o     (cacheline7_offset1_state[1:0])

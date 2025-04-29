@@ -14,17 +14,22 @@ def mcash_req_hex(tag, cache_bank, cache_set, offset, data, op):
 def main():
   offset = 0
   tag = 0
+  op = 1
 
-  #set loop
-  for i in range(max_offset_num):
-    # tag loop
-    for j in range(max_way_num):
-      hex = mcash_req_hex(tag, 0, 0, offset, (i+1)*j, 1)
-      print(hex)
-      tag = tag + 1
-
-    tag = 0
-    offset = offset + 1
+  for k in range(2):
+    #write and read
+    offset = 0
+    #set loop
+    for i in range(max_offset_num):
+      # tag loop
+      for j in range(max_way_num):
+        hex = mcash_req_hex(tag, 0, 0, offset, (i+1)*j, op)
+        print(hex)
+        tag = tag + 1
+      tag = 0
+      offset = offset + 1
+    
+    op = op - 1
 
 if __name__ == "__main__":
   main()
