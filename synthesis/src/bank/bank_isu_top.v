@@ -39,6 +39,7 @@ module bank_isu_top (
   input  wire [2:0]   xbar_isu_ch2_credit
 );
 
+  wire         htu_isu_kickoff;
   wire         htu_req_cacheline_inflight;
   wire         htu_req_need_linefill_WV;
   wire         rob_id_gen_kickoff;
@@ -49,6 +50,8 @@ module bank_isu_top (
   wire [7:0]   biu_isu_way_dcd;
   wire [5:0]   linefill_buffer_raddr;
   wire [255:0] linefill_buffer_rdata;
+
+  assign htu_isu_kickoff = htu_isu_valid_i & htu_isu_allowIn_o;
 
 //-------------------------------------------------------------------------
 //                            In-flight array
@@ -91,7 +94,7 @@ module bank_isu_top (
                                  biu_isu_rid_i[2:0] == 3'd1,
                                  biu_isu_rid_i[2:0] == 3'd0};
 
-  assign htu_req_need_linefill_WV = htu_isu_need_linefill_i & htu_isu_valid_i;
+  assign htu_req_need_linefill_WV = htu_isu_kickoff & htu_isu_need_linefill_i;
 
   bank_isu_inflight_array
   isu_inflight_array (
@@ -112,7 +115,7 @@ module bank_isu_top (
 
 // generate rob num:
 // only need generate rob id when operand is read.
-  assign rob_id_gen_kickoff = htu_isu_valid_i & htu_isu_allowIn_o & ~htu_isu_opcode_i[0];
+  assign rob_id_gen_kickoff = htu_isu_kickoff & ~htu_isu_opcode_i[0];
 
   rob_id_gen #(
     .ID_WIDTH(3)
@@ -125,7 +128,7 @@ module bank_isu_top (
   );
 
   bank_isu_iq #(
-    .PTR_WIDTH(4)
+    .PTR_WIDTH(8)
   ) u_isu_iq (
     .clk_i                          (clk_i                                 ),
     .rst_i                          (rst_i                                 ),

@@ -1,4 +1,4 @@
-module shift_priority_arb (
+module shift_priority_arb_256 (
   input  wire [255:0] valid_array_i,
   input  wire [7:0] bottom_ptr_i,
   output wire [7:0] select_ptr_o

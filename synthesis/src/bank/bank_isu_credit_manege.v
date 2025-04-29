@@ -1,17 +1,19 @@
 module bank_isu_credit_manage #(
   parameter CHANNEL_NUM = 3,
-  parameter PTR_WIDTH   = 6,
+  parameter PTR_WIDTH   = 8,
   parameter DEPTH       = 1 << PTR_WIDTH
 )(
-  input  wire                 clk,
-  input  wire                 rst,
-  input  wire                 iq_enqueue,
-  input  wire                 htu_op_is_read,
-  input  wire [1:0]           htu_ch_id,
-  input  wire [PTR_WIDTH-1:0] iq_write_ptr,
-  input  wire [PTR_WIDTH-1:0] iq_bottom_ptr,
-  input  wire [DEPTH-1:0]     iq_valid_array,
-  output wire [DEPTH-1:0]     credit_allow_array
+  input  wire                   clk,
+  input  wire                   rst,
+  input  wire                   iq_enqueue,
+  input  wire [PTR_WIDTH-1:0]   iq_write_ptr,
+  input  wire                   htu_op_is_read,
+  input  wire [1:0]             htu_ch_id,
+  input  wire [PTR_WIDTH-1:0]   iq_bottom_ptr,
+  input  wire [DEPTH-1:0]       iq_valid_array,
+  input  wire [1:0]             ch_id_array [DEPTH-1:0],
+  output wire [DEPTH-1:0]       credit_allow_array,
+  input  wire [CHANNEL_NUM-1:0] channels_credit_release
 );
 
 //------------------------------------------------------------
@@ -24,17 +26,83 @@ module bank_isu_credit_manage #(
   reg  [DEPTH-1:0]     credit_allow_array_Q;
   wire [DEPTH-1:0]     iq_no_credit_array;
 
-  wire [DEPTH-1:0]     channel_no_credit_array     [CHANNEL_NUM-1:0];
-  wire [PTR_WIDTH-1:0] channel_credit_allocate_ptr [CHANNEL_NUM-1:0];
-  wire [3:0]           channels_credit_num_Q       [CHANNEL_NUM-1:0];
-  wire [PTR_WIDTH:0]   channels_pending_inst_num_Q [CHANNEL_NUM-1:0];
+  reg  [DEPTH-1:0]       channel_no_credit_array      [CHANNEL_NUM-1:0];
+  wire [PTR_WIDTH-1:0]   channel_credit_allocate_ptr  [CHANNEL_NUM-1:0];
+  wire [CHANNEL_NUM-1:0] channels_credit_allocate;
+  reg  [3:0]             channels_credit_num_In       [CHANNEL_NUM-1:0];
+  reg  [3:0]             channels_credit_num_Q        [CHANNEL_NUM-1:0];
+  reg  [PTR_WIDTH:0]     channels_pending_inst_num_In [CHANNEL_NUM-1:0];
+  reg  [PTR_WIDTH:0]     channels_pending_inst_num_Q  [CHANNEL_NUM-1:0];
 
   wire [CHANNEL_NUM-1:0] channels_has_credit;
   wire [CHANNEL_NUM-1:0] channels_has_pending_inst;
 
+  genvar CHANNEL;
+
+//------------------------------------------------------------
+//                  Channel credit num
+//------------------------------------------------------------
+  generate
+    for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
+
+      assign channels_credit_allocate[CHANNEL] = channels_has_credit[CHANNEL]
+                                               & (   channels_has_pending_inst[CHANNEL]
+                                                   | iq_enqueue & htu_op_is_read & (htu_ch_id[1:0] == CHANNEL[1:0])
+                                                 );
+
+      always @(*) begin
+        channels_credit_num_In[CHANNEL] = channels_credit_num_Q[CHANNEL];
+        if (channels_credit_allocate[CHANNEL]) begin
+          channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] - 'd1;
+        end
+        if (channels_credit_release[CHANNEL]) begin
+          channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] + 'd1;
+        end
+      end
+
+      always @(posedge clk or posedge rst) begin
+        if (rst) begin
+          channels_credit_num_Q[CHANNEL] <= 'd8;
+        end
+        else begin
+          channels_credit_num_Q[CHANNEL] <= channels_credit_num_In[CHANNEL];
+        end
+      end
+
+    end
+  endgenerate
+
+//------------------------------------------------------------
+//                  Channel pending num
+//------------------------------------------------------------
+  generate
+    for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
+
+      always @(*) begin
+        channels_pending_inst_num_In[CHANNEL] = channels_pending_inst_num_Q[CHANNEL];
+        // if (channels_credit_allocate[CHANNEL]) begin
+        //   channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] - 'd1;
+        // end
+        // if (channels_credit_release[CHANNEL]) begin
+        //   channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] + 'd1;
+        // end
+      end
+
+      always @(posedge clk or posedge rst) begin
+        if (rst) begin
+          channels_pending_inst_num_Q[CHANNEL] <= 'd0;
+        end
+        else begin
+          channels_pending_inst_num_Q[CHANNEL] <= channels_pending_inst_num_In[CHANNEL];
+        end
+      end
+
+    end
+  endgenerate
+
   assign iq_no_credit_array[DEPTH-1:0] = ~credit_allow_array_Q[DEPTH-1:0] & iq_valid_array[DEPTH-1:0];
 
-  genvar CHANNEL;
+
 
   generate
     for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
@@ -82,6 +150,11 @@ module bank_isu_credit_manage #(
     if (iq_enqueue) begin
       credit_allow_array_In[iq_write_ptr] = enqueue_inst_has_credit;
     end
+    for (int i = 0; i < CHANNEL_NUM; i++) begin
+      if (channels_has_pending_inst[i]) begin
+        credit_allow_array_In[channel_credit_allocate_ptr[i]] = 1'b1;
+      end
+    end
   end
 
   always @(posedge clk or posedge rst) begin
@@ -92,5 +165,8 @@ module bank_isu_credit_manage #(
       credit_allow_array_Q <= credit_allow_array_In;
     end
   end
+
+  assign credit_allow_array = credit_allow_array_Q;
+
 
 endmodule

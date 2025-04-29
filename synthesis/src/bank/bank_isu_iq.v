@@ -1,5 +1,5 @@
 module bank_isu_iq #(
-  parameter PTR_WIDTH = 6
+  parameter PTR_WIDTH = 8
 )(
   input  wire         clk_i,
   input  wire         rst_i,
@@ -54,15 +54,16 @@ module bank_isu_iq #(
   reg                  iq_need_evit_array_Q     [DEPTH-1:0];
   reg                  iq_need_linefill_array_In[DEPTH-1:0];
   reg                  iq_need_linefill_array_Q [DEPTH-1:0];
-  reg [6:0]            set_way_offset_array_In  [DEPTH-1:0];
-  reg [6:0]            set_way_offset_array_Q   [DEPTH-1:0];
-  reg [6:0]            wbuffer_id_array_In      [DEPTH-1:0];
-  reg [6:0]            wbuffer_id_array_Q       [DEPTH-1:0];
-  reg [3:0]            cacheline_state_array_In [DEPTH-1:0];
-  reg [3:0]            cacheline_state_array_Q  [DEPTH-1:0];
-  reg [DEPTH-1:0]      mshr_allow_array_validate;
-  reg [DEPTH-1:0]      mshr_allow_array_In;
-  reg [DEPTH-1:0]      mshr_allow_array_Q;
+  reg  [6:0]           set_way_offset_array_In  [DEPTH-1:0];
+  reg  [6:0]           set_way_offset_array_Q   [DEPTH-1:0];
+  reg  [6:0]           wbuffer_id_array_In      [DEPTH-1:0];
+  reg  [6:0]           wbuffer_id_array_Q       [DEPTH-1:0];
+  reg  [3:0]           cacheline_state_array_In [DEPTH-1:0];
+  reg  [3:0]           cacheline_state_array_Q  [DEPTH-1:0];
+  reg  [DEPTH-1:0]     mshr_allow_array_validate;
+  reg  [DEPTH-1:0]     mshr_allow_array_In;
+  reg  [DEPTH-1:0]     mshr_allow_array_Q;
+  wire [DEPTH-1:0]     credit_allow_array;
   wire [DEPTH-1:0]     execute_array;
   wire                 bottom_ptr_kickoff;
   reg  [PTR_WIDTH-1:0] bottom_ptr_In;
@@ -212,6 +213,24 @@ module bank_isu_iq #(
   end
 
 //--------------------------------------------------------------
+//                    Credit allow array
+//--------------------------------------------------------------
+  bank_isu_credit_manage
+  u_bank_isu_credit_manage(
+    .clk                (clk_i             ),
+    .rst                (rst_i             ),
+    .iq_enqueue         (writePtr_kickoff  ),
+    .iq_write_ptr       (writePtr_Q        ),
+    .htu_op_is_read     (~req_opcode_i[0]  ),
+    .htu_ch_id          (req_ch_id_i[1:0]  ),
+    .iq_bottom_ptr      (bottom_ptr_Q      ),
+    .iq_valid_array     (valid_array_Q     ),
+    .ch_id_array        (ch_id_array_Q),
+    .credit_allow_array (credit_allow_array),
+    .channels_credit_release()
+  );
+
+//--------------------------------------------------------------
 //                     Dequeue
 //--------------------------------------------------------------
   assign bottom_ptr_kickoff = queue_size_Q != 'd0
@@ -226,9 +245,11 @@ module bank_isu_iq #(
     end
   end
 
-  assign execute_array[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0] & valid_array_Q[DEPTH-1:0];
+  assign execute_array[DEPTH-1:0] = valid_array_Q[DEPTH-1:0]
+                                  & mshr_allow_array_Q[DEPTH-1:0]
+                                  & credit_allow_array[DEPTH-1:0];
 
-  shift_priority_arb
+  shift_priority_arb_256
   u_shift_priority_arb(
     .valid_array_i(execute_array[DEPTH-1:0]),
     .bottom_ptr_i(bottom_ptr_Q[PTR_WIDTH-1:0]),
