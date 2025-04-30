@@ -79,7 +79,11 @@ module cross_bar_top (
   output wire         bank3_sc_xbar_allowIn_o,
   input  wire [1:0]   bank3_sc_xbar_ch_id_i,
   input  wire [2:0]   bank3_sc_xbar_rob_num_i,
-  input  wire [127:0] bank3_sc_xbar_data_i
+  input  wire [127:0] bank3_sc_xbar_data_i,
+  output wire [2:0]   bank0_channel_spw_pop_o,
+  output wire [2:0]   bank1_channel_spw_pop_o,
+  output wire [2:0]   bank2_channel_spw_pop_o,
+  output wire [2:0]   bank3_channel_spw_pop_o
 );
 
   wire mcash_ch0_read_req_kickoff;
@@ -139,8 +143,9 @@ module cross_bar_top (
   assign mcash_ch1_read_req_kickoff = mcash_ch1_req_valid_i & mcash_ch1_req_allowIn_o & mcash_ch1_req_op_i == 2'b00;
   assign mcash_ch2_read_req_kickoff = mcash_ch2_req_valid_i & mcash_ch2_req_allowIn_o & mcash_ch2_req_op_i == 2'b00;
 
-  cross_bar_rob
-  ch0_rob(
+  cross_bar_rob #(
+    .CHANNEL_ID(0)
+  ) ch0_rob(
     .clk_i                       (clk_i                       ),
     .rst_i                       (rst_i                       ),
     .mcash_ch0_read_req_kickoff_i(mcash_ch0_read_req_kickoff  ),
@@ -167,9 +172,84 @@ module cross_bar_top (
     .bank3_sc_xbar_data_i        (bank3_sc_xbar_data_i[127:0] ),
     .ch_rtn_data_valid_o         (mcash_ch0_rtn_valid_o       ),
     .ch_rtn_data_ready_i         (mcash_ch0_rtn_ready_i       ),
-    .ch_rtn_data_o               (mcash_ch0_rtn_data_o[127:0] )
+    .ch_rtn_data_o               (mcash_ch0_rtn_data_o[127:0] ),
+    .bank0_spw_buffer_pop_o      (bank0_channel_spw_pop_o[0]  ),
+    .bank1_spw_buffer_pop_o      (bank1_channel_spw_pop_o[0]  ),
+    .bank2_spw_buffer_pop_o      (bank2_channel_spw_pop_o[0]  ),
+    .bank3_spw_buffer_pop_o      (bank3_channel_spw_pop_o[0]  )
   );
 
+  cross_bar_rob #(
+    .CHANNEL_ID(1)
+  ) ch1_rob(
+    .clk_i                       (clk_i                       ),
+    .rst_i                       (rst_i                       ),
+    .mcash_ch0_read_req_kickoff_i(mcash_ch1_read_req_kickoff  ),
+    .mcash_ch0_read_req_bank_id_i(mcash_ch1_req_addr_i[9:8]   ),
+    .bank0_sc_xbar_valid_i       (bank0_sc_xbar_valid_i       ),
+    .bank0_sc_xbar_allowIn_o     (bank0_sc_xbar_allowIn_o     ),
+    .bank0_sc_xbar_ch_id_i       (bank0_sc_xbar_ch_id_i[1:0]  ),
+    .bank0_sc_xbar_rob_num_i     (bank0_sc_xbar_rob_num_i[2:0]),
+    .bank0_sc_xbar_data_i        (bank0_sc_xbar_data_i[127:0] ),
+    .bank1_sc_xbar_valid_i       (bank1_sc_xbar_valid_i       ),
+    .bank1_sc_xbar_allowIn_o     (bank1_sc_xbar_allowIn_o     ),
+    .bank1_sc_xbar_ch_id_i       (bank1_sc_xbar_ch_id_i[1:0]  ),
+    .bank1_sc_xbar_rob_num_i     (bank1_sc_xbar_rob_num_i[2:0]),
+    .bank1_sc_xbar_data_i        (bank1_sc_xbar_data_i[127:0] ),
+    .bank2_sc_xbar_valid_i       (bank2_sc_xbar_valid_i       ),
+    .bank2_sc_xbar_allowIn_o     (bank2_sc_xbar_allowIn_o     ),
+    .bank2_sc_xbar_ch_id_i       (bank2_sc_xbar_ch_id_i[1:0]  ),
+    .bank2_sc_xbar_rob_num_i     (bank2_sc_xbar_rob_num_i[2:0]),
+    .bank2_sc_xbar_data_i        (bank2_sc_xbar_data_i[127:0] ),
+    .bank3_sc_xbar_valid_i       (bank3_sc_xbar_valid_i       ),
+    .bank3_sc_xbar_allowIn_o     (bank3_sc_xbar_allowIn_o     ),
+    .bank3_sc_xbar_ch_id_i       (bank3_sc_xbar_ch_id_i[1:0]  ),
+    .bank3_sc_xbar_rob_num_i     (bank3_sc_xbar_rob_num_i[2:0]),
+    .bank3_sc_xbar_data_i        (bank3_sc_xbar_data_i[127:0] ),
+    .ch_rtn_data_valid_o         (mcash_ch1_rtn_valid_o       ),
+    .ch_rtn_data_ready_i         (mcash_ch1_rtn_ready_i       ),
+    .ch_rtn_data_o               (mcash_ch1_rtn_data_o[127:0] ),
+    .bank0_spw_buffer_pop_o      (bank0_channel_spw_pop_o[1]  ),
+    .bank1_spw_buffer_pop_o      (bank1_channel_spw_pop_o[1]  ),
+    .bank2_spw_buffer_pop_o      (bank2_channel_spw_pop_o[1]  ),
+    .bank3_spw_buffer_pop_o      (bank3_channel_spw_pop_o[1]  )
+  );
+
+  cross_bar_rob #(
+    .CHANNEL_ID(2)
+  ) ch2_rob(
+    .clk_i                       (clk_i                       ),
+    .rst_i                       (rst_i                       ),
+    .mcash_ch0_read_req_kickoff_i(mcash_ch2_read_req_kickoff  ),
+    .mcash_ch0_read_req_bank_id_i(mcash_ch2_req_addr_i[9:8]   ),
+    .bank0_sc_xbar_valid_i       (bank0_sc_xbar_valid_i       ),
+    .bank0_sc_xbar_allowIn_o     (bank0_sc_xbar_allowIn_o     ),
+    .bank0_sc_xbar_ch_id_i       (bank0_sc_xbar_ch_id_i[1:0]  ),
+    .bank0_sc_xbar_rob_num_i     (bank0_sc_xbar_rob_num_i[2:0]),
+    .bank0_sc_xbar_data_i        (bank0_sc_xbar_data_i[127:0] ),
+    .bank1_sc_xbar_valid_i       (bank1_sc_xbar_valid_i       ),
+    .bank1_sc_xbar_allowIn_o     (bank1_sc_xbar_allowIn_o     ),
+    .bank1_sc_xbar_ch_id_i       (bank1_sc_xbar_ch_id_i[1:0]  ),
+    .bank1_sc_xbar_rob_num_i     (bank1_sc_xbar_rob_num_i[2:0]),
+    .bank1_sc_xbar_data_i        (bank1_sc_xbar_data_i[127:0] ),
+    .bank2_sc_xbar_valid_i       (bank2_sc_xbar_valid_i       ),
+    .bank2_sc_xbar_allowIn_o     (bank2_sc_xbar_allowIn_o     ),
+    .bank2_sc_xbar_ch_id_i       (bank2_sc_xbar_ch_id_i[1:0]  ),
+    .bank2_sc_xbar_rob_num_i     (bank2_sc_xbar_rob_num_i[2:0]),
+    .bank2_sc_xbar_data_i        (bank2_sc_xbar_data_i[127:0] ),
+    .bank3_sc_xbar_valid_i       (bank3_sc_xbar_valid_i       ),
+    .bank3_sc_xbar_allowIn_o     (bank3_sc_xbar_allowIn_o     ),
+    .bank3_sc_xbar_ch_id_i       (bank3_sc_xbar_ch_id_i[1:0]  ),
+    .bank3_sc_xbar_rob_num_i     (bank3_sc_xbar_rob_num_i[2:0]),
+    .bank3_sc_xbar_data_i        (bank3_sc_xbar_data_i[127:0] ),
+    .ch_rtn_data_valid_o         (mcash_ch2_rtn_valid_o       ),
+    .ch_rtn_data_ready_i         (mcash_ch2_rtn_ready_i       ),
+    .ch_rtn_data_o               (mcash_ch2_rtn_data_o[127:0] ),
+    .bank0_spw_buffer_pop_o      (bank0_channel_spw_pop_o[2]  ),
+    .bank1_spw_buffer_pop_o      (bank1_channel_spw_pop_o[2]  ),
+    .bank2_spw_buffer_pop_o      (bank2_channel_spw_pop_o[2]  ),
+    .bank3_spw_buffer_pop_o      (bank3_channel_spw_pop_o[2]  )
+  );
 
   assign bank0_sc_xbar_allowIn_o = 1'b1;
   assign bank1_sc_xbar_allowIn_o = 1'b1;

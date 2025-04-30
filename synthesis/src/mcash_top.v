@@ -202,6 +202,10 @@ module mcash_top (
   wire [1:0]   bank3_sc_xbar_ch_id;
   wire [2:0]   bank3_sc_xbar_rob_num;
   wire [127:0] bank3_sc_xbar_data;
+  wire [2:0]   bank0_spw_buffer_pop;
+  wire [2:0]   bank1_spw_buffer_pop;
+  wire [2:0]   bank2_spw_buffer_pop;
+  wire [2:0]   bank3_spw_buffer_pop;
 
 //------------------------------------------------------------------
 //                        Cross Bar
@@ -295,7 +299,11 @@ module mcash_top (
     .bank3_sc_xbar_allowIn_o    (bank3_sc_xbar_allowIn         ),
     .bank3_sc_xbar_ch_id_i      (bank3_sc_xbar_ch_id[1:0]      ),
     .bank3_sc_xbar_rob_num_i    (bank3_sc_xbar_rob_num[2:0]    ),
-    .bank3_sc_xbar_data_i       (bank3_sc_xbar_data[127:0]     )
+    .bank3_sc_xbar_data_i       (bank3_sc_xbar_data[127:0]     ),
+    .bank0_channel_spw_pop_o    (bank0_spw_buffer_pop[2:0]     ),
+    .bank1_channel_spw_pop_o    (bank1_spw_buffer_pop[2:0]     ),
+    .bank2_channel_spw_pop_o    (bank2_spw_buffer_pop[2:0]     ),
+    .bank3_channel_spw_pop_o    (bank3_spw_buffer_pop[2:0]     )
   );
 
 //------------------------------------------------------------------
@@ -354,6 +362,10 @@ module mcash_top (
     .bank3_sc_xbar_ch_id_o      (bank3_sc_xbar_ch_id[1:0]      ),
     .bank3_sc_xbar_rob_num_o    (bank3_sc_xbar_rob_num[2:0]    ),
     .bank3_sc_xbar_data_o       (bank3_sc_xbar_data[127:0]     ),
+    .bank0_spw_buffer_pop_i     (bank0_spw_buffer_pop[2:0]     ),
+    .bank1_spw_buffer_pop_i     (bank1_spw_buffer_pop[2:0]     ),
+    .bank2_spw_buffer_pop_i     (bank2_spw_buffer_pop[2:0]     ),
+    .bank3_spw_buffer_pop_i     (bank3_spw_buffer_pop[2:0]     ),
     // bank0 AXI3 
     .bank0_biu_axi3_arvalid_o   (bank0_biu_axi3_arvalid_o      ),
     .bank0_biu_axi3_arready_i   (bank0_biu_axi3_arready_i      ),

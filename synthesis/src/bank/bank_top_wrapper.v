@@ -53,6 +53,11 @@ module bank_top_wrapper(
   output wire [1:0]   bank3_sc_xbar_ch_id_o,
   output wire [2:0]   bank3_sc_xbar_rob_num_o,
   output wire [127:0] bank3_sc_xbar_data_o,
+  // spw >> credir manage
+  input  wire [2:0]   bank0_spw_buffer_pop_i,
+  input  wire [2:0]   bank1_spw_buffer_pop_i,
+  input  wire [2:0]   bank2_spw_buffer_pop_i,
+  input  wire [2:0]   bank3_spw_buffer_pop_i,
   // bank0 AXI3 
   output wire         bank0_biu_axi3_arvalid_o,
   input  wire         bank0_biu_axi3_arready_i,

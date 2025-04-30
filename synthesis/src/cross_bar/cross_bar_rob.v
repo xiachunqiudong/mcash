@@ -27,7 +27,11 @@ module cross_bar_rob #(
   input  wire [127:0] bank3_sc_xbar_data_i,
   output wire         ch_rtn_data_valid_o,
   output wire         ch_rtn_data_ready_i,
-  output wire [127:0] ch_rtn_data_o
+  output wire [127:0] ch_rtn_data_o,
+  output wire         bank0_spw_buffer_pop_o,
+  output wire         bank1_spw_buffer_pop_o,
+  output wire         bank2_spw_buffer_pop_o,
+  output wire         bank3_spw_buffer_pop_o
 );
   
 
@@ -213,5 +217,10 @@ module cross_bar_rob #(
                               | {128{kof_use_bank1}} & bank1_spw_buffer_rdata[127:0]
                               | {128{kof_use_bank2}} & bank2_spw_buffer_rdata[127:0]
                               | {128{kof_use_bank3}} & bank3_spw_buffer_rdata[127:0];
+
+  assign bank0_spw_buffer_pop_o = bank0_spw_buffer_ren;
+  assign bank1_spw_buffer_pop_o = bank1_spw_buffer_ren;
+  assign bank2_spw_buffer_pop_o = bank2_spw_buffer_ren;
+  assign bank3_spw_buffer_pop_o = bank3_spw_buffer_ren;
 
 endmodule
