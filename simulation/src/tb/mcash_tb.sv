@@ -34,10 +34,15 @@ module mcash_tb;
   end
 
   integer i;
-  reg [162:0] code_list [99:0];
+  parameter N = 100;
+
+  reg [162:0] code_list [N-1:0];
 
   initial begin
     i = 0;
+    for (int i = 0; i < N; i = i + 1) begin
+      code_list[N] = 0;
+    end
     $readmemb(code_file, code_list);
   end
 
@@ -340,13 +345,23 @@ module mcash_tb;
   end
 
   always @(posedge clk) begin
-    if (mcash_ch0_req_allowIn) begin
-      mcash_ch0_req_valid       <= 1'b1;
-      mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
-      mcash_ch0_req_data[127:0] <= code_list[i][159:32];
-      mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
-      i++;
+    
+    if (i < 32) begin
+      if (mcash_ch0_req_allowIn) begin
+        mcash_ch0_req_valid       <= 1'b1;
+        mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
+        mcash_ch0_req_data[127:0] <= code_list[i][159:32];
+        mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
+        i++;
+      end
     end
+    else begin
+      mcash_ch0_req_valid       <= '0;
+      mcash_ch0_req_op[2:0]     <= '0;
+      mcash_ch0_req_data[127:0] <= '0;
+      mcash_ch0_req_addr[31:4]  <= '0;
+    end
+  
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
       mcash_ch1_req_addr[31:4] <= 28'b10;
     end
@@ -971,7 +986,7 @@ module mcash_tb;
   end
 
   initial begin
-    #10000
+    #100000
     $fsdbDumpoff;
     $finish;
   end

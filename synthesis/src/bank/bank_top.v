@@ -13,6 +13,7 @@ module bank_top(
   output wire [1:0]   bank_sc_xbar_ch_id_o,
   output wire [2:0]   bank_sc_xbar_rob_num_o,
   output wire [127:0] bank_sc_xbar_data_o,
+  input  wire [2:0]   channel_spw_pop_i,
   output wire         biu_axi3_arvalid_o,
   input  wire         biu_axi3_arready_i,
   output wire [5:0]   biu_axi3_arid_o,
@@ -168,9 +169,7 @@ module bank_top(
     .isu_sc_cacheline_dirty_offset1_o (isu_sc_cacheline_dirty_offset1[1:0] ),
     .isu_sc_linefill_data_offset0_o   (isu_sc_linefill_data_offset0[127:0] ),
     .isu_sc_linefill_data_offset1_o   (isu_sc_linefill_data_offset1[127:0] ),
-    .xbar_isu_ch0_credit              (),
-    .xbar_isu_ch1_credit              (),
-    .xbar_isu_ch2_credit              ()
+    .channel_spw_pop_i                (channel_spw_pop_i[2:0]              )
   );
 
 //---------------------------------------------------------------------------------

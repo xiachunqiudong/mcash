@@ -28,7 +28,8 @@ module bank_isu_iq #(
   output wire [1:0]   iq_sc_cacheline_state_offset0_o,
   output wire [1:0]   iq_sc_cacheline_state_offset1_o,
   output wire [127:0] iq_sc_linefill_data_offset0_o,
-  output wire [127:0] iq_sc_linefill_data_offset1_o
+  output wire [127:0] iq_sc_linefill_data_offset1_o,
+  input  wire [2:0]   channel_spw_pop_i
 );
 
   parameter DEPTH = 1 << PTR_WIDTH;
@@ -215,19 +216,20 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
 //                    Credit allow array
 //--------------------------------------------------------------
-  bank_isu_credit_manage
-  u_bank_isu_credit_manage(
-    .clk                (clk_i             ),
-    .rst                (rst_i             ),
-    .iq_enqueue         (writePtr_kickoff  ),
-    .iq_write_ptr       (writePtr_Q        ),
-    .htu_op_is_read     (~req_opcode_i[0]  ),
-    .htu_ch_id          (req_ch_id_i[1:0]  ),
-    .iq_bottom_ptr      (bottom_ptr_Q      ),
-    .iq_valid_array     (valid_array_Q     ),
-    .ch_id_array        (ch_id_array_Q),
-    .credit_allow_array (credit_allow_array),
-    .channels_credit_release()
+  bank_isu_credit_manage #(
+    .PTR_WIDTH(PTR_WIDTH)
+  ) u_bank_isu_credit_manage(
+    .clk                    (clk_i                        ),
+    .rst                    (rst_i                        ),
+    .iq_enqueue             (writePtr_kickoff             ),
+    .iq_write_ptr           (writePtr_Q                   ),
+    .htu_op_is_read         (~req_opcode_i[0]             ),
+    .htu_ch_id              (req_ch_id_i[1:0]             ),
+    .iq_bottom_ptr          (bottom_ptr_Q                 ),
+    .iq_valid_array         (valid_array_Q[DEPTH-1:0]     ),
+    .ch_id_array            (ch_id_array_Q[DEPTH-1:0]     ),
+    .credit_allow_array     (credit_allow_array[DEPTH-1:0]),
+    .channels_credit_release(channel_spw_pop_i[2:0]       )
   );
 
 //--------------------------------------------------------------

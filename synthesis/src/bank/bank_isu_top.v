@@ -34,9 +34,7 @@ module bank_isu_top (
   output wire [1:0]   isu_sc_cacheline_dirty_offset1_o,
   output wire [127:0] isu_sc_linefill_data_offset0_o,
   output wire [127:0] isu_sc_linefill_data_offset1_o,
-  input  wire [2:0]   xbar_isu_ch0_credit,
-  input  wire [2:0]   xbar_isu_ch1_credit,
-  input  wire [2:0]   xbar_isu_ch2_credit
+  input  wire [2:0]   channel_spw_pop_i
 );
 
   wire         htu_isu_kickoff;
@@ -157,7 +155,8 @@ module bank_isu_top (
     .iq_sc_cacheline_state_offset0_o(isu_sc_cacheline_dirty_offset0_o[1:0] ),
     .iq_sc_cacheline_state_offset1_o(isu_sc_cacheline_dirty_offset1_o[1:0] ),
     .iq_sc_linefill_data_offset0_o  (isu_sc_linefill_data_offset0_o[127:0] ),
-    .iq_sc_linefill_data_offset1_o  (isu_sc_linefill_data_offset1_o[127:0] )
+    .iq_sc_linefill_data_offset1_o  (isu_sc_linefill_data_offset1_o[127:0] ),
+    .channel_spw_pop_i              (channel_spw_pop_i[2:0]                )
   );
 
   bank_isu_linefill_buffer

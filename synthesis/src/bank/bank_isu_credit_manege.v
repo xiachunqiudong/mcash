@@ -29,7 +29,7 @@ module bank_isu_credit_manage #(
   reg  [DEPTH-1:0]       channel_no_credit_array      [CHANNEL_NUM-1:0];
   wire [PTR_WIDTH-1:0]   channel_credit_allocate_ptr  [CHANNEL_NUM-1:0];
   wire [CHANNEL_NUM-1:0] channels_credit_allocate;
-  reg  [3:0]             channels_credit_num_In       [CHANNEL_NUM-1:0];
+  wire [3:0]             channels_credit_num_In       [CHANNEL_NUM-1:0];
   reg  [3:0]             channels_credit_num_Q        [CHANNEL_NUM-1:0];
   reg  [PTR_WIDTH:0]     channels_pending_inst_num_In [CHANNEL_NUM-1:0];
   reg  [PTR_WIDTH:0]     channels_pending_inst_num_Q  [CHANNEL_NUM-1:0];
@@ -50,15 +50,9 @@ module bank_isu_credit_manage #(
                                                    | iq_enqueue & htu_op_is_read & (htu_ch_id[1:0] == CHANNEL[1:0])
                                                  );
 
-      always @(*) begin
-        channels_credit_num_In[CHANNEL] = channels_credit_num_Q[CHANNEL];
-        if (channels_credit_allocate[CHANNEL]) begin
-          channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] - 'd1;
-        end
-        if (channels_credit_release[CHANNEL]) begin
-          channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] + 'd1;
-        end
-      end
+      assign channels_credit_num_In[CHANNEL] =  channels_credit_allocate[CHANNEL] & ~channels_credit_release[CHANNEL] ? channels_credit_num_Q[CHANNEL] - 'd1
+                                             : ~channels_credit_allocate[CHANNEL] &  channels_credit_release[CHANNEL] ? channels_credit_num_Q[CHANNEL] + 'd1
+                                             : channels_credit_num_Q[CHANNEL];
 
       always @(posedge clk or posedge rst) begin
         if (rst) begin
@@ -78,15 +72,7 @@ module bank_isu_credit_manage #(
   generate
     for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
 
-      always @(*) begin
-        channels_pending_inst_num_In[CHANNEL] = channels_pending_inst_num_Q[CHANNEL];
-        // if (channels_credit_allocate[CHANNEL]) begin
-        //   channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] - 'd1;
-        // end
-        // if (channels_credit_release[CHANNEL]) begin
-        //   channels_credit_num_In[CHANNEL] = channels_credit_num_In[CHANNEL] + 'd1;
-        // end
-      end
+      assign channels_pending_inst_num_In[CHANNEL] = channels_pending_inst_num_Q[CHANNEL];
 
       always @(posedge clk or posedge rst) begin
         if (rst) begin
