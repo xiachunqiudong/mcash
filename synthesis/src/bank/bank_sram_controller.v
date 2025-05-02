@@ -15,7 +15,6 @@ module bank_sram_controller(
   input  wire [127:0]  isu_sc_linefill_data_offset1_i,
   // sc >> xbar
   output wire          sc_xbar_valid_o,
-  input  wire          sc_xbar_allowIn_i,
   output wire [1:0]    sc_xbar_channel_id_o,
   output wire [2:0]    sc_xbar_rob_num_o,
   output wire [127:0]  sc_xbar_data_o,
@@ -78,7 +77,6 @@ module bank_sram_controller(
   wire [127:0] sc_data_ram_wdata;
   wire [127:0] sc_data_ram_rdata;
 // sc >> xbar
-  wire         sc_xbar_kickoff;
   wire         sc_send_data_to_xbar_done_wen;
   wire         sc_send_data_to_xbar_done_In;
   reg          sc_send_data_to_xbar_done_Q;
@@ -148,9 +146,7 @@ module bank_sram_controller(
                              | (isu_op_is_read_linefill & ~sc_send_data_to_xbar_done_Q)
                            );
 
-  assign sc_xbar_kickoff = sc_xbar_valid_o & sc_xbar_allowIn_i;
-
-  assign sc_send_data_to_xbar_done_wen = isu_op_is_read_linefill & sc_xbar_kickoff
+  assign sc_send_data_to_xbar_done_wen = isu_op_is_read_linefill & sc_xbar_valid_o
                                        | isu_sc_req_done;
 
   assign sc_send_data_to_xbar_done_In = ~isu_sc_req_done;
@@ -215,10 +211,10 @@ module bank_sram_controller(
 
   assign read_with_linefill_done = isu_op_is_read_linefill
                                  & (~sc_read_sram_twice | (|sram_write_cnt_Q[1:0]))   // sram write done
-                                 & (sc_xbar_kickoff | sc_send_data_to_xbar_done_Q);  // send data to xbar done
+                                 & (sc_xbar_valid_o | sc_send_data_to_xbar_done_Q);  // send data to xbar done
 
   assign isu_sc_write_done     = sc_wbuf_rtn_valid_i;
-  assign isu_sc_read_done      = isu_op_is_read & sc_xbar_kickoff;
+  assign isu_sc_read_done      = isu_op_is_read & sc_xbar_valid_o;
   assign isu_sc_wirteBack_done = 1'b0;
 
   assign isu_sc_req_done = read_with_linefill_done
@@ -308,7 +304,7 @@ module bank_sram_controller(
                                      & ~sram_read_data_bufferB_valid_Q;
 
   assign sram_read_data_bufferB_pop = isu_op_is_read
-                                   & sc_xbar_kickoff;
+                                   & sc_xbar_valid_o;
 
   assign sram_read_data_bufferB_valid_In = sram_read_data_bufferB_push ? 1'b1
                                          : sram_read_data_bufferB_pop  ? 1'b0
