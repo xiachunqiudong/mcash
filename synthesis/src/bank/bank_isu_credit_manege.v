@@ -31,11 +31,15 @@ module bank_isu_credit_manage #(
   wire [CHANNEL_NUM-1:0] channels_credit_allocate;
   wire [3:0]             channels_credit_num_In       [CHANNEL_NUM-1:0];
   reg  [3:0]             channels_credit_num_Q        [CHANNEL_NUM-1:0];
+  wire [CHANNEL_NUM-1:0] channels_has_credit;
+
+  wire [CHANNEL_NUM-1:0] channels_pending_inst_num_allocate;
+  wire [CHANNEL_NUM-1:0] channels_pending_inst_num_release;
   reg  [PTR_WIDTH:0]     channels_pending_inst_num_In [CHANNEL_NUM-1:0];
   reg  [PTR_WIDTH:0]     channels_pending_inst_num_Q  [CHANNEL_NUM-1:0];
-
-  wire [CHANNEL_NUM-1:0] channels_has_credit;
   wire [CHANNEL_NUM-1:0] channels_has_pending_inst;
+
+
 
   genvar CHANNEL;
 
@@ -71,8 +75,16 @@ module bank_isu_credit_manage #(
 //------------------------------------------------------------
   generate
     for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
+    
+      assign channels_pending_inst_num_allocate[CHANNEL] = iq_enqueue & htu_op_is_read & (htu_ch_id[1:0] == CHANNEL[1:0])
+                                                         & ( ~channels_has_credit[CHANNEL] 
+                                                            | channels_has_pending_inst[CHANNEL]);
 
-      assign channels_pending_inst_num_In[CHANNEL] = channels_pending_inst_num_Q[CHANNEL];
+      assign channels_pending_inst_num_release[CHANNEL] = channels_has_credit[CHANNEL] & channels_has_pending_inst[CHANNEL];
+
+      assign channels_pending_inst_num_In[CHANNEL] =  channels_pending_inst_num_allocate[CHANNEL] & ~channels_pending_inst_num_release[CHANNEL] ? channels_pending_inst_num_Q[CHANNEL] + 'd1
+                                                   : ~channels_pending_inst_num_allocate[CHANNEL] &  channels_pending_inst_num_release[CHANNEL] ? channels_pending_inst_num_Q[CHANNEL] - 'd1
+                                                   : channels_pending_inst_num_Q[CHANNEL];
 
       always @(posedge clk or posedge rst) begin
         if (rst) begin
