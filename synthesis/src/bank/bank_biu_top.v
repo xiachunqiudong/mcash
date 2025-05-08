@@ -14,7 +14,7 @@ module bank_biu_top #(
   output wire                  htu_biu_awready_o,
   input  wire [ADDR_WIDTH-1:5] htu_biu_awaddr_i,
   input  wire [5:0]            htu_biu_set_way_i,
-  // sram >> biu
+  // sc >> biu
   input  wire                  sc_biu_valid_i,
   output wire                  sc_biu_ready_o,
   input  wire [127:0]          sc_biu_data_i,
@@ -93,7 +93,9 @@ module bank_biu_top #(
   assign biu_axi3_awlen_o[3:0]             = 4'b0000;
   assign biu_axi3_awsize_o[2:0]            = 3'b101;
   assign biu_axi3_awburst_o[1:0]           = 2'b01;
-  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {htu_biu_araddr_i[ADDR_WIDTH-1:5], 5'b00000};
+  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {htu_biu_awaddr_i[ADDR_WIDTH-1:5], 5'b00000};
+
+  assign htu_biu_awready_o = biu_axi3_awready_i;
 
 //-------------------------------------------------------------------------
 //                             W channel

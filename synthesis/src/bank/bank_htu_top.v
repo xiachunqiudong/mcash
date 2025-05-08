@@ -38,6 +38,7 @@ module bank_htu_top (
   wire         op_is_write;
   wire         op_is_flush;
   wire         op_is_invalidate;
+  wire [1:0]   htu_cacheline_bank;
   wire [2:0]   htu_cacheline_index;
   wire [7:0]   htu_cacheline_index_dcd;
   wire         htu_cacheline_offset;
@@ -99,6 +100,7 @@ module bank_htu_top (
   assign op_is_flush      = xbar_bank_htu_opcode_i[1:0] == 2'b10;
   assign op_is_invalidate = xbar_bank_htu_opcode_i[1:0] == 2'b11;
 
+  assign htu_cacheline_bank[1:0]  = xbar_bank_htu_addr_i[9:8];
   assign htu_cacheline_index[2:0] = xbar_bank_htu_addr_i[7:5];
   assign htu_cacheline_offset     = xbar_bank_htu_addr_i[4];
   assign htu_cacheline_tag[31:10] = xbar_bank_htu_addr_i[31:10];
@@ -119,10 +121,9 @@ module bank_htu_top (
                                     | access_cacheline_offset_state[1:0] == 2'b00 // cacheline hit but empty [E, D]
                                  );
 
-  assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i
-                                 & (~cacheline_need_refill | htu_biu_arready_i); // htu send ar to biu
-
-
+  assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i                             // isu iq is not full
+                                 & (~cacheline_need_refill | htu_biu_arready_i)  // htu send ar to biu
+                                 & (~cacheline_need_evit   | htu_biu_awready_i); // htu send aw to biu
 
 //-------------------------------------------------------------------------
 //                               HTU >> ISU
@@ -145,7 +146,8 @@ module bank_htu_top (
   assign htu_isu_linefill_way_o[2:0] = htu_access_way[2:0];
 
   assign htu_isu_valid_o = xbar_bank_htu_valid_i
-                         & (~cacheline_need_refill | htu_biu_arready_i);
+                         & (~cacheline_need_refill | htu_biu_arready_i)
+                         & (~cacheline_need_evit   | htu_biu_awready_i);
 
 // ISU opcode[0]: 0 => read    1 => write
 // ISU opcode[1]: 0 => no evit 1 => need evit
@@ -188,6 +190,8 @@ module bank_htu_top (
 //-------------------------------------------------------------------------
 //                               HTU >> BIU
 //-------------------------------------------------------------------------
+
+// ar channel
   assign htu_biu_arvalid_o = xbar_bank_htu_valid_i & cacheline_need_refill
                            & htu_isu_allowIn_i;
 
@@ -205,6 +209,13 @@ module bank_htu_top (
                                    | {10{htu_cacheline_index_dcd[6]}} & set6_evit_cacheline_tag[31:10]
                                    | {10{htu_cacheline_index_dcd[7]}} & set7_evit_cacheline_tag[31:10];
 
+// aw channel
+  assign htu_biu_awvalid_o = xbar_bank_htu_valid_i & cacheline_need_evit
+                           & htu_isu_allowIn_i;
+
+  assign htu_biu_awaddr_o[31:5] = {evit_cacheline_tag[31:10],
+                                   htu_cacheline_bank[1:0],
+                                   htu_cacheline_index[2:0]};
 
 //-------------------------------------------------------------------------
 //                         HTU set array

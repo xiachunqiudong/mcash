@@ -8,10 +8,31 @@ def mcash_req_hex(tag, cache_bank, cache_set, offset, data, op):
   addr_bin = "{:032b}".format(addr)
   op_bin = "{:03b}".format(op)
   data_bin = "{:0128b}".format(data)
-  return op_bin + data_bin + addr_bin
+  valid_bin = "{:01b}".format(1)
+  return valid_bin + op_bin + data_bin + addr_bin
 
 
-def main():
+def write_with_evit():
+  tag = 0
+  cnt = 0
+  
+  for i in range(8):
+    hex = mcash_req_hex(tag, 0, 0, 0, i + 1, 1)
+    print(hex)
+    tag += 1
+    cnt += 1
+  
+  for i in range(8):
+    hex = mcash_req_hex(tag, 0, 0, 0, i + 1, 1)
+    print(hex)
+    tag += 1
+    cnt += 1
+
+  while(cnt <= 100):
+    cnt += 1
+    print("{:0164b}".format(0))
+
+def read_after_write():
   offset = 0
   tag = 0
   op = 1
@@ -32,6 +53,9 @@ def main():
       offset = offset + 1
     
     op = op - 1
+
+def main():
+  write_with_evit()
 
 if __name__ == "__main__":
   main()

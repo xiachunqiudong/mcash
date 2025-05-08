@@ -36,13 +36,10 @@ module mcash_tb;
   integer i;
   parameter N = 100;
 
-  reg [162:0] code_list [N-1:0];
+  reg [163:0] code_list [N-1:0];
 
   initial begin
     i = 0;
-    for (int i = 0; i < N; i = i + 1) begin
-      code_list[N] = 0;
-    end
     $readmemb(code_file, code_list);
   end
 
@@ -348,7 +345,7 @@ module mcash_tb;
     
     if (i < 32) begin
       if (mcash_ch0_req_allowIn) begin
-        mcash_ch0_req_valid       <= 1'b1;
+        mcash_ch0_req_valid       <= code_list[i][163];
         mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
         mcash_ch0_req_data[127:0] <= code_list[i][159:32];
         mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
@@ -538,14 +535,16 @@ module mcash_tb;
     .arprot_s0      (),
     .arsize_s0      (S0_axi3_arsize[2:0]),
     .arvalid_s0     (S0_axi3_arvalid),
-    .awaddr_s0      (),
-    .awburst_s0     (),
+
+    .awburst_s0     (S0_axi3_awburst[ 1:0]       ),
     .awcache_s0     (),
-    .awid_s0        (),
-    .awlen_s0       (),
+    .awid_s0        (S0_axi3_awid[WIDTH_SID-1:0] ),
+    .awaddr_s0      (S0_axi3_awaddr[WIDTH_AD-1:0]),
+    .awlen_s0       (S0_axi3_awlen[ 3:0]       ),
     .awprot_s0      (),
-    .awsize_s0      (),
-    .awvalid_s0     (),
+    .awsize_s0      (S0_axi3_awsize[ 2:0]        ),
+    .awvalid_s0     (S0_axi3_awvalid             ),
+    .awready_s0     (S0_axi3_awready),
     .bready_s0      (),
     .pad_cpu_rst    (rst),
     .pll_core_cpuclk(clk),
@@ -556,7 +555,6 @@ module mcash_tb;
     .wstrb_s0       (),
     .wvalid_s0      (),
     .arready_s0     (S0_axi3_arready),
-    .awready_s0     (),
     .bid_s0         (),
     .bresp_s0       (),
     .bvalid_s0      (),
