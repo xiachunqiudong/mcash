@@ -18,7 +18,7 @@ module bank_biu_top #(
   input  wire                  sc_biu_valid_i,
   output wire                  sc_biu_ready_o,
   input  wire [255:0]          sc_biu_data_i,
-  input  wire [15:0]           sc_biu_strb_i,
+  input  wire [31:0]           sc_biu_strb_i,
   input  wire [5:0]            sc_biu_set_way_i,
   // biu >> isu
   output wire                  biu_isu_rvalid_o,
@@ -100,11 +100,11 @@ module bank_biu_top #(
 //                             W channel
 //-------------------------------------------------------------------------
   assign biu_axi3_wvalid_o                = sc_biu_valid_i;
-  assign biu_axi3_wdata_o[DATA_WIDTH-1:0] = sc_biu_data_i;
-  assign biu_axi3_wstrb_o[STRB_WIDTH-1:0] = sc_biu_strb_i;
+  assign biu_axi3_wdata_o[DATA_WIDTH-1:0] = sc_biu_data_i[255:0];
+  assign biu_axi3_wstrb_o[STRB_WIDTH-1:0] = sc_biu_strb_i[31:0];
   assign biu_axi3_wid_o[ID_WIDTH-1:0]     = {2'b00, htu_biu_set_way_i[5:0]};
   assign biu_axi3_wlast_o                 = 1'b1;
 
-  assign sc_biu_ready_o = sc_biu_valid_i;
+  assign sc_biu_ready_o = biu_axi3_wready_i;
 
 endmodule

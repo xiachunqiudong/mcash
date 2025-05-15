@@ -22,7 +22,7 @@ module bank_sram_controller(
   output wire          sc_biu_valid_o,
   input  wire          sc_biu_ready_i,
   output wire [255:0]  sc_biu_data_o,
-  output wire [15:0]   sc_biu_strb_o,
+  output wire [31:0]   sc_biu_strb_o,
   output wire [5:0]    sc_biu_set_way_o,
   // sc >> Wbuf
   output wire          sc_wbuf_req_valid_o,
@@ -259,7 +259,7 @@ module bank_sram_controller(
   assign sc_biu_valid_o        = isu_op_is_write_back & (sc_counter_Q[1:0] != 2'b00);
   assign sc_biu_data_o[255:0]  = {256{ sram_read_data_in_buffer}} & sram_read_data_buffer_Q[255:0]
                                | {256{~sram_read_data_in_buffer}} & sram_read_data_buffer_In[255:0];
-  assign sc_biu_strb_o[15:0]   = {{8{sram_read_data_need_offset1}}, {8{sram_read_data_need_offset0}}};
+  assign sc_biu_strb_o[31:0]   = {{16{sram_read_data_need_offset1}}, {16{sram_read_data_need_offset0}}};
   assign sc_biu_set_way_o[5:0] = isu_sc_set_way_offset_i[6:1];
 
 //====================================================================

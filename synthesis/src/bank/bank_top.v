@@ -81,7 +81,7 @@ module bank_top(
   wire         sc_biu_valid;
   wire         sc_biu_ready;
   wire [255:0] sc_biu_data;
-  wire [15:0]  sc_biu_strb;
+  wire [31:0]  sc_biu_strb;
   wire [5:0]   sc_biu_set_way;
   wire         sc_wbuf_req_valid;
   wire         sc_wbuf_req_ready;
@@ -191,7 +191,7 @@ module bank_top(
     .sc_biu_valid_i          (sc_biu_valid              ),
     .sc_biu_ready_o          (sc_biu_ready              ),
     .sc_biu_data_i           (sc_biu_data[255:0]        ),
-    .sc_biu_strb_i           (sc_biu_strb[15:0]         ),
+    .sc_biu_strb_i           (sc_biu_strb[31:0]         ),
     .sc_biu_set_way_i        (sc_biu_set_way[5:0]       ),
     .biu_isu_rvalid_o        (biu_isu_rvalid            ),
     .biu_isu_rready_i        (biu_isu_rready            ),
@@ -254,7 +254,7 @@ module bank_top(
     .sc_biu_valid_o                  (sc_biu_valid                       ),
     .sc_biu_ready_i                  (sc_biu_ready                       ),
     .sc_biu_data_o                   (sc_biu_data[255:0]                 ),
-    .sc_biu_strb_o                   (sc_biu_strb[15:0]                  ),
+    .sc_biu_strb_o                   (sc_biu_strb[31:0]                  ),
     .sc_biu_set_way_o                (sc_biu_set_way[5:0]                ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_wbuffer_id_o        (sc_wbuf_req_wbuffer_id[7:0]        ),

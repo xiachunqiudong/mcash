@@ -549,11 +549,14 @@ module mcash_tb;
     .pad_cpu_rst    (rst),
     .pll_core_cpuclk(clk),
     .rready_s0      (S0_axi3_rready),
-    .wdata_s0       (),
-    .wid_s0         (),
-    .wlast_s0       (),
-    .wstrb_s0       (),
-    .wvalid_s0      (),
+
+    .wvalid_s0      (S0_axi3_wvalid),
+    .wready_s0      (S0_axi3_wready),
+    .wdata_s0       (S0_axi3_wdata[255:0]),
+    .wid_s0         (S0_axi3_wid[WIDTH_SID-1:0]),
+    .wlast_s0       (S0_axi3_wlast),
+    .wstrb_s0       (S0_axi3_wstrb[31:0]),
+
     .arready_s0     (S0_axi3_arready),
     .bid_s0         (),
     .bresp_s0       (),
@@ -562,8 +565,7 @@ module mcash_tb;
     .rid_s0         (S0_axi3_rid[WIDTH_SID-1:0]),
     .rlast_s0       (S0_axi3_rlast),
     .rresp_s0       (),
-    .rvalid_s0      (S0_axi3_rvalid),
-    .wready_s0      ()
+    .rvalid_s0      (S0_axi3_rvalid)
   );
 
   axi_slave_ram
