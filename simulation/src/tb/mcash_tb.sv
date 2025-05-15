@@ -540,7 +540,7 @@ module mcash_tb;
     .awcache_s0     (),
     .awid_s0        (S0_axi3_awid[WIDTH_SID-1:0] ),
     .awaddr_s0      (S0_axi3_awaddr[WIDTH_AD-1:0]),
-    .awlen_s0       (S0_axi3_awlen[ 3:0]       ),
+    .awlen_s0       ({4'b0, S0_axi3_awlen[3:0]} ),
     .awprot_s0      (),
     .awsize_s0      (S0_axi3_awsize[ 2:0]        ),
     .awvalid_s0     (S0_axi3_awvalid             ),

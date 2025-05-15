@@ -80,10 +80,9 @@ module bank_top(
 
   wire         sc_biu_valid;
   wire         sc_biu_ready;
-  wire [127:0] sc_biu_data;
-  wire         sc_biu_offset;
-  wire         sc_biu_all_offset;
-  wire [6:0]   sc_biu_set_way_offset;
+  wire [255:0] sc_biu_data;
+  wire [15:0]  sc_biu_strb;
+  wire [5:0]   sc_biu_set_way;
   wire         sc_wbuf_req_valid;
   wire         sc_wbuf_req_ready;
   wire [7:0]   sc_wbuf_req_wbuffer_id;
@@ -191,10 +190,9 @@ module bank_top(
     .htu_biu_set_way_i       (htu_biu_set_way[5:0]      ),
     .sc_biu_valid_i          (sc_biu_valid              ),
     .sc_biu_ready_o          (sc_biu_ready              ),
-    .sc_biu_data_i           (sc_biu_data[127:0]        ),
-    .sc_biu_offset_i         (sc_biu_offset             ),
-    .sc_biu_all_offset_i     (sc_biu_all_offset         ),
-    .sc_biu_set_way_offset_i (sc_biu_set_way_offset[6:0]),
+    .sc_biu_data_i           (sc_biu_data[255:0]        ),
+    .sc_biu_strb_i           (sc_biu_strb[15:0]         ),
+    .sc_biu_set_way_i        (sc_biu_set_way[5:0]       ),
     .biu_isu_rvalid_o        (biu_isu_rvalid            ),
     .biu_isu_rready_i        (biu_isu_rready            ),
     .biu_isu_rdata_o         (biu_isu_rdata[255:0]      ),
@@ -255,10 +253,9 @@ module bank_top(
     .sc_xbar_data_o                  (bank_sc_xbar_data_o[127:0]         ),
     .sc_biu_valid_o                  (sc_biu_valid                       ),
     .sc_biu_ready_i                  (sc_biu_ready                       ),
-    .sc_biu_data_o                   (sc_biu_data[127:0]                 ),
-    .sc_biu_offset_o                 (sc_biu_offset                      ),
-    .sc_biu_all_offset_o             (sc_biu_all_offset                  ),
-    .sc_biu_set_way_offset_o         (sc_biu_set_way_offset[6:0]         ),
+    .sc_biu_data_o                   (sc_biu_data[255:0]                 ),
+    .sc_biu_strb_o                   (sc_biu_strb[15:0]                  ),
+    .sc_biu_set_way_o                (sc_biu_set_way[5:0]                ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_wbuffer_id_o        (sc_wbuf_req_wbuffer_id[7:0]        ),
     .sc_wbuf_rtn_valid_i             (sc_wbuf_rtn_valid                  ),
