@@ -525,47 +525,52 @@ module mcash_tb;
     .bank3_biu_axi3_bresp_i  (bank3_biu_axi3_bresp[1:0]   )
   );
 
+//--------------------------------------------------------------
+//  SLAVE0: ram0
+//--------------------------------------------------------------
   axi_slave_ram
   ram0 (
+    .pad_cpu_rst    (rst                         ),
+    .pll_core_cpuclk(clk                         ),
+    // RAM0 AR
+    .arvalid_s0     (S0_axi3_arvalid             ),
+    .arready_s0     (S0_axi3_arready             ),
     .araddr_s0      (S0_axi3_araddr[WIDTH_AD-1:0]),
-    .arburst_s0     (S0_axi3_arburst[1:0]),
-    .arcache_s0     (),
-    .arid_s0        (S0_axi3_arid[WIDTH_SID-1:0]),
-    .arlen_s0       ({4'b0, S0_axi3_arlen[3:0]}),
-    .arprot_s0      (),
-    .arsize_s0      (S0_axi3_arsize[2:0]),
-    .arvalid_s0     (S0_axi3_arvalid),
-
+    .arburst_s0     (S0_axi3_arburst[1:0]        ),
+    .arcache_s0     (                            ),
+    .arid_s0        (S0_axi3_arid[WIDTH_SID-1:0] ),
+    .arlen_s0       ({4'b0, S0_axi3_arlen[3:0]}  ),
+    .arprot_s0      (                            ),
+    .arsize_s0      (S0_axi3_arsize[2:0]         ),
+    // RAM0 AW
+    .awvalid_s0     (S0_axi3_awvalid             ),
+    .awready_s0     (S0_axi3_awready             ),
     .awburst_s0     (S0_axi3_awburst[ 1:0]       ),
     .awcache_s0     (),
     .awid_s0        (S0_axi3_awid[WIDTH_SID-1:0] ),
     .awaddr_s0      (S0_axi3_awaddr[WIDTH_AD-1:0]),
-    .awlen_s0       ({4'b0, S0_axi3_awlen[3:0]} ),
+    .awlen_s0       ({4'b0, S0_axi3_awlen[3:0]}  ),
     .awprot_s0      (),
     .awsize_s0      (S0_axi3_awsize[ 2:0]        ),
-    .awvalid_s0     (S0_axi3_awvalid             ),
-    .awready_s0     (S0_axi3_awready),
-    .bready_s0      (),
-    .pad_cpu_rst    (rst),
-    .pll_core_cpuclk(clk),
-    .rready_s0      (S0_axi3_rready),
-
-    .wvalid_s0      (S0_axi3_wvalid),
-    .wready_s0      (S0_axi3_wready),
-    .wdata_s0       (S0_axi3_wdata[255:0]),
-    .wid_s0         (S0_axi3_wid[WIDTH_SID-1:0]),
-    .wlast_s0       (S0_axi3_wlast),
-    .wstrb_s0       (S0_axi3_wstrb[31:0]),
-
-    .arready_s0     (S0_axi3_arready),
-    .bid_s0         (),
-    .bresp_s0       (),
-    .bvalid_s0      (),
-    .rdata_s0       (S0_axi3_rdata[WIDTH_DA-1:0]),
-    .rid_s0         (S0_axi3_rid[WIDTH_SID-1:0]),
-    .rlast_s0       (S0_axi3_rlast),
-    .rresp_s0       (),
-    .rvalid_s0      (S0_axi3_rvalid)
+    // RAM0 W
+    .wvalid_s0      (S0_axi3_wvalid              ),
+    .wready_s0      (S0_axi3_wready              ),
+    .wdata_s0       (S0_axi3_wdata[255:0]        ),
+    .wid_s0         (S0_axi3_wid[WIDTH_SID-1:0]  ),
+    .wlast_s0       (S0_axi3_wlast               ),
+    .wstrb_s0       (S0_axi3_wstrb[31:0]         ),
+    // RAM0 B
+    .bvalid_s0      (                            ),
+    .bready_s0      (1'b1                        ),
+    .bid_s0         (                            ),
+    .bresp_s0       (                            ),
+    // RAM0 R
+    .rvalid_s0      (S0_axi3_rvalid              ),
+    .rready_s0      (S0_axi3_rready              ),
+    .rdata_s0       (S0_axi3_rdata[WIDTH_DA-1:0] ),
+    .rid_s0         (S0_axi3_rid[WIDTH_SID-1:0]  ),
+    .rlast_s0       (S0_axi3_rlast               ),
+    .rresp_s0       (                            )
   );
 
   axi_slave_ram
@@ -709,7 +714,7 @@ module mcash_tb;
   )
   u_amba_axi_m4s4(
     .ACLK      (clk                                  ),
-    .ARESETn   (rst                                  ),
+    .ARESETn   (~rst                                 ),
     //---------------------------------------------------------------------------
     .M0_AWID   (bank0_biu_axi3_awid[WIDTH_ID-1:0]    ),
     .M0_AWADDR (bank0_biu_axi3_awaddr[WIDTH_AD-1:0]  ),
