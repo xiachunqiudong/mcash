@@ -58,8 +58,12 @@ module bank_biu_top #(
   input  wire [1:0]            biu_axi3_bresp_i
 );
 
-
-
+  wire         aw_fifo_push;
+  wire         aw_fifo_pop;
+  wire         aw_fifo_empty;
+  wire         aw_fifo_full;
+  wire [32:0]  aw_fifo_din;
+  wire [32:0]  aw_fifo_dout;
 
 //-------------------------------------------------------------------------
 //                            AR channel
@@ -86,15 +90,36 @@ module bank_biu_top #(
 
 //-------------------------------------------------------------------------
 //                             AW channel
+// AW FIFO DEPTH: 8
 //-------------------------------------------------------------------------
-  assign biu_axi3_awvalid_o                = htu_biu_awvalid_i;
-  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, htu_biu_set_way_i[5:0]};
+  assign htu_biu_awready_o = ~aw_fifo_full;
+
+  assign aw_fifo_push = htu_biu_awvalid_i & htu_biu_awready_o;
+  assign aw_fifo_pop  = biu_axi3_awvalid_o & biu_axi3_awready_i;
+
+  assign aw_fifo_din[32:0] = {htu_biu_set_way_i[5:0],  // 6  bits
+                              htu_biu_awaddr_i[31:5]}; // 27 bits
+
+  sync_fifo#(
+     .AW(3 ),
+     .DW(33)
+  ) aw_fifo(
+      .clk   (clk_i        ),
+      .rst   (rst_i        ),
+      .push  (aw_fifo_push ),
+      .din   (aw_fifo_din  ),
+      .pop   (aw_fifo_pop  ),
+      .dout  (aw_fifo_dout ),
+      .empry (aw_fifo_empty),
+      .full  (aw_fifo_full )
+  );
+
+  assign biu_axi3_awvalid_o                = ~aw_fifo_empty;
+  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, aw_fifo_dout[31:27]};
+  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {aw_fifo_dout[26:0], 5'b00000};
   assign biu_axi3_awlen_o[3:0]             = 4'b0000;
   assign biu_axi3_awsize_o[2:0]            = 3'b101;
   assign biu_axi3_awburst_o[1:0]           = 2'b01;
-  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {htu_biu_awaddr_i[ADDR_WIDTH-1:5], 5'b00000};
-
-  assign htu_biu_awready_o = biu_axi3_awready_i;
 
 //-------------------------------------------------------------------------
 //                             W channel
