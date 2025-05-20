@@ -81,7 +81,7 @@ module bank_sram_controller(
   wire [5:0]   s0_offset1_data_array_addr;
   wire [127:0] s0_offset1_data_array_wdata;
 
-// s1 ctrl flow
+// s0 ctrl flow
   wire         sc_counter_incr;
   wire         sc_counter_wen;
   wire [1:0]   sc_counter_In;
@@ -159,6 +159,36 @@ module bank_sram_controller(
   assign s0_pop = s0_valid & s1_allowIn & s0_can_go;
 
   assign isu_sc_ready_o = s0_can_go & s1_allowIn;
+
+//==================================================================
+//                    S0 Ctrl flow
+// SC counter
+// 2'b00
+//------------------------------------------------------------------
+// 1. read/read_with_linefill/write_back send request to sram
+// 2. write: send request to wbuffer
+//------------------------------------------------------------------
+// 2'b01
+// 1. write: get wdata from wbuffer and send request to sram
+//==================================================================
+  assign sc_counter_incr = s0_valid
+                         & ( (s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00
+                            | s0_op_is_write & sc_counter_Q[1:0] < 2'b10
+                           );
+
+  assign sc_counter_wen = sc_counter_incr
+                        | s0_pop;
+
+  assign sc_counter_In[1:0] = s0_pop ? 2'b00 : sc_counter_Q[1:0] + 2'b01;
+
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      sc_counter_Q[1:0] <= 2'b00;
+    end
+    else if (sc_counter_wen) begin
+      sc_counter_Q[1:0] <= sc_counter_In[1:0];
+    end
+  end
 
 //---------------------------------------------------------
 //               send request to wBuffer
@@ -306,32 +336,6 @@ module bank_sram_controller(
   assign sc_xbar_channel_id_o[1:0] = s1_channel_id_Q[1:0];
 
   assign sc_xbar_rob_num_o[2:0] = s1_rob_num_Q[2:0];
-
-//==================================================================
-//                    SC Ctrl flow
-// SC counter
-// 2'b00 -> send read enable to sram
-// 2'b01 -> get read data from sram
-// 2'b10 -> read data in data buffer
-//==================================================================
-  assign sc_counter_incr = s0_valid
-                         & ( (s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00
-                            | s0_op_is_write & sc_counter_Q[1:0] < 2'b10
-                           );
-
-  assign sc_counter_wen = sc_counter_incr
-                        | s0_pop;
-
-  assign sc_counter_In[1:0] = s0_pop ? 2'b00 : sc_counter_Q[1:0] + 2'b01;
-
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      sc_counter_Q[1:0] <= 2'b00;
-    end
-    else if (sc_counter_wen) begin
-      sc_counter_Q[1:0] <= sc_counter_In[1:0];
-    end
-  end
 
 //--------------------------------------------------------------------
 //                    Data array: offset0
