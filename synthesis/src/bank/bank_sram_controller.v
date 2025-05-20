@@ -33,10 +33,16 @@ module bank_sram_controller(
 );
 
 // s0 inst info
+  wire         s0_can_go;
+  wire         s0_valid;
+  wire         s0_pop;
   wire         s0_op_is_write;
   wire         s0_op_is_read;
   wire         s0_op_is_read_linefill;
   wire         s0_op_is_write_back;
+  wire [5:0]   s0_set_way;
+  wire [1:0]   s0_channel_id;
+  wire [2:0]   s0_rob_num;
   wire         s0_offset;
 // cacheline info
   wire [1:0]   isu_sc_select_offset_state;
@@ -48,51 +54,57 @@ module bank_sram_controller(
   wire         unselect_offset_empty;
   wire         unselect_offset_dirty;
 
-  wire [127:0] isu_sc_offset_linefill_data;
+  wire [127:0] s0_linefill_data;
 
-// sram read buffer
-  wire         sram_read_data_in_buffer;
-  wire         s1_data_buffer_push;
-  wire         s1_data_buffer_pop;
-  reg          s1_data_buffer_valid_In;
-  reg          s1_data_buffer_valid_Q;
-  wire [255:0] sram_read_data_buffer_In;
-  reg  [255:0] sram_read_data_buffer_Q;
+// sc data buffer
+  wire         s0_lf_data_push;
+  wire         s1_wb_data_push;
+  wire         s1_data_bufferA_push;
+  wire [127:0] s1_data_bufferA_In;
+  reg  [127:0] s1_data_bufferA_Q;
+  wire [127:0] s1_data_bufferB_In;
+  reg  [127:0] s1_data_bufferB_Q;
+  wire         s1_wb_data_in_buffer_In;
+  reg          s1_wb_data_in_buffer_Q;
   wire         sc_biu_kickoff;
 
   wire         data_array_en;
   wire         data_array_wen;
-  wire         offset0_data_array_touch;
-  wire         offset0_data_array_en;
-  wire         offset0_data_array_wen;
-  wire [5:0]   offset0_data_array_addr;
-  wire [127:0] offset0_data_array_wdata;
-  wire [127:0] offset0_data_array_rdata;
-  wire         offset1_data_array_touch;
-  wire         offset1_data_array_en;
-  wire         offset1_data_array_wen;
-  wire [5:0]   offset1_data_array_addr;
-  wire [127:0] offset1_data_array_wdata;
-  wire [127:0] offset1_data_array_rdata;
+  wire         s0_offset0_data_array_touch;
+  wire         s0_offset0_data_array_en;
+  wire         s0_offset0_data_array_wen;
+  wire [5:0]   s0_offset0_data_array_addr;
+  wire [127:0] s0_offset0_data_array_wdata;
+  wire         s0_offset1_data_array_touch;
+  wire         s0_offset1_data_array_en;
+  wire         s0_offset1_data_array_wen;
+  wire [5:0]   s0_offset1_data_array_addr;
+  wire [127:0] s0_offset1_data_array_wdata;
 
-// sc ctrl flow
+// s1 ctrl flow
   wire         sc_counter_incr;
-  wire         sc_counter_init;
   wire         sc_counter_wen;
   wire [1:0]   sc_counter_In;
   reg  [1:0]   sc_counter_Q;
-  wire         read_with_linefill_done;
-  wire         isu_sc_write_done;
-  wire         isu_sc_read_done;
-  wire         isu_sc_req_done;
 
-// s1 inst info
-  reg  s1_offset_Q;
-  reg  s1_offset0_dirty_Q;
-  reg  s1_offset1_dirty_Q;
-  reg  s1_op_is_read_Q;
-  reg  s1_op_is_read_linefill_Q;
-  reg  s1_op_is_write_back_Q;
+  // s1 stage
+  wire         s1_allowIn;
+  wire         s1_push;
+  wire         s1_pop;
+  wire         s1_valid_In;
+  reg          s1_valid_Q;
+  reg          s1_offset_Q;
+  reg          s1_offset0_dirty_Q;
+  reg          s1_offset1_dirty_Q;
+  reg          s1_op_is_read_Q;
+  reg          s1_op_is_read_linefill_Q;
+  reg          s1_op_is_write_back_Q;
+  reg [5:0]    s1_set_way_Q;
+  reg [1:0]    s1_channel_id_Q;
+  reg [2:0]    s1_rob_num_Q;
+  wire [127:0] s1_offset0_data_array_rdata;
+  wire [127:0] s1_offset1_data_array_rdata;
+  wire [127:0] s1_data_array_rdata;
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // ISU opcode
@@ -105,11 +117,10 @@ module bank_sram_controller(
   assign s0_op_is_read          = isu_sc_opcode_i[2:0] == 3'd1;
   assign s0_op_is_read_linefill = isu_sc_opcode_i[2:0] == 3'd2;
   assign s0_op_is_write_back    = isu_sc_opcode_i[2:0] == 3'd3;
-
-
-  // 0 -> offset 0
-  // 1 -> offset 1
-  assign s0_offset = isu_sc_set_way_offset_i[0];
+  assign s0_set_way[5:0]        = isu_sc_set_way_offset_i[5:0];
+  assign s0_offset              = isu_sc_set_way_offset_i[0];
+  assign s0_channel_id[1:0]     = isu_sc_channel_id_i[1:0];
+  assign s0_rob_num[2:0]        = isu_sc_xbar_rob_num_i[2:0];
 
   assign isu_sc_select_offset_state[1:0] = s0_offset ? isu_sc_cacheline_dirty_offset1_i[1:0]
                                                          : isu_sc_cacheline_dirty_offset0_i[1:0];
@@ -133,14 +144,6 @@ module bank_sram_controller(
   assign unselect_offset_empty = isu_sc_unselect_offset_state[1:0] == 2'b00;
   assign unselect_offset_dirty = isu_sc_unselect_offset_state[1:0] == 2'b10;
 
-  wire s0_can_go;
-  wire s0_valid;
-  wire s1_allowIn;
-  wire s1_push;
-  wire s1_pop;
-  wire s1_valid_In;
-  reg  s1_valid_Q;
-
 //---------------------------------------------------------
 // S0 stage
 // 1. read:               send en to sram
@@ -151,7 +154,9 @@ module bank_sram_controller(
   assign s0_valid = isu_sc_valid_i;
 
   assign s0_can_go = ~s0_op_is_write
-                   | (sc_counter_Q[1:0] == 2'b01);
+                   | (sc_counter_Q[1:0] != 2'b00);
+
+  assign s0_pop = s0_valid & s1_allowIn & s0_can_go;
 
   assign isu_sc_ready_o = s0_can_go & s1_allowIn;
 
@@ -166,11 +171,11 @@ module bank_sram_controller(
 
 //---------------------------------------------------------
 // S1 stage
-// 1. read :      send rdata to xbar
+// 1. read :               send rdata to xbar
 // 2. read with linefill : send linefill data to xbar
-// 3. write back: send rdata to biu
+// 3. write back:          send rdata to biu
 //---------------------------------------------------------
-  assign s1_push = s0_valid & ~s0_op_is_write;
+  assign s1_push = s0_valid & s1_allowIn & ~s0_op_is_write;
 
   assign s1_pop = s1_valid_Q
                 & (  s1_op_is_read_Q
@@ -197,20 +202,23 @@ module bank_sram_controller(
       s1_op_is_read_Q          <= s0_op_is_read;
       s1_op_is_read_linefill_Q <= s0_op_is_read_linefill;
       s1_op_is_write_back_Q    <= s0_op_is_write_back;
-      s1_offset_Q              <= s0_offset;
       s1_offset0_dirty_Q       <= s0_offset0_dirty;
       s1_offset1_dirty_Q       <= s0_offset1_dirty;
+      s1_set_way_Q[5:0]        <= s0_set_way[5:0];
+      s1_offset_Q              <= s0_offset;
+      s1_channel_id_Q[1:0]     <= s0_channel_id[1:0];
+      s1_rob_num_Q[2:0]        <= s0_rob_num[2:0];
     end
   end
 
   assign data_array_en = s0_valid
-                       & (   ((s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00)
-                           | s0_op_is_write & sc_counter_Q[1:0] == 2'b01
+                       & (   (s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00
+                           |  s0_op_is_write                                                & sc_counter_Q[1:0] == 2'b01
                          );
 
   assign data_array_wen = s0_valid
-                        & (   (s0_op_is_read_linefill & sc_counter_Q[1:0] == 2'b00)
-                            | s0_op_is_write & sc_counter_Q[1:0] == 2'b01
+                        & (   s0_op_is_read_linefill & sc_counter_Q[1:0] == 2'b00
+                            | s0_op_is_write         & sc_counter_Q[1:0] == 2'b01
                           );
 
 //---------------------------------------------------------
@@ -219,24 +227,48 @@ module bank_sram_controller(
 // 1. s0 linefill data
 // 2. s1 write back data from sram
 //---------------------------------------------------------
-  assign s1_data_bufferA_push = s0_valid
-                                     & (s0_op_is_read | s0_op_is_write_back)
-                                     & (sc_counter_Q[1:0] == 2'b01);
+  assign s0_lf_data_push = s0_valid & s1_allowIn & s0_op_is_read_linefill;
 
-  assign sram_read_data_in_buffer = sc_counter_Q[1:0] == 2'b10;
+  assign s1_wb_data_push = s1_valid_Q & s1_op_is_write_back_Q & ~s1_wb_data_in_buffer_Q;
 
-  assign sram_read_data_need_offset0 = ~s1_offset_Q
-                                     | (s1_op_is_write_back_Q & s1_offset0_dirty_Q);
+  assign s1_wb_data_in_buffer_In = s1_pop          ? 1'b0
+                                 : s1_wb_data_push ? 1'b1
+                                 :                   s1_wb_data_in_buffer_Q;
 
-  assign sram_read_data_need_offset1 = s1_offset_Q
-                                     | (s1_op_is_write_back_Q & s1_offset1_dirty_Q);
+  always @(posedge clk_i or posedge rst_i) begin
+    if (rst_i) begin
+      s1_wb_data_in_buffer_Q <= 1'b0;
+    end
+    else begin
+      s1_wb_data_in_buffer_Q <= s1_wb_data_in_buffer_In;
+    end
+  end
 
-  assign sram_read_data_buffer_In[127:0]   = {128{sram_read_data_need_offset0}} & offset0_data_array_rdata[127:0];
-  assign sram_read_data_buffer_In[255:128] = {128{sram_read_data_need_offset1}} & offset1_data_array_rdata[127:0];
+  assign s1_offset0_need_evit = ~s1_offset_Q
+                              | (s1_op_is_write_back_Q & s1_offset0_dirty_Q);
+
+  assign s1_offset1_need_evit = s1_offset_Q
+                              | (s1_op_is_write_back_Q & s1_offset1_dirty_Q);
+
+  assign s0_linefill_data[127:0] = s0_offset
+                                 ? isu_sc_linefill_data_offset1_i[127:0]
+                                 : isu_sc_linefill_data_offset0_i[127:0];
+
+  assign s1_data_bufferA_In[127:0] = s0_lf_data_push
+                                   ? s0_linefill_data[127:0]
+                                   : {128{s1_offset0_need_evit}} & s1_offset0_data_array_rdata[127:0];
+
+  assign s1_data_bufferB_In[127:0] = {128{s1_offset1_need_evit}} & s1_offset1_data_array_rdata[127:0];
+
+  assign s1_data_bufferA_push = s0_lf_data_push  // s0 linefill data push
+                              | s1_wb_data_push; // s1 write back data push
 
   always @(posedge clk_i) begin
     if (s1_data_bufferA_push) begin
-      sram_read_data_buffer_Q[255:0] <= sram_read_data_buffer_In[255:0];
+      s1_data_bufferA_Q[127:0] <= s1_data_bufferA_In[127:0];
+    end
+    if (s1_wb_data_push) begin
+      s1_data_bufferB_Q[127:0] <= s1_data_bufferB_In[127:0];
     end
   end
 
@@ -245,13 +277,12 @@ module bank_sram_controller(
 //---------------------------------------------------------
   assign sc_biu_valid_o = s1_valid_Q & s1_op_is_write_back_Q;
 
-  assign sc_biu_data_o[255:0] = {256{ sram_read_data_in_buffer}} & sram_read_data_buffer_Q[255:0]
-                              | {256{~sram_read_data_in_buffer}} & sram_read_data_buffer_In[255:0];
+  assign sc_biu_data_o[255:0] = {256{ s1_wb_data_in_buffer_Q}} & {s1_data_bufferB_Q[127:0] , s1_data_bufferA_Q[127:0]}
+                              | {256{~s1_wb_data_in_buffer_Q}} & {s1_data_bufferB_In[127:0], s1_data_bufferA_In[127:0]};
 
-  assign sc_biu_strb_o[31:0]   = {{16{sram_read_data_need_offset1}}, {16{sram_read_data_need_offset0}}};
+  assign sc_biu_strb_o[31:0]   = {{16{s1_offset1_need_evit}}, {16{s1_offset0_need_evit}}};
 
-  assign sc_biu_set_way_o[5:0] = isu_sc_set_way_offset_i[6:1];
-
+  assign sc_biu_set_way_o[5:0] = s1_set_way_Q[5:0];
 
 //---------------------------------------------------------
 //                        SC to Xbar
@@ -260,23 +291,21 @@ module bank_sram_controller(
 //---------------------------------------------------------
 
 // sc to xbar ctrl path
-  assign sc_xbar_valid_o = s0_valid
-                         & (   (s0_op_is_read          & (sc_counter_Q[1:0] > 2'b00))
-                             | (s0_op_is_read_linefill & (sc_counter_Q[1:0] == 2'b00))
+  assign sc_xbar_valid_o = s1_valid_Q
+                         & (   s1_op_is_read_Q
+                             | s1_op_is_read_linefill_Q
                            );
 
-// sc to xbar data path
-  assign isu_sc_offset_linefill_data[127:0] = isu_sc_set_way_offset_i[0]
-                                            ? isu_sc_linefill_data_offset1_i[127:0]
-                                            : isu_sc_linefill_data_offset0_i[127:0];
+  assign s1_data_array_rdata[127:0] = s1_offset_Q
+                                    ? s1_offset1_data_array_rdata[127:0]
+                                    : s1_offset0_data_array_rdata[127:0];
 
-  assign sc_xbar_data_o[127:0] = {128{s1_op_is_read_linefill_Q}} & isu_sc_offset_linefill_data[127:0]
-                               | {128{s1_op_is_read_Q}}          & offset0_data_array_rdata[127:0];
+  assign sc_xbar_data_o[127:0] = {128{s1_op_is_read_linefill_Q}} & s1_data_bufferA_Q[127:0]
+                               | {128{s1_op_is_read_Q}}          & s1_data_array_rdata[127:0];
 
-  assign sc_xbar_channel_id_o[1:0] = isu_sc_channel_id_i[1:0];
+  assign sc_xbar_channel_id_o[1:0] = s1_channel_id_Q[1:0];
 
-  assign sc_xbar_rob_num_o[2:0] = isu_sc_xbar_rob_num_i[2:0];
-
+  assign sc_xbar_rob_num_o[2:0] = s1_rob_num_Q[2:0];
 
 //==================================================================
 //                    SC Ctrl flow
@@ -286,21 +315,14 @@ module bank_sram_controller(
 // 2'b10 -> read data in data buffer
 //==================================================================
   assign sc_counter_incr = s0_valid
-                         & (sc_counter_Q[1:0] == 2'b00)
-                         & (  s0_op_is_read_linefill               // write to sram
-                            | s0_op_is_write_back                  // read from sram
-                            | s0_op_is_read                        // read from sram
-                            | s0_op_is_write                        // write to sram
-                         );
-
-  assign sc_counter_init = isu_sc_req_done;
+                         & ( (s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00
+                            | s0_op_is_write & sc_counter_Q[1:0] < 2'b10
+                           );
 
   assign sc_counter_wen = sc_counter_incr
-                        | sc_counter_init;
+                        | s0_pop;
 
-  assign sc_counter_In[1:0] = sc_counter_init ? 2'b00
-                            : sc_counter_incr ? sc_counter_Q[1:0] + 2'b01
-                                              : sc_counter_Q[1:0];
+  assign sc_counter_In[1:0] = s0_pop ? 2'b00 : sc_counter_Q[1:0] + 2'b01;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
@@ -311,64 +333,34 @@ module bank_sram_controller(
     end
   end
 
-  assign read_with_linefill_done = s0_op_is_read_linefill & sc_counter_Q[1:0] == 2'b01;
-
-  assign isu_sc_write_done     = sc_wbuf_rtn_valid_i;
-  assign isu_sc_read_done      = s0_op_is_read & sc_xbar_valid_o;
-  assign isu_sc_wirteBack_done = sc_biu_valid_o & sc_biu_ready_i;
-
-  assign isu_sc_req_done = read_with_linefill_done
-                         | isu_sc_write_done
-                         | isu_sc_read_done
-                         | isu_sc_wirteBack_done;
-
-//---------------------------------------------------------
-//                     Read from SRAM
-// 1. read
-// 2. write back
-//---------------------------------------------------------
-// SC counter
-// 2'b00 -> send ren to sram
-// 2'b01 -> get read data from sram
-// 2'b10 -> read data in data buffer
-//---------------------------------------------------------
-
-
-//====================================================================
-//                      Data Array
-// offset0 data array
-// offset1 data array
-//====================================================================
-
-
 //--------------------------------------------------------------------
 //                    Data array: offset0
 // Witdh: 128
 // Depth: 64
 //--------------------------------------------------------------------
-  assign offset0_data_array_touch = ~s0_offset
-                                  | (s0_op_is_read_linefill & offset0_empty)
-                                  | (s0_op_is_write_back    & s0_offset0_dirty);
+  assign s0_offset0_data_array_touch = ~s0_offset
+                                     | (s0_op_is_read_linefill & offset0_empty)
+                                     | (s0_op_is_write_back    & s0_offset0_dirty);
 
-  assign offset0_data_array_en = offset0_data_array_touch & data_array_en;
+  assign s0_offset0_data_array_en = s0_offset0_data_array_touch & data_array_en;
 
-  assign offset0_data_array_wen = offset0_data_array_touch & data_array_wen;
+  assign s0_offset0_data_array_wen = s0_offset0_data_array_touch & data_array_wen;
 
-  assign offset0_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
+  assign s0_offset0_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
 
-  assign offset0_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset0_i[127:0]
-                                         | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
+  assign s0_offset0_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset0_i[127:0]
+                                            | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
 
   ram_sp #(
     .AW(6),
     .DW(128)
-  ) offset0_data_array (
-    .CLK(clk_i                          ),
-    .ME (offset0_data_array_en          ),
-    .WE (offset0_data_array_wen         ),
-    .ADR(offset0_data_array_addr[5:0]   ),
-    .D  (offset0_data_array_wdata[127:0]),
-    .Q  (offset0_data_array_rdata[127:0])
+  ) s0_offset0_data_array (
+    .CLK(clk_i                             ),
+    .ME (s0_offset0_data_array_en          ),
+    .WE (s0_offset0_data_array_wen         ),
+    .ADR(s0_offset0_data_array_addr[5:0]   ),
+    .D  (s0_offset0_data_array_wdata[127:0]),
+    .Q  (s1_offset0_data_array_rdata[127:0])
   );
 
 //--------------------------------------------------------------------
@@ -376,29 +368,29 @@ module bank_sram_controller(
 // Witdh: 128
 // Depth: 64
 //--------------------------------------------------------------------
-  assign offset1_data_array_touch = s0_offset
-                                  | (s0_op_is_read_linefill & offset1_empty)
-                                  | (s0_op_is_write_back    & s0_offset1_dirty);
+  assign s0_offset1_data_array_touch = s0_offset
+                                     | (s0_op_is_read_linefill & offset1_empty)
+                                     | (s0_op_is_write_back    & s0_offset1_dirty);
 
-  assign offset1_data_array_en = offset1_data_array_touch & data_array_en;
+  assign s0_offset1_data_array_en = s0_offset1_data_array_touch & data_array_en;
 
-  assign offset1_data_array_wen = offset1_data_array_touch & data_array_wen;
+  assign s0_offset1_data_array_wen = s0_offset1_data_array_touch & data_array_wen;
 
-  assign offset1_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
+  assign s0_offset1_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
 
-  assign offset1_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset1_i[127:0]
-                                         | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
+  assign s0_offset1_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset1_i[127:0]
+                                            | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
 
   ram_sp #(
     .AW(6),
     .DW(128)
-  ) offset1_data_array (
-    .CLK(clk_i                          ),
-    .ME (offset1_data_array_en          ),
-    .WE (offset1_data_array_wen         ),
-    .ADR(offset1_data_array_addr[5:0]   ),
-    .D  (offset1_data_array_wdata[127:0]),
-    .Q  (offset1_data_array_rdata[127:0])
+  ) s0_offset1_data_array (
+    .CLK(clk_i                             ),
+    .ME (s0_offset1_data_array_en          ),
+    .WE (s0_offset1_data_array_wen         ),
+    .ADR(s0_offset1_data_array_addr[5:0]   ),
+    .D  (s0_offset1_data_array_wdata[127:0]),
+    .Q  (s1_offset1_data_array_rdata[127:0])
   );
 
 
