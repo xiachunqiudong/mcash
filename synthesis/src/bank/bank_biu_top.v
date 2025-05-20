@@ -58,26 +58,67 @@ module bank_biu_top #(
   input  wire [1:0]            biu_axi3_bresp_i
 );
 
-  wire         aw_fifo_push;
-  wire         aw_fifo_pop;
-  wire         aw_fifo_empty;
-  wire         aw_fifo_full;
-  wire [32:0]  aw_fifo_din;
-  wire [32:0]  aw_fifo_dout;
+  wire         biu_out_valid;
+  wire         biu_fifo_pop;
+  wire         biu_fifo_allowIn;
+  wire [32:0]  biu_din0;
+  wire [32:0]  biu_din1;
+  wire [32:0]  biu_dout;
+
+//-------------------------------------------------------------------------
+// BIU FIFO
+// 2 inputs, 1 output
+//-------------------------------------------------------------------------
+  assign biu_din0[32]    = 1'b1;
+  assign biu_din0[31:27] = htu_biu_set_way_i[5:0];
+  assign biu_din0[26:0]  = htu_biu_awaddr_i[31:5];
+
+  assign biu_din1[32]    = 1'b0;
+  assign biu_din1[31:27] = htu_biu_set_way_i[5:0];
+  assign biu_din1[26:0]  = htu_biu_araddr_i[31:5];
+
+  assign biu_fifo_pop  = biu_axi3_arvalid_o & biu_axi3_arready_i
+                       | biu_axi3_awvalid_o & biu_axi3_awready_i;
+
+  assign htu_biu_arready_o = biu_fifo_allowIn;
+  assign htu_biu_awready_o = biu_fifo_allowIn;
+
+  biu_fifo_2i1o #(
+    .AW(3 ),
+    .DW(33)
+  ) biu_ctrl_fifo(
+    .clk       (clk_i            ),
+    .rst       (rst_i            ),
+    .din0_valid(htu_biu_awvalid_i),
+    .din1_valid(htu_biu_arvalid_i),
+    .pop       (biu_fifo_pop     ),
+    .din0      (biu_din0         ),
+    .din1      (biu_din1         ),
+    .allowIn   (biu_fifo_allowIn ),
+    .dout_valid(biu_out_valid    ),
+    .dout      (biu_dout         )
+  );
 
 //-------------------------------------------------------------------------
 //                            AR channel
 // to add fifo to release timing
 //-------------------------------------------------------------------------
-  assign biu_axi3_arvalid_o                = htu_biu_arvalid_i;
-  assign biu_axi3_arid_o[5:0]              = htu_biu_set_way_i[5:0];
+  assign biu_axi3_arvalid_o                = biu_out_valid & ~biu_dout[32];
+  assign biu_axi3_arid_o[5:0]              = {2'b00, biu_dout[31:27]};
+  assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {biu_dout[26:0], 5'b00000};
   assign biu_axi3_arsize_o[2:0]            = 3'b101;  // 32 Byte
   assign biu_axi3_arlen_o[3:0]             = 4'b0000;
   assign biu_axi3_arburst_o[1:0]           = 2'b01;   // Incrementing burst
-  assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {htu_biu_araddr_i[ADDR_WIDTH-1:5], 5'b00000};
 
-  assign htu_biu_arready_o = biu_axi3_arready_i;
-
+//-------------------------------------------------------------------------
+//                             AW channel
+//-------------------------------------------------------------------------
+  assign biu_axi3_awvalid_o                = biu_out_valid & biu_dout[32];
+  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, biu_dout[31:27]};
+  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {biu_dout[26:0], 5'b00000};
+  assign biu_axi3_awlen_o[3:0]             = 4'b0000;
+  assign biu_axi3_awsize_o[2:0]            = 3'b101;
+  assign biu_axi3_awburst_o[1:0]           = 2'b01;
 
 //-------------------------------------------------------------------------
 //                             R channel
@@ -87,47 +128,13 @@ module bank_biu_top #(
   assign biu_isu_rid_o[ID_WIDTH-1:0]     = biu_axi3_rid_i[ID_WIDTH-1:0];
   assign biu_axi3_rready_o               = biu_isu_rready_i;
 
-
-//-------------------------------------------------------------------------
-//                             AW channel
-// AW FIFO DEPTH: 8
-//-------------------------------------------------------------------------
-  assign htu_biu_awready_o = ~aw_fifo_full;
-
-  assign aw_fifo_push = htu_biu_awvalid_i & htu_biu_awready_o;
-  assign aw_fifo_pop  = biu_axi3_awvalid_o & biu_axi3_awready_i;
-
-  assign aw_fifo_din[32:0] = {htu_biu_set_way_i[5:0],  // 6  bits
-                              htu_biu_awaddr_i[31:5]}; // 27 bits
-
-  sync_fifo#(
-     .AW(3 ),
-     .DW(33)
-  ) aw_fifo(
-      .clk   (clk_i        ),
-      .rst   (rst_i        ),
-      .push  (aw_fifo_push ),
-      .din   (aw_fifo_din  ),
-      .pop   (aw_fifo_pop  ),
-      .dout  (aw_fifo_dout ),
-      .empry (aw_fifo_empty),
-      .full  (aw_fifo_full )
-  );
-
-  assign biu_axi3_awvalid_o                = ~aw_fifo_empty;
-  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, aw_fifo_dout[31:27]};
-  assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {aw_fifo_dout[26:0], 5'b00000};
-  assign biu_axi3_awlen_o[3:0]             = 4'b0000;
-  assign biu_axi3_awsize_o[2:0]            = 3'b101;
-  assign biu_axi3_awburst_o[1:0]           = 2'b01;
-
 //-------------------------------------------------------------------------
 //                             W channel
 //-------------------------------------------------------------------------
   assign biu_axi3_wvalid_o                = sc_biu_valid_i;
   assign biu_axi3_wdata_o[DATA_WIDTH-1:0] = sc_biu_data_i[255:0];
   assign biu_axi3_wstrb_o[STRB_WIDTH-1:0] = sc_biu_strb_i[31:0];
-  assign biu_axi3_wid_o[ID_WIDTH-1:0]     = {2'b00, htu_biu_set_way_i[5:0]};
+  assign biu_axi3_wid_o[ID_WIDTH-1:0]     = {2'b00, sc_biu_set_way_i[5:0]};
   assign biu_axi3_wlast_o                 = 1'b1;
 
   assign sc_biu_ready_o = biu_axi3_wready_i;

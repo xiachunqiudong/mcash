@@ -15,15 +15,22 @@ def mcash_req_hex(tag, cache_bank, cache_set, offset, data, op):
 def write_with_evit():
   tag = 0
   cnt = 0
-  
+
   for i in range(8):
     hex = mcash_req_hex(tag, 0, 0, 0, i + 1, 1)
     print(hex)
     tag += 1
     cnt += 1
-  
+
   for i in range(8):
     hex = mcash_req_hex(tag, 0, 0, 0, i + 1, 1)
+    print(hex)
+    tag += 1
+    cnt += 1
+
+  tag = 0
+  for i in range(8):
+    hex = mcash_req_hex(tag, 0, 0, 0, i + 1, 0)
     print(hex)
     tag += 1
     cnt += 1
