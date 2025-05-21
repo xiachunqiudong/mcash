@@ -51,8 +51,8 @@ module bank_isu_iq #(
   reg  [1:0]           ch_id_array_Q            [DEPTH-1:0];
   reg                  iq_op_is_write_array_In  [DEPTH-1:0];
   reg                  iq_op_is_write_array_Q   [DEPTH-1:0];
-  reg                  iq_need_evit_array_In    [DEPTH-1:0];
-  reg                  iq_need_evit_array_Q     [DEPTH-1:0];
+  reg [DEPTH-1:0]      iq_need_evit_array_In;
+  reg [DEPTH-1:0]      iq_need_evit_array_Q;
   reg                  iq_need_linefill_array_In[DEPTH-1:0];
   reg                  iq_need_linefill_array_Q [DEPTH-1:0];
   reg  [6:0]           set_way_offset_array_In  [DEPTH-1:0];
@@ -118,7 +118,7 @@ module bank_isu_iq #(
       valid_array_In[writePtr_Q] = 1'b1;
     end
     if (issue_kickoff) begin
-      valid_array_In[select_ptr] = 1'b0;
+      valid_array_In[select_ptr] = iq_need_evit_array_Q[select_ptr];
     end
   end
 
@@ -159,12 +159,14 @@ module bank_isu_iq #(
   always @(*) begin
     // default value
     iq_need_evit_array_In = iq_need_evit_array_Q;
-    // update value
+    // update value when enqueue
     iq_need_evit_array_In[writePtr_Q] = req_opcode_i[1];
+    // update value when dequeue
+    iq_need_evit_array_In[select_ptr] = 1'b0;
   end
 
   always @(posedge clk_i) begin
-    if (writePtr_kickoff) begin // update array when write
+    if (writePtr_kickoff | issue_kickoff) begin
       iq_need_evit_array_Q <= iq_need_evit_array_In;
     end
   end
@@ -248,7 +250,7 @@ module bank_isu_iq #(
   end
 
   assign execute_array[DEPTH-1:0] = valid_array_Q[DEPTH-1:0]
-                                  & mshr_allow_array_Q[DEPTH-1:0]
+                                  & (mshr_allow_array_Q[DEPTH-1:0] | iq_need_evit_array_Q[DEPTH-1:0])
                                   & credit_allow_array[DEPTH-1:0];
 
   shift_priority_arb_256
@@ -278,16 +280,14 @@ module bank_isu_iq #(
 
   assign iq_sc_valid_o               = |execute_array[DEPTH-1:0];
   assign iq_sc_channel_id_o[1:0]     = ch_id_array_Q[select_ptr];
-  // assign iq_sc_opcode_o = 
+
   assign iq_sc_set_way_offset_o[6:0]     = set_way_offset_array_Q[select_ptr];
   assign iq_sc_wbuffer_id_o[7:0]         = wbuffer_id_array_Q[select_ptr];
   assign iq_sc_xbar_rob_num_o[2:0]       = rob_id_array_Q[select_ptr];
   assign iq_sc_cacheline_state_offset0_o[1:0] = cacheline_state_array_Q[select_ptr][1:0];
   assign iq_sc_cacheline_state_offset1_o[1:0] = cacheline_state_array_Q[select_ptr][3:2];
-  // assign iq_sc_linefill_data_offset0_o 
-  // assign iq_sc_linefill_data_offset1_o
 
-  assign iq_linefill_buffer_raddr_o[5:0] = set_way_offset_array_Q[select_ptr][6:1];
+  assign iq_linefill_buffer_raddr_o[5:0]      = set_way_offset_array_Q[select_ptr][6:1];
   assign iq_sc_linefill_data_offset0_o[127:0] = linefill_buffer_data_i[127:0];
   assign iq_sc_linefill_data_offset1_o[127:0] = linefill_buffer_data_i[255:128];
 

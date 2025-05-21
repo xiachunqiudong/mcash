@@ -99,9 +99,9 @@ module bank_sram_controller(
   reg          s1_op_is_read_Q;
   reg          s1_op_is_read_linefill_Q;
   reg          s1_op_is_write_back_Q;
-  reg [5:0]    s1_set_way_Q;
-  reg [1:0]    s1_channel_id_Q;
-  reg [2:0]    s1_rob_num_Q;
+  reg  [5:0]   s1_set_way_Q;
+  reg  [1:0]   s1_channel_id_Q;
+  reg  [2:0]   s1_rob_num_Q;
   wire [127:0] s1_offset0_data_array_rdata;
   wire [127:0] s1_offset1_data_array_rdata;
   wire [127:0] s1_data_array_rdata;
@@ -117,7 +117,7 @@ module bank_sram_controller(
   assign s0_op_is_read          = isu_sc_opcode_i[2:0] == 3'd1;
   assign s0_op_is_read_linefill = isu_sc_opcode_i[2:0] == 3'd2;
   assign s0_op_is_write_back    = isu_sc_opcode_i[2:0] == 3'd3;
-  assign s0_set_way[5:0]        = isu_sc_set_way_offset_i[5:0];
+  assign s0_set_way[5:0]        = isu_sc_set_way_offset_i[6:1];
   assign s0_offset              = isu_sc_set_way_offset_i[0];
   assign s0_channel_id[1:0]     = isu_sc_channel_id_i[1:0];
   assign s0_rob_num[2:0]        = isu_sc_xbar_rob_num_i[2:0];
@@ -350,7 +350,7 @@ module bank_sram_controller(
 
   assign s0_offset0_data_array_wen = s0_offset0_data_array_touch & data_array_wen;
 
-  assign s0_offset0_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
+  assign s0_offset0_data_array_addr[5:0] = s0_set_way[5:0];
 
   assign s0_offset0_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset0_i[127:0]
                                             | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];

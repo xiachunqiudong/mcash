@@ -84,7 +84,7 @@ module bank_biu_top #(
   assign htu_biu_awready_o = biu_fifo_allowIn;
 
   biu_fifo_2i1o #(
-    .AW(3 ),
+    .AW(4 ),
     .DW(33)
   ) biu_ctrl_fifo(
     .clk       (clk_i            ),
