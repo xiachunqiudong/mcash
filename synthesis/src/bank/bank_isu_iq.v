@@ -157,18 +157,17 @@ module bank_isu_iq #(
   end
 
   always @(*) begin
-    // default value
     iq_need_evit_array_In = iq_need_evit_array_Q;
-    // update value when enqueue
-    iq_need_evit_array_In[writePtr_Q] = req_opcode_i[1];
-    // update value when dequeue
-    iq_need_evit_array_In[select_ptr] = 1'b0;
+    if (writePtr_kickoff) begin
+      iq_need_evit_array_In[writePtr_Q] = req_opcode_i[1];
+    end
+    if (issue_kickoff) begin
+      iq_need_evit_array_In[select_ptr] = 1'b0;
+    end
   end
 
   always @(posedge clk_i) begin
-    if (writePtr_kickoff | issue_kickoff) begin
-      iq_need_evit_array_Q <= iq_need_evit_array_In;
-    end
+    iq_need_evit_array_Q <= iq_need_evit_array_In;
   end
 
   always @(posedge clk_i) begin
