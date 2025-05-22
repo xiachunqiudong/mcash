@@ -58,10 +58,9 @@ module bank_top(
   wire [1:0]  htu_isu_cacheline_offset0_state;
   wire [1:0]  htu_isu_cacheline_offset1_state;
   wire        htu_biu_arvalid;
-  wire        htu_biu_arready;
+  wire        htu_biu_allowIn;
   wire [31:5] htu_biu_araddr;
   wire        htu_biu_awvalid;
-  wire        htu_biu_awready;
   wire [31:5] htu_biu_awaddr;
   wire [5:0]  htu_biu_set_way;
  
@@ -125,12 +124,11 @@ module bank_top(
     .isu_htu_already_done_valid_i     (                                    ),
     .isu_htu_set_way_i                (                                    ),
     .htu_biu_arvalid_o                (htu_biu_arvalid                     ),
-    .htu_biu_arready_i                (htu_biu_arready                     ),
     .htu_biu_araddr_o                 (htu_biu_araddr[31:5]                ),
     .htu_biu_awvalid_o                (htu_biu_awvalid                     ),
-    .htu_biu_awready_i                (htu_biu_awready                     ),
     .htu_biu_awaddr_o                 (htu_biu_awaddr[31:5]                ),
-    .htu_biu_set_way_o                (htu_biu_set_way[5:0]                )
+    .htu_biu_set_way_o                (htu_biu_set_way[5:0]                ),
+    .htu_biu_allowIn_i                (htu_biu_allowIn                     )
   );
 
 
@@ -182,12 +180,11 @@ module bank_top(
     .clk_i                   (clk_i                     ),
     .rst_i                   (rst_i                     ),
     .htu_biu_arvalid_i       (htu_biu_arvalid           ),
-    .htu_biu_arready_o       (htu_biu_arready           ),
     .htu_biu_araddr_i        (htu_biu_araddr[31:5]      ),
     .htu_biu_awvalid_i       (htu_biu_awvalid           ),
-    .htu_biu_awready_o       (htu_biu_awready           ),
     .htu_biu_awaddr_i        (htu_biu_awaddr[31:5]      ),
     .htu_biu_set_way_i       (htu_biu_set_way[5:0]      ),
+    .htu_biu_allowIn_o       (htu_biu_allowIn           ),
     .sc_biu_valid_i          (sc_biu_valid              ),
     .sc_biu_ready_o          (sc_biu_ready              ),
     .sc_biu_data_i           (sc_biu_data[255:0]        ),

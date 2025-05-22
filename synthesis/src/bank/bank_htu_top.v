@@ -26,11 +26,10 @@ module bank_htu_top (
   // htu >> sub mem
   output wire [5:0]  htu_biu_set_way_o,
   output wire        htu_biu_arvalid_o,
-  input  wire        htu_biu_arready_i,
   output wire [31:5] htu_biu_araddr_o,
   output wire        htu_biu_awvalid_o,
-  input  wire        htu_biu_awready_i,
-  output wire [31:5] htu_biu_awaddr_o
+  output wire [31:5] htu_biu_awaddr_o,
+  input  wire        htu_biu_allowIn_i
 );
 
   wire         xbar_bank_htu_kickoff;
@@ -122,8 +121,8 @@ module bank_htu_top (
                                  );
 
   assign xbar_bank_htu_allowIn_o = htu_isu_allowIn_i                             // isu iq is not full
-                                 & (~cacheline_need_refill | htu_biu_arready_i)  // htu send ar to biu
-                                 & (~cacheline_need_evit   | htu_biu_awready_i); // htu send aw to biu
+                                 & (~(cacheline_need_refill | cacheline_need_evit)
+                                    | htu_biu_allowIn_i);
 
 //-------------------------------------------------------------------------
 //                               HTU >> ISU
@@ -146,8 +145,8 @@ module bank_htu_top (
   assign htu_isu_linefill_way_o[2:0] = htu_access_way[2:0];
 
   assign htu_isu_valid_o = xbar_bank_htu_valid_i
-                         & (~cacheline_need_refill | htu_biu_arready_i)
-                         & (~cacheline_need_evit   | htu_biu_awready_i);
+                         & (~(cacheline_need_refill | cacheline_need_evit)
+                            | htu_biu_allowIn_i);
 
 // ISU opcode[0]: 0 => read    1 => write
 // ISU opcode[1]: 0 => no evit 1 => need evit

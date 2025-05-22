@@ -8,12 +8,11 @@ module bank_biu_top #(
   input  wire                  rst_i,
   // htu >> biu
   input  wire                  htu_biu_arvalid_i,
-  output wire                  htu_biu_arready_o,
   input  wire [ADDR_WIDTH-1:5] htu_biu_araddr_i,
   input  wire                  htu_biu_awvalid_i,
-  output wire                  htu_biu_awready_o,
   input  wire [ADDR_WIDTH-1:5] htu_biu_awaddr_i,
   input  wire [5:0]            htu_biu_set_way_i,
+  output wire                  htu_biu_allowIn_o,
   // sc >> biu
   input  wire                  sc_biu_valid_i,
   output wire                  sc_biu_ready_o,
@@ -80,8 +79,7 @@ module bank_biu_top #(
   assign biu_fifo_pop  = biu_axi3_arvalid_o & biu_axi3_arready_i
                        | biu_axi3_awvalid_o & biu_axi3_awready_i;
 
-  assign htu_biu_arready_o = biu_fifo_allowIn;
-  assign htu_biu_awready_o = biu_fifo_allowIn;
+  assign htu_biu_allowIn_o = biu_fifo_allowIn;
 
   biu_fifo_2i1o #(
     .AW(4 ),
