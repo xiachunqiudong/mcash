@@ -149,7 +149,7 @@ module bank_isu_credit_manage #(
       credit_allow_array_In[iq_write_ptr] = enqueue_inst_has_credit;
     end
     for (int i = 0; i < CHANNEL_NUM; i++) begin
-      if (channels_has_pending_inst[i]) begin
+      if (channels_pending_inst_num_release[i]) begin
         credit_allow_array_In[channel_credit_allocate_ptr[i]] = 1'b1;
       end
     end
