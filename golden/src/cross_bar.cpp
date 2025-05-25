@@ -4,5 +4,6 @@
 
 std::vector<std::vector<Mcash_req_t>> xbar_ch_buffers;
 
-
-
+int main() {
+  return 0;
+}
