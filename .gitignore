@@ -5,5 +5,6 @@
 *.key
 /simulation/sim/*
 !/simulation/Makefile
+/golden/build
 
 

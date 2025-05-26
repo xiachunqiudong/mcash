@@ -1,5 +1,7 @@
 $MCASH_HOME/simulation/src/tb/mcash_tb.sv
 $MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
+$MCASH_HOME/simulation/src/dumper/mcash_diff.sv
+$MCASH_HOME/golden/build/golden.so
 
 $MCASH_HOME/synthesis/src/commons/sync_fifo.v
 $MCASH_HOME/synthesis/src/commons/biu_fifo_2i1o.v

@@ -16,7 +16,10 @@ BUILD_DIR = ./build
 gen_code:
 	python3 $(MCASH_HOME)/simulation/src/tools/addr_gen.py > $(CASE_PATH)/$(CASE_NAME).hex
 
-vcs:
+golden:
+	make -C ../../golden all
+
+vcs: golden
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \
 	vcs -full64 -timescale=1ns/1ns +lint=TFIPC-L -debug_acc+all -debug_access -sverilog \

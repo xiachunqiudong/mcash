@@ -1,11 +1,13 @@
 
+VCS_INC = /home/synopsys/vcs/O-2018.09-SP2/include
 
-CXXFLAGS = -Wall -Werror -Iinclude
+CXXFLAGS = -Wall -Werror -Iinclude -shared -std=c++11 -fPIC \
+           -I $(VCS_INC)
 
 SRCS := $(wildcard src/*.cpp)
 OBJS := $(patsubst src/%.cpp,build/objs/%.o,$(SRCS))
 
-TARGET = ./build/mcash
+TARGET = ./build/golden.so
 
 all: $(TARGET)
 

@@ -1000,3 +1000,5 @@ module mcash_tb;
 endmodule
 
 bind mcash_tb mcash_dumper u_mcash_dumper(clk);
+
+bind mcash_tb mcash_diff u_mcash_diff(clk);

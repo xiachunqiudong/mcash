@@ -1,7 +1,7 @@
-
+#include <stdint.h>
 
 struct Mcash_req_t {
-  int op;
-  int addr;
-  long data;
+  uint8_t  op;
+  uint32_t addr;
+  uint64_t data;
 };
