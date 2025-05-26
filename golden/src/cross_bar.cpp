@@ -25,15 +25,21 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
   // get channel want to send bank request
   for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
     chs_has_valid_entry[ch] = false;
+    chs_valid_entry_id[ch] = 0;
     auto ch_buffer = xbar_ch_buffers[ch];
+    if (ch_buffer.empty()) break;
     for (int en = 0; en < XBAR_BUFFER_SIZE; en++) {
       uint8_t ch_bank_id = (uint8_t)get_bits((uint64_t)ch_buffer[en].addr, 8, 9);
       if (ch_buffer[en].valid && ch_bank_id == bank_id) {
         chs_has_valid_entry[ch] = true;
         chs_valid_entry_id[ch] = en;
+        // printf("ch: %d, has_valid_entry: %d, valid_entry_id: %d\n", ch, chs_has_valid_entry[ch], chs_valid_entry_id[ch]);
         break;
       }
     }
+  }
+  for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
+    // printf("ch: %d, has_valid_entry: %d, valid_entry_id: %d\n", ch, chs_has_valid_entry[ch], chs_valid_entry_id[ch]);
   }
   // bank rr
   for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
@@ -42,11 +48,13 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
       has_req = true;
       ch_id = act_ch;
       entry_id = chs_valid_entry_id[act_ch];
+      printf("act_ch:%d ch id:%d, entryid:%d",act_ch,  ch_id, entry_id);
       xbar_ch_buffers[ch_id][entry_id].valid = false;
       banks_ch_rr_id[bank_id] = (act_ch + 1) % CHANNLE_SIZE;
       break;
     }
   }
+  std::cout << "bank_ch_rr pass1" << std::endl;
 }
 
 int xbar_bank_htu_req_check(uint8_t bank_id, uint8_t ch_id, uint8_t entry_id, uint8_t op, uint32_t addr, uint64_t data) {
