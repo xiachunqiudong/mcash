@@ -19,7 +19,7 @@ int xbar_ch_buffers_push(uint8_t ch_id, uint8_t op, uint32_t addr, uint64_t data
 
 uint8_t banks_ch_rr_id[BANK_SIZE];
 
-void bank_ch_rr(uint8_t bank_id, bool& has_req,uint8_t& ch_id, uint8_t& entry_id) {
+void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_id) {
   bool chs_has_valid_entry[CHANNLE_SIZE];
   uint8_t chs_valid_entry_id[CHANNLE_SIZE];
   // get channel want to send bank request
@@ -28,7 +28,7 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req,uint8_t& ch_id, uint8_t& entry_id
     auto ch_buffer = xbar_ch_buffers[ch];
     for (int en = 0; en < XBAR_BUFFER_SIZE; en++) {
       uint8_t ch_bank_id = (uint8_t)get_bits((uint64_t)ch_buffer[en].addr, 8, 9);
-      if (ch_buffer[en].valid && ch_bank_id == ch_bank_id) {
+      if (ch_buffer[en].valid && ch_bank_id == bank_id) {
         chs_has_valid_entry[ch] = true;
         chs_valid_entry_id[ch] = en;
         break;
