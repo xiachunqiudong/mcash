@@ -57,7 +57,9 @@ module mcash_diff(
 
     // check xbar to bank req
     if (xbar_bank0_htu_valid & xbar_bank0_htu_allowIn) begin
-      c_xbar_bank_htu_req_check(0, xbar_bank0_htu_ch_id, ch0_entryID_send_to_bank0, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data);
+      if(c_xbar_bank_htu_req_check(0, xbar_bank0_htu_ch_id, ch0_entryID_send_to_bank0, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data)) begin
+        $finish;
+      end
     end
 
 

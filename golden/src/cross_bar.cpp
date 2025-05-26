@@ -33,13 +33,12 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
       if (ch_buffer[en].valid && ch_bank_id == bank_id) {
         chs_has_valid_entry[ch] = true;
         chs_valid_entry_id[ch] = en;
-        // printf("ch: %d, has_valid_entry: %d, valid_entry_id: %d\n", ch, chs_has_valid_entry[ch], chs_valid_entry_id[ch]);
         break;
       }
     }
   }
   for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
-    // printf("ch: %d, has_valid_entry: %d, valid_entry_id: %d\n", ch, chs_has_valid_entry[ch], chs_valid_entry_id[ch]);
+    printf("ch: %d, has_valid_entry: %d, valid_entry_id: %d\n", ch, chs_has_valid_entry[ch], chs_valid_entry_id[ch]);
   }
   // bank rr
   for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
@@ -65,6 +64,8 @@ int xbar_bank_htu_req_check(uint8_t bank_id, uint8_t ch_id, uint8_t entry_id, ui
   auto bank_req_entry = xbar_ch_buffers[bank_ch_id][bank_entry_id];
   
   if (!bank_has_req || bank_ch_id != ch_id || bank_entry_id != entry_id || bank_req_entry.op != op || bank_req_entry.addr != addr || bank_req_entry.data != data) {
+    printf("golden: bank_has_req: %d, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", bank_has_req, bank_ch_id, bank_entry_id, bank_req_entry.op, bank_req_entry.addr, bank_req_entry.data);
+    printf("RTL:    bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", ch_id, entry_id, op, addr, data);
     std::cout << "xbar bank req checke fail!" << std::endl;
     return 1;
   }
