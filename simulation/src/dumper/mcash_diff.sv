@@ -16,7 +16,7 @@ module mcash_diff(
   assign mcash_ch0_req_valid   = `CROSS_BAR_TOP.mcash_ch0_req_valid_i;
   assign mcash_ch0_req_allowIn = `CROSS_BAR_TOP.mcash_ch0_req_allowIn_o;
   assign mcash_ch0_req_op      = `CROSS_BAR_TOP.mcash_ch0_req_op_i;
-  assign mcash_ch0_req_addr    = `CROSS_BAR_TOP.mcash_ch0_req_addr_i;
+  assign mcash_ch0_req_addr    = {`CROSS_BAR_TOP.mcash_ch0_req_addr_i[31:4], 4'b0};
   assign mcash_ch0_req_data    = `CROSS_BAR_TOP.mcash_ch0_req_data_i;
 
   always_ff @(posedge clk) begin
@@ -24,6 +24,7 @@ module mcash_diff(
     if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
       c_xbar_ch_buffers_push(0, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data);
     end
+
   end
 
 
