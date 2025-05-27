@@ -39,3 +39,6 @@ simb: vcs
 vd:
 	verdi -elab ./build/simv.daidir/kdb \
 	-ssf $(CASE_PATH)/$(CASE_NAME).fsdb &
+
+clean:
+	rm -rf ./build
