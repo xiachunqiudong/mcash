@@ -40,10 +40,8 @@ void logMessage(uint64_t cycle, LogLevel level, const char* file, const char* fu
     std::string color = get_color_by_log_level(level);
     std::ostringstream oss;
 
-    oss << color << cycle << " | [" << levelStr << "] [" 
-        << file << ">" << function << "] "
-        << message << COLOR_RESET << std::endl;
-    
+    oss << color << cycle << " | [" << levelStr << "] [" << file << ">" << function << "] " << message << COLOR_RESET << std::endl;
+
     std::cerr << oss.str();
 }
 

@@ -38,8 +38,6 @@ module bank_isu_iq #(
   wire [PTR_WIDTH:0]   queue_size_In;
   reg  [PTR_WIDTH:0]   queue_size_Q;
   wire                 issue_kickoff;
-  wire [PTR_WIDTH-1:0] readPtr_In;
-  reg  [PTR_WIDTH-1:0] readPtr_Q;
   wire                 writePtr_kickoff;
   wire [PTR_WIDTH-1:0] writePtr_In;
   reg  [PTR_WIDTH-1:0] writePtr_Q;
