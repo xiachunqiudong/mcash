@@ -34,7 +34,7 @@ std::string get_color_by_log_level(LogLevel level) {
     }
 }
 
-void logMessage(uint64_t cycle, LogLevel level, const char* file, const char* function, const char* message) {
+static void __log_message__(uint64_t cycle, LogLevel level, const char* file, const char* function, const char* message) {
 
     std::string levelStr = get_log_level_string(level);
     std::string color = get_color_by_log_level(level);
@@ -51,5 +51,5 @@ void log_message(uint64_t cycle, LogLevel level, const char* file, const char* f
     va_start(args, format);
     vsprintf(msg_buf, format, args);
     va_end(args);
-    logMessage(cycle, level, file, function, msg_buf);
+    __log_message__(cycle, level, file, function, msg_buf);
 }

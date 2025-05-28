@@ -7,7 +7,7 @@ uint8_t banks_inflight_array[BANK_SIZE][64];
 
 uint8_t banks_chs_rob[BANK_SIZE][CHANNLE_SIZE];
 
-uint16_t banks_iq_write_ptr[ISU_IQ_SIZE], banks_iq_bottom_ptr[ISU_IQ_SIZE], banks_iq_size[ISU_IQ_SIZE];
+uint16_t banks_iq_write_ptr[BANK_SIZE], banks_iq_bottom_ptr[BANK_SIZE], banks_iq_size[BANK_SIZE];
 
 bool banks_mshr_allow_array[BANK_SIZE][ISU_IQ_SIZE];
 
@@ -55,6 +55,28 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
 
   return 0;
 }
+
+uint16_t get_issue_index(uint8_t bank) {
+  uint16_t issue_ptr;
+  for (uint16_t i = 0; i < ISU_IQ_SIZE; i++) {
+    issue_ptr = (i + banks_iq_bottom_ptr[bank]) % ISU_IQ_SIZE;
+    if (banks_iq[bank][issue_ptr].valid && banks_mshr_allow_array[bank][issue_ptr])
+      return issue_ptr;
+  }
+  return ISU_IQ_SIZE;
+}
+
+int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint32_t bottom_ptr) {
+  uint16_t golden_issue_ptr = get_issue_index(bank);
+  if (   issue_ptr != golden_issue_ptr
+      || bottom_ptr != banks_iq_bottom_ptr[bank]
+     ) {
+    
+    return 1;
+  }
+  return 0;
+}
+
 
 extern "C" {
   int c_isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,

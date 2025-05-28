@@ -8,6 +8,20 @@ struct Mcash_req_t {
   uint64_t data;
 };
 
+// htu check
+enum class Cacheline_state {
+  EMPTY,
+  SYNC,
+  DIRTY
+};
+
+struct Cacheline_t {
+  bool            valid;
+  uint16_t        tag;
+  Cacheline_state offset0_state;
+  Cacheline_state offset1_state;
+};
+
 // isu check
 struct Isu_iq_entry_t {
   bool    valid;
