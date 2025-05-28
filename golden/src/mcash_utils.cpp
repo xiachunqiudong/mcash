@@ -45,3 +45,11 @@ void logMessage(uint64_t cycle, LogLevel level, const char* file, const char* fu
     std::cerr << oss.str();
 }
 
+void log_message(uint64_t cycle, LogLevel level, const char* file, const char* function, const char* format, ...) {
+    char msg_buf[512];
+    va_list args;
+    va_start(args, format);
+    vsprintf(msg_buf, format, args);
+    va_end(args);
+    logMessage(cycle, level, file, function, msg_buf);
+}

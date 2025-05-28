@@ -130,6 +130,12 @@ module mcash_diff(
     else     cycle_cnt_Q <= cycle_cnt_Q + 'd1;
   end
 
+  function longint sv_get_cycle();
+    return cycle_cnt_Q;
+  endfunction
+
+  export "DPI-C" function sv_get_cycle;
+
   assign mcash_ch0_req_valid   = `CROSS_BAR_TOP.mcash_ch0_req_valid_i;
   assign mcash_ch0_req_allowIn = `CROSS_BAR_TOP.mcash_ch0_req_allowIn_o;
   assign mcash_ch0_req_op      = `CROSS_BAR_TOP.mcash_ch0_req_op_i;

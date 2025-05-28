@@ -7,18 +7,18 @@ Mcash_req_t xbar_ch_buffers[CHANNLE_SIZE][XBAR_BUFFER_SIZE];
 
 
 int xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t op, uint32_t addr, uint64_t data) {
-  char msg_buf[256];
+
   if (ch_id >= CHANNLE_SIZE) {
     return 1;
   }
+
   Mcash_req_t* ch_buffer = xbar_ch_buffers[ch_id];
   if (buffer_size[ch_id] >= XBAR_BUFFER_SIZE) {
     return 1;
   }
-  
+
   ch_buffer[write_ptr] = {1, op, addr, data};
-  sprintf(msg_buf, "[CHANNEL %d] buffer push success, op: %d, addr: 0x%x, data: 0x%lx", ch_id, ch_buffer[write_ptr].op, ch_buffer[write_ptr].addr, ch_buffer[write_ptr].data);
-  LOG_INFO(cycle, msg_buf);
+  LOG_INFO(cycle, "[CHANNEL %d] buffer push success, op: %d, addr: 0x%x, data: 0x%lx", ch_id, ch_buffer[write_ptr].op, ch_buffer[write_ptr].addr, ch_buffer[write_ptr].data);
   buffer_size[ch_id] = buffer_size[ch_id] + 1;
   write_ptr = (write_ptr + 1) % XBAR_BUFFER_SIZE;
 
@@ -77,7 +77,6 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
 }
 
 int xbar_bank_htu_req_check(uint64_t cycle, uint8_t bank_id, uint8_t ch_id, uint8_t entry_id, uint8_t op, uint32_t addr, uint64_t data) {
-  char msg_buf[256];
   bool bank_has_req = false;
   uint8_t bank_ch_id, bank_entry_id;
   bank_ch_rr(bank_id, bank_has_req, bank_ch_id, bank_entry_id);
@@ -85,16 +84,12 @@ int xbar_bank_htu_req_check(uint64_t cycle, uint8_t bank_id, uint8_t ch_id, uint
   auto bank_req_entry = xbar_ch_buffers[bank_ch_id][bank_entry_id];
   
   if (!bank_has_req || bank_ch_id != ch_id || bank_entry_id != entry_id || bank_req_entry.op != op || bank_req_entry.addr != addr || bank_req_entry.data != data) {
-    sprintf(msg_buf, "[BANK %d] check fail!", bank_id);
-    LOG_ERROR(cycle, msg_buf);
-    sprintf(msg_buf, "GOLDEN: bank_has_req: %d, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", bank_has_req, bank_ch_id, bank_entry_id, bank_req_entry.op, bank_req_entry.addr, bank_req_entry.data);
-    LOG_ERROR(cycle, msg_buf);
-    sprintf(msg_buf, "RTL:    bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", ch_id, entry_id, op, addr, data);
-    LOG_ERROR(cycle, msg_buf);
+    LOG_ERROR(cycle, "[BANK %d] check fail!", bank_id);
+    LOG_ERROR(cycle, "GOLDEN: bank_has_req: %d, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", bank_has_req, bank_ch_id, bank_entry_id, bank_req_entry.op, bank_req_entry.addr, bank_req_entry.data);
+    LOG_ERROR(cycle, "RTL:    bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx\n", ch_id, entry_id, op, addr, data);
     return 1;
   }
-  sprintf(msg_buf, "[BANK %d] check pass: bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx",bank_id, ch_id, entry_id, op, addr, data);
-  LOG_INFO(cycle, msg_buf);
+  LOG_INFO(cycle, "[BANK %d] check pass: bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx", bank_id, ch_id, entry_id, op, addr, data);
 
   return 0;
 }
