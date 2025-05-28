@@ -5,10 +5,16 @@ module mcash_diff(
 
   `define CROSS_BAR_TOP mcash_tb.u_mcash_top.u_cross_bar_top
   `define CROSS_BAR_TOP_CORE `CROSS_BAR_TOP.u_cross_bar_core
+  `define BANK0_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank0_top.isu_top
+  `define BANK1_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank1_top.isu_top
+  `define BANK2_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank2_top.isu_top
+  `define BANK3_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank3_top.isu_top
 
   import "DPI-C" function int c_xbar_ch_buffers_push(longint cycle, byte ch_id, byte op, int addr, longint data);
   import "DPI-C" function int c_xbar_bank_htu_req_check(longint cycle, byte bank_id, byte ch_id, byte entry_id, byte op, int addr, longint data);
-  
+  import "DPI-C" function int c_isu_iq_enqueue(longint cycle, byte bank, byte cacheline_inflight, byte need_linefill, byte rob_id, byte ch_id,
+                                               byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state);
+
   logic [63:0]  cycle_cnt_Q;
 
   logic         mcash_ch0_req_valid;
@@ -26,7 +32,6 @@ module mcash_diff(
   logic [2:0]   mcash_ch2_req_op;
   logic [31:0]  mcash_ch2_req_addr;
   logic [127:0] mcash_ch2_req_data;
-
 
   logic [2:0]   ch0_entryID_send_to_bank0;
   logic [2:0]   ch0_entryID_send_to_bank1;
@@ -74,6 +79,51 @@ module mcash_diff(
   logic [31:0]  xbar_bank3_htu_addr;
   logic [127:0] xbar_bank3_htu_data;
   logic [7:0]   xbar_bank3_htu_wbuffer_id;
+
+  logic         bank0_htu_isu_valid;
+  logic         bank0_htu_isu_allowIn;
+  logic         bank0_htu_isu_cacheline_inflight;
+  logic         bank0_htu_isu_need_linefill;
+  logic [2:0]   bank0_htu_isu_rob_id;
+  logic [1:0]   bank0_htu_isu_ch_id;
+  logic [1:0]   bank0_htu_isu_opcode;
+  logic [6:0]   bank0_htu_isu_set_way_offset;
+  logic [7:0]   bank0_htu_isu_wbuffer_id;
+  logic [1:0]   bank0_htu_isu_offset0_state;
+  logic [1:0]   bank0_htu_isu_offset1_state;
+  logic         bank1_htu_isu_valid;
+  logic         bank1_htu_isu_allowIn;
+  logic         bank1_htu_isu_cacheline_inflight;
+  logic         bank1_htu_isu_need_linefill;
+  logic [2:0]   bank1_htu_isu_rob_id;
+  logic [1:0]   bank1_htu_isu_ch_id;
+  logic [1:0]   bank1_htu_isu_opcode;
+  logic [6:0]   bank1_htu_isu_set_way_offset;
+  logic [7:0]   bank1_htu_isu_wbuffer_id;
+  logic [1:0]   bank1_htu_isu_offset0_state;
+  logic [1:0]   bank1_htu_isu_offset1_state;
+  logic         bank2_htu_isu_valid;
+  logic         bank2_htu_isu_allowIn;
+  logic         bank2_htu_isu_cacheline_inflight;
+  logic         bank2_htu_isu_need_linefill;
+  logic [2:0]   bank2_htu_isu_rob_id;
+  logic [1:0]   bank2_htu_isu_ch_id;
+  logic [1:0]   bank2_htu_isu_opcode;
+  logic [6:0]   bank2_htu_isu_set_way_offset;
+  logic [7:0]   bank2_htu_isu_wbuffer_id;
+  logic [1:0]   bank2_htu_isu_offset0_state;
+  logic [1:0]   bank2_htu_isu_offset1_state;
+  logic         bank3_htu_isu_valid;
+  logic         bank3_htu_isu_allowIn;
+  logic         bank3_htu_isu_cacheline_inflight;
+  logic         bank3_htu_isu_need_linefill;
+  logic [2:0]   bank3_htu_isu_rob_id;
+  logic [1:0]   bank3_htu_isu_ch_id;
+  logic [1:0]   bank3_htu_isu_opcode;
+  logic [6:0]   bank3_htu_isu_set_way_offset;
+  logic [7:0]   bank3_htu_isu_wbuffer_id;
+  logic [1:0]   bank3_htu_isu_offset0_state;
+  logic [1:0]   bank3_htu_isu_offset1_state;
 
   always_ff @(posedge clk or posedge rst) begin
     if (rst) cycle_cnt_Q <= 'd0;
@@ -138,6 +188,54 @@ module mcash_diff(
   assign ch2_entryID_send_to_bank2[2:0] = `CROSS_BAR_TOP_CORE.u_cross_bar_core_buffer_ch2.ch_entryID_send_to_bank2;
   assign ch2_entryID_send_to_bank3[2:0] = `CROSS_BAR_TOP_CORE.u_cross_bar_core_buffer_ch2.ch_entryID_send_to_bank3;
 
+  assign bank0_htu_isu_valid               = `BANK0_ISU_TOP.htu_isu_valid_i;
+  assign bank0_htu_isu_allowIn             = `BANK0_ISU_TOP.htu_isu_allowIn_o;
+  assign bank0_htu_isu_cacheline_inflight  = `BANK0_ISU_TOP.htu_req_cacheline_inflight;
+  assign bank0_htu_isu_need_linefill       = `BANK0_ISU_TOP.htu_isu_need_linefill_i;
+  assign bank0_htu_isu_rob_id[2:0]         = `BANK0_ISU_TOP.isu_rob_id[2:0];
+  assign bank0_htu_isu_ch_id[1:0]          = `BANK0_ISU_TOP.htu_isu_ch_id_i[1:0];
+  assign bank0_htu_isu_opcode[1:0]         = `BANK0_ISU_TOP.htu_isu_opcode_i[1:0];
+  assign bank0_htu_isu_set_way_offset[6:0] = `BANK0_ISU_TOP.htu_isu_set_way_offset_i[6:0];
+  assign bank0_htu_isu_wbuffer_id[7:0]     = `BANK0_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
+  assign bank0_htu_isu_offset0_state[1:0]  = `BANK0_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank0_htu_isu_offset1_state[1:0]  = `BANK0_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+
+  assign bank1_htu_isu_valid               = `BANK1_ISU_TOP.htu_isu_valid_i;
+  assign bank1_htu_isu_allowIn             = `BANK1_ISU_TOP.htu_isu_allowIn_o;
+  assign bank1_htu_isu_cacheline_inflight  = `BANK1_ISU_TOP.htu_req_cacheline_inflight;
+  assign bank1_htu_isu_need_linefill       = `BANK1_ISU_TOP.htu_isu_need_linefill_i;
+  assign bank1_htu_isu_rob_id[2:0]         = `BANK1_ISU_TOP.isu_rob_id[2:0];
+  assign bank1_htu_isu_ch_id[1:0]          = `BANK1_ISU_TOP.htu_isu_ch_id_i[1:0];
+  assign bank1_htu_isu_opcode[1:0]         = `BANK1_ISU_TOP.htu_isu_opcode_i[1:0];
+  assign bank1_htu_isu_set_way_offset[6:0] = `BANK1_ISU_TOP.htu_isu_set_way_offset_i[6:0];
+  assign bank1_htu_isu_wbuffer_id[7:0]     = `BANK1_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
+  assign bank1_htu_isu_offset0_state[1:0]  = `BANK1_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank1_htu_isu_offset1_state[1:0]  = `BANK1_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+
+  assign bank2_htu_isu_valid               = `BANK2_ISU_TOP.htu_isu_valid_i;
+  assign bank2_htu_isu_allowIn             = `BANK2_ISU_TOP.htu_isu_allowIn_o;
+  assign bank2_htu_isu_cacheline_inflight  = `BANK2_ISU_TOP.htu_req_cacheline_inflight;
+  assign bank2_htu_isu_need_linefill       = `BANK2_ISU_TOP.htu_isu_need_linefill_i;
+  assign bank2_htu_isu_rob_id[2:0]         = `BANK2_ISU_TOP.isu_rob_id[2:0];
+  assign bank2_htu_isu_ch_id[1:0]          = `BANK2_ISU_TOP.htu_isu_ch_id_i[1:0];
+  assign bank2_htu_isu_opcode[1:0]         = `BANK2_ISU_TOP.htu_isu_opcode_i[1:0];
+  assign bank2_htu_isu_set_way_offset[6:0] = `BANK2_ISU_TOP.htu_isu_set_way_offset_i[6:0];
+  assign bank2_htu_isu_wbuffer_id[7:0]     = `BANK2_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
+  assign bank2_htu_isu_offset0_state[1:0]  = `BANK2_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank2_htu_isu_offset1_state[1:0]  = `BANK2_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+
+  assign bank3_htu_isu_valid               = `BANK3_ISU_TOP.htu_isu_valid_i;
+  assign bank3_htu_isu_allowIn             = `BANK3_ISU_TOP.htu_isu_allowIn_o;
+  assign bank3_htu_isu_cacheline_inflight  = `BANK3_ISU_TOP.htu_req_cacheline_inflight;
+  assign bank3_htu_isu_need_linefill       = `BANK3_ISU_TOP.htu_isu_need_linefill_i;
+  assign bank3_htu_isu_rob_id[2:0]         = `BANK3_ISU_TOP.isu_rob_id[2:0];
+  assign bank3_htu_isu_ch_id[1:0]          = `BANK3_ISU_TOP.htu_isu_ch_id_i[1:0];
+  assign bank3_htu_isu_opcode[1:0]         = `BANK3_ISU_TOP.htu_isu_opcode_i[1:0];
+  assign bank3_htu_isu_set_way_offset[6:0] = `BANK3_ISU_TOP.htu_isu_set_way_offset_i[6:0];
+  assign bank3_htu_isu_wbuffer_id[7:0]     = `BANK3_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
+  assign bank3_htu_isu_offset0_state[1:0]  = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank3_htu_isu_offset1_state[1:0]  = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+
   always_comb begin
     // bank0
     if      (xbar_bank0_htu_ch_id == 'd0) xbar_bank0_ch_entryID = ch0_entryID_send_to_bank0;
@@ -161,6 +259,7 @@ module mcash_diff(
     else                                  xbar_bank3_ch_entryID = 'd0;
   end
 
+  // xbar -> bank check
   always_ff @(posedge clk) begin
     // push data into cross bar buffer
     if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
@@ -173,23 +272,67 @@ module mcash_diff(
       c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch1_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
     end
 
-
-    // check xbar to bank req
+    // check xbar to bank0 req
     if (xbar_bank0_htu_valid & xbar_bank0_htu_allowIn) begin
-      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank0_htu_ch_id, ch0_entryID_send_to_bank0, xbar_bank0_htu_opcode, xbar_bank0_htu_addr, xbar_bank0_htu_data)) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank0_htu_ch_id, xbar_bank0_ch_entryID, xbar_bank0_htu_opcode, xbar_bank0_htu_addr, xbar_bank0_htu_data)) begin
+        $finish;
+      end
+    end
+    // check xbar to bank1 req
+    if (xbar_bank1_htu_valid & xbar_bank1_htu_allowIn) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank1_htu_ch_id, xbar_bank1_ch_entryID, xbar_bank1_htu_opcode, xbar_bank1_htu_addr, xbar_bank1_htu_data)) begin
+        $finish;
+      end
+    end
+    // check xbar to bank2 req
+    if (xbar_bank2_htu_valid & xbar_bank2_htu_allowIn) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank2_htu_ch_id, xbar_bank2_ch_entryID, xbar_bank2_htu_opcode, xbar_bank2_htu_addr, xbar_bank2_htu_data)) begin
+        $finish;
+      end
+    end
+    // check xbar to bank3 req
+    if (xbar_bank3_htu_valid & xbar_bank3_htu_allowIn) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank3_htu_ch_id, xbar_bank3_ch_entryID, xbar_bank3_htu_opcode, xbar_bank3_htu_addr, xbar_bank3_htu_data)) begin
         $finish;
       end
     end
 
+  end
 
+  always_ff @(posedge clk) begin
+    if (bank0_htu_isu_valid & bank0_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
+                       bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
+                       bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0])) begin
+          $finish;
+        end
+    end
 
+    if (bank1_htu_isu_valid & bank1_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank1_htu_isu_cacheline_inflight, bank1_htu_isu_need_linefill, bank1_htu_isu_rob_id[2:0], 
+                       bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
+                       bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0])) begin
+          $finish;
+        end
+    end
 
+    if (bank2_htu_isu_valid & bank2_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank2_htu_isu_cacheline_inflight, bank2_htu_isu_need_linefill, bank2_htu_isu_rob_id[2:0], 
+                       bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
+                       bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0])) begin
+          $finish;
+        end
+    end
 
-
-
+    if (bank3_htu_isu_valid & bank3_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank3_htu_isu_cacheline_inflight, bank3_htu_isu_need_linefill, bank3_htu_isu_rob_id[2:0], 
+                       bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
+                       bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0])) begin
+          $finish;
+        end
+    end
 
 
   end
-
 
 endmodule
