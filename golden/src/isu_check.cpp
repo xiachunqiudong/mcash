@@ -56,6 +56,20 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
   return 0;
 }
 
+int iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
+  bool golden_bottom_wen = banks_iq_size[bank] != 0 && !banks_iq[bank][bottom_ptr].valid;
+  if (!golden_bottom_wen) {
+    LOG_ERROR(cycle, "bottom ptr update fail, RTL need update but GOLDEN not!");
+    return 1;
+  }
+  if (bottom_ptr != banks_iq_bottom_ptr[bank]) {
+    LOG_ERROR(cycle, "bottom ptr check fail, GOLDEN bottom ptr %d RTL bottom ptr %d", banks_iq_bottom_ptr[bank], bottom_ptr);
+    return 1;
+  }
+  LOG_INFO(cycle, "[BANK %d] bottom check pass", bank);
+  return 0;
+}
+
 uint16_t get_issue_index(uint8_t bank) {
   uint16_t issue_ptr;
   for (uint16_t i = 0; i < ISU_IQ_SIZE; i++) {
@@ -66,14 +80,29 @@ uint16_t get_issue_index(uint8_t bank) {
   return ISU_IQ_SIZE;
 }
 
-int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint32_t bottom_ptr) {
+int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint16_t bottom_ptr, uint8_t ch_id, uint8_t opcode,
+                  uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
+                  uint64_t linefill_data_offset0, uint64_t linefill_data_offset1) {
+
   uint16_t golden_issue_ptr = get_issue_index(bank);
-  if (   issue_ptr != golden_issue_ptr
-      || bottom_ptr != banks_iq_bottom_ptr[bank]
-     ) {
-    
+  
+  // ptr check
+  if (issue_ptr != golden_issue_ptr) {
+    LOG_ERROR(cycle, "[BANK %d] iq dequeue issue ptr check fail!, GOLDEN: %d, RTL: %d", bank, golden_issue_ptr, issue_ptr);
     return 1;
   }
+
+  // isu to sc req check
+  if (   banks_iq[bank][issue_ptr].rob_id         != rob_id
+      || banks_iq[bank][issue_ptr].ch_id          != ch_id
+      || banks_iq[bank][issue_ptr].set_way_offset != set_way_offset
+      || banks_iq[bank][issue_ptr].wbuffer_id     != wbuffer_id
+      || banks_iq[bank][issue_ptr].offset0_state  != offset0_state
+      || banks_iq[bank][issue_ptr].offset1_state  != offset1_state
+  ) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -83,4 +112,15 @@ extern "C" {
                    uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state) {
     return isu_iq_enqueue(cycle, bank, cacheline_inflight, need_linefill, rob_id, ch_id, opcode, set_way_offset, wbuffer_id, offset0_state, offset1_state);
   }
+
+  int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint16_t bottom_ptr, uint8_t ch_id, uint8_t opcode,
+                    uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
+                    uint64_t linefill_data_offset0, uint64_t linefill_data_offset1) {
+    return isu_iq_dequeue(cycle, bank, issue_ptr, bottom_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data_offset0, linefill_data_offset1);
+  }
+
+  int c_iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
+    return iq_bottom_ptr_update(cycle, bank, bottom_ptr);
+  }
+
 }

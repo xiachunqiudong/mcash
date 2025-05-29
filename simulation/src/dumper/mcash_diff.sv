@@ -3,6 +3,8 @@ module mcash_diff(
   input wire rst
 );
 
+  parameter IQ_PTR_WIDTH = 8;
+
   `define CROSS_BAR_TOP mcash_tb.u_mcash_top.u_cross_bar_top
   `define CROSS_BAR_TOP_CORE `CROSS_BAR_TOP.u_cross_bar_core
   `define BANK0_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank0_top.isu_top
@@ -14,6 +16,11 @@ module mcash_diff(
   import "DPI-C" function int c_xbar_bank_htu_req_check(longint cycle, byte bank_id, byte ch_id, byte entry_id, byte op, int addr, longint data);
   import "DPI-C" function int c_isu_iq_enqueue(longint cycle, byte bank, byte cacheline_inflight, byte need_linefill, byte rob_id, byte ch_id,
                                                byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state);
+  import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int issue_ptr, int bottom_ptr, byte ch_id, byte opcode,
+                                               byte set_way_offset, byte wbuffer_id, byte rob_id, byte offset0_state, byte offset1_state,
+                                               longint linefill_data_offset0, longint linefill_data_offset1);
+
+  import "DPI-C" function int c_iq_bottom_ptr_update(longint cycle, byte bank, int bottom_ptr);
 
   logic [63:0]  cycle_cnt_Q;
 
@@ -124,6 +131,16 @@ module mcash_diff(
   logic [7:0]   bank3_htu_isu_wbuffer_id;
   logic [1:0]   bank3_htu_isu_offset0_state;
   logic [1:0]   bank3_htu_isu_offset1_state;
+
+  logic                    bank0_bottom_ptr_kickoff;
+  logic [IQ_PTR_WIDTH-1:0] bank0_bottom_ptr_Q;
+  logic                    bank1_bottom_ptr_kickoff;
+  logic [IQ_PTR_WIDTH-1:0] bank1_bottom_ptr_Q;
+  logic                    bank2_bottom_ptr_kickoff;
+  logic [IQ_PTR_WIDTH-1:0] bank2_bottom_ptr_Q;
+  logic                    bank3_bottom_ptr_kickoff;
+  logic [IQ_PTR_WIDTH-1:0] bank3_bottom_ptr_Q;
+
 
   always_ff @(posedge clk or posedge rst) begin
     if (rst) cycle_cnt_Q <= 'd0;
@@ -242,6 +259,15 @@ module mcash_diff(
   assign bank3_htu_isu_offset0_state[1:0]  = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
   assign bank3_htu_isu_offset1_state[1:0]  = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
 
+  assign bank0_bottom_ptr_kickoff = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank0_bottom_ptr_Q       = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_Q;
+  assign bank1_bottom_ptr_kickoff = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank1_bottom_ptr_Q       = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_Q;
+  assign bank2_bottom_ptr_kickoff = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank2_bottom_ptr_Q       = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_Q;
+  assign bank3_bottom_ptr_kickoff = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank3_bottom_ptr_Q       = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_Q;
+
   always_comb begin
     // bank0
     if      (xbar_bank0_htu_ch_id == 'd0) xbar_bank0_ch_entryID = ch0_entryID_send_to_bank0;
@@ -338,6 +364,29 @@ module mcash_diff(
         end
     end
 
+    if (bank0_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 0, bank0_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+
+    if (bank1_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 1, bank1_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+
+    if (bank2_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+
+    if (bank3_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
 
   end
 
