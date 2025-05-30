@@ -76,7 +76,7 @@ uint16_t get_issue_index(uint8_t bank) {
   uint16_t issue_ptr;
   for (uint16_t i = 0; i < ISU_IQ_SIZE; i++) {
     issue_ptr = (i + banks_iq_bottom_ptr[bank]) % ISU_IQ_SIZE;
-    if (banks_iq[bank][issue_ptr].valid && banks_mshr_allow_array[bank][issue_ptr])
+    if (banks_iq[bank][issue_ptr].valid && (banks_mshr_allow_array[bank][issue_ptr] || ((banks_iq[bank][issue_ptr].opcode >> 1) == 1)))
       return issue_ptr;
   }
   return ISU_IQ_SIZE;
@@ -91,6 +91,11 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
   // ptr check
   if (issue_ptr != golden_issue_ptr) {
     LOG_ERROR(cycle, "[BANK %d] iq dequeue issue ptr check fail!, GOLDEN: %d, RTL: %d", bank, golden_issue_ptr, issue_ptr);
+    LOG_ERROR(cycle, "[BANK %d] GOLDEN ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d, linefill_data_offset0 %0x, linefill_data_offset1 %0x",
+              bank, banks_iq[bank][issue_ptr].ch_id, banks_iq[bank][issue_ptr].opcode, banks_iq[bank][issue_ptr].set_way_offset, banks_iq[bank][issue_ptr].wbuffer_id, banks_iq[bank][issue_ptr].rob_id,
+              banks_iq[bank][issue_ptr].offset0_state, banks_iq[bank][issue_ptr].offset1_state, linefill_data_offset0, linefill_data_offset1);
+    LOG_ERROR(cycle, "[BANK %d] RLT    ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d, linefill_data_offset0 %0x, linefill_data_offset1 %0x",
+              bank, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data_offset0, linefill_data_offset1);
     return 1;
   }
 
@@ -104,11 +109,25 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
   // ) {
   //   return 1;
   // }
-
-  banks_iq[bank][issue_ptr].valid = false;
+  if ((banks_iq[bank][issue_ptr].opcode >> 1) == 1) {
+    banks_iq[bank][issue_ptr].opcode = banks_iq[bank][issue_ptr].opcode & 1;
+    LOG_INFO(cycle, "this is evit");
+  } else {
+    banks_iq[bank][issue_ptr].valid = false;
+  }
 
   return 0;
 }
+
+  int update_inflight_array (uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata) {
+    for (int i = 0; i < ISU_IQ_SIZE; i++) {
+      if ((banks_iq[bank][i].set_way_offset >> 1) == rid) {
+        banks_mshr_allow_array[bank][i] = 1;
+      }
+    }
+    banks_inflight_array[bank][rid] = 1;
+    return 0;
+  }
 
 
 extern "C" {
@@ -125,6 +144,10 @@ extern "C" {
 
   int c_iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
     return iq_bottom_ptr_update(cycle, bank, bottom_ptr);
+  }
+
+  int c_update_inflight_array(uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata) {
+    return update_inflight_array(cycle, bank, rid, rdata);
   }
 
 }

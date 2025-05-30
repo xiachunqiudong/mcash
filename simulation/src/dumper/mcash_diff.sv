@@ -22,6 +22,8 @@ module mcash_diff(
 
   import "DPI-C" function int c_iq_bottom_ptr_update(longint cycle, byte bank, int bottom_ptr);
 
+  import "DPI-C" function int c_update_inflight_array(longint cycle, byte bank, byte rid, longint rdata);
+
   logic [63:0]  cycle_cnt_Q;
 
   logic         mcash_ch0_req_valid;
@@ -191,7 +193,18 @@ module mcash_diff(
   logic [127:0] bank3_isu_sc_linefill_data_offset0;
   logic [127:0] bank3_isu_sc_linefill_data_offset1;
 
-
+  logic         bank0_biu_isu_rvalid;
+  logic [5:0]   bank0_biu_isu_rid;
+  logic [255:0] bank0_biu_isu_rdata;
+  logic         bank1_biu_isu_rvalid;
+  logic [5:0]   bank1_biu_isu_rid;
+  logic [255:0] bank1_biu_isu_rdata;
+  logic         bank2_biu_isu_rvalid;
+  logic [5:0]   bank2_biu_isu_rid;
+  logic [255:0] bank2_biu_isu_rdata;
+  logic         bank3_biu_isu_rvalid;
+  logic [5:0]   bank3_biu_isu_rid;
+  logic [255:0] bank3_biu_isu_rdata;
 
   always_ff @(posedge clk or posedge rst) begin
     if (rst) cycle_cnt_Q <= 'd0;
@@ -359,6 +372,19 @@ module mcash_diff(
   assign bank3_isu_sc_cacheline_dirty_offset1 = `BANK3_ISU_TOP.isu_sc_cacheline_dirty_offset1_o;
   assign bank3_isu_sc_linefill_data_offset0   = `BANK3_ISU_TOP.isu_sc_linefill_data_offset0_o;
   assign bank3_isu_sc_linefill_data_offset1   = `BANK3_ISU_TOP.isu_sc_linefill_data_offset1_o;
+  assign bank0_biu_isu_rvalid                 = `BANK0_ISU_TOP.biu_isu_rvalid_i;
+  assign bank0_biu_isu_rdata                  = `BANK0_ISU_TOP.biu_isu_rdata_i;
+  assign bank0_biu_isu_rid                    = `BANK0_ISU_TOP.biu_isu_rid_i;
+  assign bank1_biu_isu_rvalid                 = `BANK1_ISU_TOP.biu_isu_rvalid_i;
+  assign bank1_biu_isu_rdata                  = `BANK1_ISU_TOP.biu_isu_rdata_i;
+  assign bank1_biu_isu_rid                    = `BANK1_ISU_TOP.biu_isu_rid_i;
+  assign bank2_biu_isu_rvalid                 = `BANK2_ISU_TOP.biu_isu_rvalid_i;
+  assign bank2_biu_isu_rdata                  = `BANK2_ISU_TOP.biu_isu_rdata_i;
+  assign bank2_biu_isu_rid                    = `BANK2_ISU_TOP.biu_isu_rid_i;
+  assign bank3_biu_isu_rvalid                 = `BANK3_ISU_TOP.biu_isu_rvalid_i;
+  assign bank3_biu_isu_rdata                  = `BANK3_ISU_TOP.biu_isu_rdata_i;
+  assign bank3_biu_isu_rid                    = `BANK3_ISU_TOP.biu_isu_rid_i;
+
 
   always_comb begin
     // bank0
@@ -476,17 +502,28 @@ module mcash_diff(
         $finish;
       end
     end
-
     if (bank2_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
         $finish;
       end
     end
-
     if (bank3_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
         $finish;
       end
+    end
+  
+    if (bank0_biu_isu_rvalid) begin
+      c_update_inflight_array(cycle_cnt_Q, 0, bank0_biu_isu_rid, bank0_biu_isu_rdata);
+    end
+    if (bank1_biu_isu_rvalid) begin
+      c_update_inflight_array(cycle_cnt_Q, 1, bank1_biu_isu_rid, bank1_biu_isu_rdata);
+    end
+    if (bank2_biu_isu_rvalid) begin
+      c_update_inflight_array(cycle_cnt_Q, 2, bank2_biu_isu_rid, bank2_biu_isu_rdata);
+    end
+    if (bank3_biu_isu_rvalid) begin
+      c_update_inflight_array(cycle_cnt_Q, 3, bank3_biu_isu_rid, bank3_biu_isu_rdata);
     end
 
   end
