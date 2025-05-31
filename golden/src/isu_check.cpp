@@ -43,12 +43,14 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
     banks_inflight_array[bank][set_way] = 1;
   }
 
-  banks_mshr_allow_array[bank][set_way] = !(need_linefill == 1 || golden_inflight == 1);
+  uint16_t iq_write_ptr = banks_iq_write_ptr[bank];
 
-  banks_iq[bank][banks_iq_write_ptr[bank]] = {true, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state};
+  banks_mshr_allow_array[bank][iq_write_ptr] = !(need_linefill == 1 || golden_inflight == 1);
 
-  LOG_INFO(cycle, "[BANK %d] push htu req into iq, rob_id: %d ch_id %d opcode %d need_linefill %d set_way_offset %d wbuffer_id %d offset0_state %d offset1_state %d",
-                    bank, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state);
+  banks_iq[bank][iq_write_ptr] = {true, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state};
+
+  LOG_INFO(cycle, "[BANK %d] push htu req into iq, write_ptr: %d rob_id: %d ch_id %d opcode %d need_linefill %d set_way_offset %d wbuffer_id %d offset0_state %d offset1_state %d",
+           bank, iq_write_ptr, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state);
 
   banks_iq_write_ptr[bank] = (banks_iq_write_ptr[bank] + 1) % ISU_IQ_SIZE;
   banks_iq_size[bank]++;
