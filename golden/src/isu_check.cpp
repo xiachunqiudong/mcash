@@ -70,7 +70,7 @@ int iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
   }
   // update golden bottom ptr
   banks_iq_bottom_ptr[bank] = (banks_iq_bottom_ptr[bank] + 1) % ISU_IQ_SIZE;
-  LOG_INFO(cycle, "[BANK %d] bottom ptr update check pass", bank);
+  LOG_INFO(cycle, "[BANK %d] bottom ptr update check pass, bottom ptr %d -> %d", bank, bottom_ptr, banks_iq_bottom_ptr[bank]);
   return 0;
 }
 
@@ -101,16 +101,16 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
     return 1;
   }
 
-  // isu to sc req check
-  // if (   banks_iq[bank][issue_ptr].rob_id         != rob_id
-  //     || banks_iq[bank][issue_ptr].ch_id          != ch_id
-  //     || banks_iq[bank][issue_ptr].set_way_offset != set_way_offset
-  //     || banks_iq[bank][issue_ptr].wbuffer_id     != wbuffer_id
-  //     || banks_iq[bank][issue_ptr].offset0_state  != offset0_state
-  //     || banks_iq[bank][issue_ptr].offset1_state  != offset1_state
-  // ) {
-  //   return 1;
-  // }
+  if (   banks_iq[bank][issue_ptr].rob_id         != rob_id
+      || banks_iq[bank][issue_ptr].ch_id          != ch_id
+      || banks_iq[bank][issue_ptr].set_way_offset != set_way_offset
+      // || banks_iq[bank][issue_ptr].wbuffer_id     != wbuffer_id
+      || banks_iq[bank][issue_ptr].offset0_state  != offset0_state
+      || banks_iq[bank][issue_ptr].offset1_state  != offset1_state
+  ) {
+    return 1;
+  }
+
   if ((banks_iq[bank][issue_ptr].opcode >> 1) == 1) {
     banks_iq[bank][issue_ptr].opcode = banks_iq[bank][issue_ptr].opcode & 1;
     LOG_INFO(cycle, "this is evit");

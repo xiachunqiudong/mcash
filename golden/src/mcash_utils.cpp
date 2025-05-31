@@ -34,22 +34,22 @@ std::string get_color_by_log_level(LogLevel level) {
     }
 }
 
-static void __log_message__(uint64_t cycle, LogLevel level, const char* file, const char* function, const char* message) {
+static void __log_message__(uint64_t cycle, LogLevel level, const char* function, const char* message) {
 
     std::string levelStr = get_log_level_string(level);
     std::string color = get_color_by_log_level(level);
     std::ostringstream oss;
 
-    oss << color << cycle << " | [" << levelStr << "] [" << file << ">" << function << "] " << message << COLOR_RESET << std::endl;
+    oss << color << cycle << " | [" << levelStr << "] [" << function << "] " << message << COLOR_RESET << std::endl;
 
     std::cerr << oss.str();
 }
 
-void log_message(uint64_t cycle, LogLevel level, const char* file, const char* function, const char* format, ...) {
+void log_message(uint64_t cycle, LogLevel level, const char* function, const char* format, ...) {
     char msg_buf[512];
     va_list args;
     va_start(args, format);
     vsprintf(msg_buf, format, args);
     va_end(args);
-    __log_message__(cycle, level, file, function, msg_buf);
+    __log_message__(cycle, level, function, msg_buf);
 }

@@ -282,7 +282,7 @@ module mcash_diff(
   assign bank0_htu_isu_set_way_offset[6:0]    = `BANK0_ISU_TOP.htu_isu_set_way_offset_i[6:0];
   assign bank0_htu_isu_wbuffer_id[7:0]        = `BANK0_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
   assign bank0_htu_isu_offset0_state[1:0]     = `BANK0_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
-  assign bank0_htu_isu_offset1_state[1:0]     = `BANK0_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank0_htu_isu_offset1_state[1:0]     = `BANK0_ISU_TOP.htu_isu_cacheline_offset1_state_i[1:0];
   assign bank1_htu_isu_valid                  = `BANK1_ISU_TOP.htu_isu_valid_i;
   assign bank1_htu_isu_allowIn                = `BANK1_ISU_TOP.htu_isu_allowIn_o;
   assign bank1_htu_isu_cacheline_inflight     = `BANK1_ISU_TOP.htu_req_cacheline_inflight;
@@ -293,7 +293,7 @@ module mcash_diff(
   assign bank1_htu_isu_set_way_offset[6:0]    = `BANK1_ISU_TOP.htu_isu_set_way_offset_i[6:0];
   assign bank1_htu_isu_wbuffer_id[7:0]        = `BANK1_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
   assign bank1_htu_isu_offset0_state[1:0]     = `BANK1_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
-  assign bank1_htu_isu_offset1_state[1:0]     = `BANK1_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank1_htu_isu_offset1_state[1:0]     = `BANK1_ISU_TOP.htu_isu_cacheline_offset1_state_i[1:0];
   assign bank2_htu_isu_valid                  = `BANK2_ISU_TOP.htu_isu_valid_i;
   assign bank2_htu_isu_allowIn                = `BANK2_ISU_TOP.htu_isu_allowIn_o;
   assign bank2_htu_isu_cacheline_inflight     = `BANK2_ISU_TOP.htu_req_cacheline_inflight;
@@ -304,7 +304,7 @@ module mcash_diff(
   assign bank2_htu_isu_set_way_offset[6:0]    = `BANK2_ISU_TOP.htu_isu_set_way_offset_i[6:0];
   assign bank2_htu_isu_wbuffer_id[7:0]        = `BANK2_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
   assign bank2_htu_isu_offset0_state[1:0]     = `BANK2_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
-  assign bank2_htu_isu_offset1_state[1:0]     = `BANK2_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank2_htu_isu_offset1_state[1:0]     = `BANK2_ISU_TOP.htu_isu_cacheline_offset1_state_i[1:0];
   assign bank3_htu_isu_valid                  = `BANK3_ISU_TOP.htu_isu_valid_i;
   assign bank3_htu_isu_allowIn                = `BANK3_ISU_TOP.htu_isu_allowIn_o;
   assign bank3_htu_isu_cacheline_inflight     = `BANK3_ISU_TOP.htu_req_cacheline_inflight;
@@ -315,7 +315,7 @@ module mcash_diff(
   assign bank3_htu_isu_set_way_offset[6:0]    = `BANK3_ISU_TOP.htu_isu_set_way_offset_i[6:0];
   assign bank3_htu_isu_wbuffer_id[7:0]        = `BANK3_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
   assign bank3_htu_isu_offset0_state[1:0]     = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
-  assign bank3_htu_isu_offset1_state[1:0]     = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
+  assign bank3_htu_isu_offset1_state[1:0]     = `BANK3_ISU_TOP.htu_isu_cacheline_offset1_state_i[1:0];
   assign bank0_bottom_ptr_kickoff             = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
   assign bank0_bottom_ptr_Q                   = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_Q;
   assign bank1_bottom_ptr_kickoff             = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
