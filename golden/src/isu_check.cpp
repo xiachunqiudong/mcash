@@ -4,6 +4,7 @@
 
 
 uint8_t banks_inflight_array[BANK_SIZE][64];
+uint64_t banks_linefill_data_array[BANK_SIZE][64][4];
 
 uint8_t banks_chs_rob[BANK_SIZE][CHANNLE_SIZE];
 
@@ -86,48 +87,95 @@ uint16_t get_issue_index(uint8_t bank) {
 
 int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
                    uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                   uint64_t linefill_data_offset0, uint64_t linefill_data_offset1) {
+                   uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3) {
 
   uint16_t golden_issue_ptr = get_issue_index(bank);
   
+  auto golden_issue_entry = banks_iq[bank][issue_ptr];
+
   // ptr check
   if (issue_ptr != golden_issue_ptr) {
     LOG_ERROR(cycle, "[BANK %d] iq dequeue issue ptr check fail!, GOLDEN: %d, RTL: %d", bank, golden_issue_ptr, issue_ptr);
-    LOG_ERROR(cycle, "[BANK %d] GOLDEN ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d, linefill_data_offset0 %0x, linefill_data_offset1 %0x",
-              bank, banks_iq[bank][issue_ptr].ch_id, banks_iq[bank][issue_ptr].opcode, banks_iq[bank][issue_ptr].set_way_offset, banks_iq[bank][issue_ptr].wbuffer_id, banks_iq[bank][issue_ptr].rob_id,
-              banks_iq[bank][issue_ptr].offset0_state, banks_iq[bank][issue_ptr].offset1_state, linefill_data_offset0, linefill_data_offset1);
-    LOG_ERROR(cycle, "[BANK %d] RLT    ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d, linefill_data_offset0 %0x, linefill_data_offset1 %0x",
-              bank, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data_offset0, linefill_data_offset1);
+    LOG_ERROR(cycle, "[BANK %d] GOLDEN ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d",
+              bank, golden_issue_entry.ch_id, golden_issue_entry.opcode, golden_issue_entry.set_way_offset, golden_issue_entry.wbuffer_id, golden_issue_entry.rob_id,
+              golden_issue_entry.offset0_state, golden_issue_entry.offset1_state);
+    LOG_ERROR(cycle, "[BANK %d] RLT    ->  chID: %d, opcode: %d, set_way_offset: %d, wbufferID %d, robID %d, offset0State %d, offset1State %d",
+              bank, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state);
     return 1;
   }
 
-  if (   banks_iq[bank][issue_ptr].rob_id         != rob_id
-      || banks_iq[bank][issue_ptr].ch_id          != ch_id
-      || banks_iq[bank][issue_ptr].set_way_offset != set_way_offset
-      // || banks_iq[bank][issue_ptr].wbuffer_id     != wbuffer_id
-      || banks_iq[bank][issue_ptr].offset0_state  != offset0_state
-      || banks_iq[bank][issue_ptr].offset1_state  != offset1_state
+  if (   golden_issue_entry.rob_id         != rob_id
+      || golden_issue_entry.ch_id          != ch_id
+      || golden_issue_entry.set_way_offset != set_way_offset
+      // || golden_issue_entry.wbuffer_id     != wbuffer_id
+      || golden_issue_entry.offset0_state  != offset0_state
+      || golden_issue_entry.offset1_state  != offset1_state
   ) {
     return 1;
   }
 
-  if ((banks_iq[bank][issue_ptr].opcode >> 1) == 1) {
+  // opcode check
+  uint8_t golden_htu_opcode = golden_issue_entry.opcode;
+  bool golden_iq_dequeue_need_evit = (golden_htu_opcode >> 1) == 1;
+
+  uint8_t golden_sc_opcode;
+
+  if (golden_iq_dequeue_need_evit) {
+    golden_sc_opcode = 3; // write back
+  } else if (golden_issue_entry.need_linefill) {
+    golden_sc_opcode = 2;
+  } else if (golden_htu_opcode & 1) {
+    golden_sc_opcode = 0;
+  } else {
+    golden_sc_opcode = 1;
+  }
+
+  if (golden_sc_opcode != opcode) {
+    LOG_ERROR(cycle, "[BANK %d] isu to sc opcode check fail! GOLDEN %d but RTL %d", bank, golden_sc_opcode, opcode);
+    return 1;
+  }
+
+  if (golden_iq_dequeue_need_evit) {
     banks_iq[bank][issue_ptr].opcode = banks_iq[bank][issue_ptr].opcode & 1;
-    LOG_INFO(cycle, "this is evit");
   } else {
     banks_iq[bank][issue_ptr].valid = false;
   }
 
+  // linefill data check
+  uint8_t set_way = golden_issue_entry.set_way_offset >> 1;
+
+  uint64_t issue_linefill_data0 = banks_linefill_data_array[bank][set_way][0];
+  uint64_t issue_linefill_data1 = banks_linefill_data_array[bank][set_way][1];
+  uint64_t issue_linefill_data2 = banks_linefill_data_array[bank][set_way][2];
+  uint64_t issue_linefill_data3 = banks_linefill_data_array[bank][set_way][3];
+
+  if (issue_linefill_data0 != linefill_data0 || issue_linefill_data1 != linefill_data1
+    || issue_linefill_data2 != linefill_data2 || issue_linefill_data3 != linefill_data3) {
+      LOG_ERROR(cycle, "[BANK %d] isu to sc linefill data check fail! GOLDEN %016x%016x%016x%016x but RTL %016x%016x%016x%016x", bank, 
+                issue_linefill_data0, issue_linefill_data1, issue_linefill_data2, issue_linefill_data3, linefill_data0, linefill_data1, linefill_data2, linefill_data3);
+      return 1;
+  }
+
+
+
+  LOG_INFO(cycle, "ISU IQ checke pass, opcode %d", opcode);
+
   return 0;
 }
 
-  int update_inflight_array (uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata) {
+  int update_inflight_array (uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata0, uint64_t rdata1, uint64_t rdata2, uint64_t rdata3) {
+    // update golden inflight array
     for (int i = 0; i < ISU_IQ_SIZE; i++) {
       if ((banks_iq[bank][i].set_way_offset >> 1) == rid) {
         banks_mshr_allow_array[bank][i] = 1;
       }
     }
     banks_inflight_array[bank][rid] = 1;
+    // update linefill buffer
+    banks_linefill_data_array[bank][rid][0] = rdata0;
+    banks_linefill_data_array[bank][rid][1] = rdata1;
+    banks_linefill_data_array[bank][rid][2] = rdata2;
+    banks_linefill_data_array[bank][rid][3] = rdata3;
     return 0;
   }
 
@@ -140,16 +188,16 @@ extern "C" {
 
   int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
                     uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                    uint64_t linefill_data_offset0, uint64_t linefill_data_offset1) {
-    return isu_iq_dequeue(cycle, bank, issue_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data_offset0, linefill_data_offset1);
+                    uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3) {
+    return isu_iq_dequeue(cycle, bank, issue_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data0, linefill_data1, linefill_data2, linefill_data3);
   }
 
   int c_iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
     return iq_bottom_ptr_update(cycle, bank, bottom_ptr);
   }
 
-  int c_update_inflight_array(uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata) {
-    return update_inflight_array(cycle, bank, rid, rdata);
+  int c_update_inflight_array(uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata0, uint64_t rdata1, uint64_t rdata2, uint64_t rdata3) {
+    return update_inflight_array(cycle, bank, rid, rdata0, rdata1, rdata2, rdata3);
   }
 
 }

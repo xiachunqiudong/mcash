@@ -18,11 +18,11 @@ module mcash_diff(
                                                byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state);
   import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int select_ptr, byte ch_id, byte opcode,
                                                byte set_way_offset, byte wbuffer_id, byte rob_id, byte offset0_state, byte offset1_state,
-                                               longint linefill_data_offset0, longint linefill_data_offset1);
+                                               longint linefill_data0, longint linefill_data1, longint linefill_data2, longint linefill_data3);
 
   import "DPI-C" function int c_iq_bottom_ptr_update(longint cycle, byte bank, int bottom_ptr);
 
-  import "DPI-C" function int c_update_inflight_array(longint cycle, byte bank, byte rid, longint rdata);
+  import "DPI-C" function int c_update_inflight_array(longint cycle, byte bank, byte rid, longint rdata0, longint rdata1, longint rdata2, longint rdata3);
 
   logic [63:0]  cycle_cnt_Q;
 
@@ -488,7 +488,8 @@ module mcash_diff(
     if (bank0_isu_sc_valid & bank0_isu_sc_ready) begin
       c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
                        bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
-                       bank0_isu_sc_linefill_data_offset0, bank0_isu_sc_linefill_data_offset1);
+                       bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
+                       bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64]);
     end
 
     if (bank0_bottom_ptr_kickoff) begin
@@ -514,16 +515,16 @@ module mcash_diff(
     end
   
     if (bank0_biu_isu_rvalid) begin
-      c_update_inflight_array(cycle_cnt_Q, 0, bank0_biu_isu_rid, bank0_biu_isu_rdata);
+      c_update_inflight_array(cycle_cnt_Q, 0, bank0_biu_isu_rid, bank0_biu_isu_rdata[63:0], bank0_biu_isu_rdata[127:64], bank0_biu_isu_rdata[191:128], bank0_biu_isu_rdata[255:192]);
     end
     if (bank1_biu_isu_rvalid) begin
-      c_update_inflight_array(cycle_cnt_Q, 1, bank1_biu_isu_rid, bank1_biu_isu_rdata);
+      c_update_inflight_array(cycle_cnt_Q, 1, bank1_biu_isu_rid, bank1_biu_isu_rdata[63:0], bank1_biu_isu_rdata[127:64], bank1_biu_isu_rdata[191:128], bank1_biu_isu_rdata[255:192]);
     end
     if (bank2_biu_isu_rvalid) begin
-      c_update_inflight_array(cycle_cnt_Q, 2, bank2_biu_isu_rid, bank2_biu_isu_rdata);
+      c_update_inflight_array(cycle_cnt_Q, 2, bank2_biu_isu_rid, bank2_biu_isu_rdata[63:0], bank2_biu_isu_rdata[127:64], bank2_biu_isu_rdata[191:128], bank2_biu_isu_rdata[255:192]);
     end
     if (bank3_biu_isu_rvalid) begin
-      c_update_inflight_array(cycle_cnt_Q, 3, bank3_biu_isu_rid, bank3_biu_isu_rdata);
+      c_update_inflight_array(cycle_cnt_Q, 3, bank3_biu_isu_rid, bank3_biu_isu_rdata[63:0], bank3_biu_isu_rdata[127:64], bank3_biu_isu_rdata[191:128], bank3_biu_isu_rdata[255:192]);
     end
 
   end
