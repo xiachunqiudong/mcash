@@ -12,7 +12,7 @@ module mcash_diff(
   `define BANK2_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank2_top.isu_top
   `define BANK3_ISU_TOP mcash_tb.u_mcash_top.u_bank_top_wrapper.bank3_top.isu_top
 
-  import "DPI-C" function int c_xbar_ch_buffers_push(longint cycle, byte ch_id, byte op, int addr, longint data);
+  import "DPI-C" function int c_xbar_ch_buffers_push(longint cycle, byte ch_id, byte write_ptr, byte op, int addr, longint data);
   import "DPI-C" function int c_xbar_bank_htu_req_check(longint cycle, byte bank_id, byte ch_id, byte entry_id, byte op, int addr, longint data);
   import "DPI-C" function int c_isu_iq_enqueue(longint cycle, byte bank, byte cacheline_inflight, byte need_linefill, byte rob_id, byte ch_id,
                                                byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state);
@@ -29,16 +29,22 @@ module mcash_diff(
   logic         mcash_ch0_req_valid;
   logic         mcash_ch0_req_allowIn;
   logic [2:0]   mcash_ch0_req_op;
+  logic [2:0]   mcash_ch0_req_write_ptr;
+  logic [2:0]   mcash_ch0_req_read_ptr;
   logic [31:0]  mcash_ch0_req_addr;
   logic [127:0] mcash_ch0_req_data;
   logic         mcash_ch1_req_valid;
   logic         mcash_ch1_req_allowIn;
   logic [2:0]   mcash_ch1_req_op;
+  logic [2:0]   mcash_ch1_req_write_ptr;
+  logic [2:0]   mcash_ch1_req_read_ptr;
   logic [31:0]  mcash_ch1_req_addr;
   logic [127:0] mcash_ch1_req_data;
   logic         mcash_ch2_req_valid;
   logic         mcash_ch2_req_allowIn;
   logic [2:0]   mcash_ch2_req_op;
+  logic [2:0]   mcash_ch2_req_write_ptr;
+  logic [2:0]   mcash_ch2_req_read_ptr;
   logic [31:0]  mcash_ch2_req_addr;
   logic [127:0] mcash_ch2_req_data;
 
@@ -220,16 +226,22 @@ module mcash_diff(
   assign mcash_ch0_req_valid                  = `CROSS_BAR_TOP.mcash_ch0_req_valid_i;
   assign mcash_ch0_req_allowIn                = `CROSS_BAR_TOP.mcash_ch0_req_allowIn_o;
   assign mcash_ch0_req_op                     = `CROSS_BAR_TOP.mcash_ch0_req_op_i;
+  assign mcash_ch0_req_write_ptr              = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch0.ch_wr_ptr_Q;
+  assign mcash_ch0_req_read_ptr               = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch0.ch_rd_ptr_Q;
   assign mcash_ch0_req_addr                   = {`CROSS_BAR_TOP.mcash_ch0_req_addr_i[31:4], 4'b0};
   assign mcash_ch0_req_data                   = `CROSS_BAR_TOP.mcash_ch0_req_data_i;
   assign mcash_ch1_req_valid                  = `CROSS_BAR_TOP.mcash_ch1_req_valid_i;
   assign mcash_ch1_req_allowIn                = `CROSS_BAR_TOP.mcash_ch1_req_allowIn_o;
   assign mcash_ch1_req_op                     = `CROSS_BAR_TOP.mcash_ch1_req_op_i;
+  assign mcash_ch1_req_write_ptr              = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch1.ch_wr_ptr_Q;
+  assign mcash_ch1_req_read_ptr               = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch1.ch_rd_ptr_Q;
   assign mcash_ch1_req_addr                   = {`CROSS_BAR_TOP.mcash_ch1_req_addr_i[31:4], 4'b0};
   assign mcash_ch1_req_data                   = `CROSS_BAR_TOP.mcash_ch1_req_data_i;
   assign mcash_ch2_req_valid                  = `CROSS_BAR_TOP.mcash_ch2_req_valid_i;
   assign mcash_ch2_req_allowIn                = `CROSS_BAR_TOP.mcash_ch2_req_allowIn_o;
   assign mcash_ch2_req_op                     = `CROSS_BAR_TOP.mcash_ch2_req_op_i;
+  assign mcash_ch2_req_write_ptr              = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch2.ch_wr_ptr_Q;
+  assign mcash_ch2_req_read_ptr               = `CROSS_BAR_TOP.u_cross_bar_core.u_cross_bar_core_buffer_ch2.ch_rd_ptr_Q;
   assign mcash_ch2_req_addr                   = {`CROSS_BAR_TOP.mcash_ch2_req_addr_i[31:4], 4'b0};
   assign mcash_ch2_req_data                   = `CROSS_BAR_TOP.mcash_ch2_req_data_i;
   assign xbar_bank0_htu_valid                 = `CROSS_BAR_TOP_CORE.xbar_bank0_htu_valid_o;
@@ -416,13 +428,13 @@ module mcash_diff(
   always_ff @(posedge clk) begin
     // push data into cross bar buffer
     if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data);
+      c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch0_req_write_ptr, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data);
     end
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data);
+      c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_req_write_ptr, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data);
     end
     if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch1_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
+      c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_req_write_ptr, mcash_ch1_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
     end
 
     // check xbar to bank0 req
@@ -433,19 +445,19 @@ module mcash_diff(
     end
     // check xbar to bank1 req
     if (xbar_bank1_htu_valid & xbar_bank1_htu_allowIn) begin
-      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank1_htu_ch_id, xbar_bank1_ch_entryID, xbar_bank1_htu_opcode, xbar_bank1_htu_addr, xbar_bank1_htu_data)) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 1, xbar_bank1_htu_ch_id, xbar_bank1_ch_entryID, xbar_bank1_htu_opcode, xbar_bank1_htu_addr, xbar_bank1_htu_data)) begin
         $finish;
       end
     end
     // check xbar to bank2 req
     if (xbar_bank2_htu_valid & xbar_bank2_htu_allowIn) begin
-      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank2_htu_ch_id, xbar_bank2_ch_entryID, xbar_bank2_htu_opcode, xbar_bank2_htu_addr, xbar_bank2_htu_data)) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 2, xbar_bank2_htu_ch_id, xbar_bank2_ch_entryID, xbar_bank2_htu_opcode, xbar_bank2_htu_addr, xbar_bank2_htu_data)) begin
         $finish;
       end
     end
     // check xbar to bank3 req
     if (xbar_bank3_htu_valid & xbar_bank3_htu_allowIn) begin
-      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank3_htu_ch_id, xbar_bank3_ch_entryID, xbar_bank3_htu_opcode, xbar_bank3_htu_addr, xbar_bank3_htu_data)) begin
+      if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 3, xbar_bank3_htu_ch_id, xbar_bank3_ch_entryID, xbar_bank3_htu_opcode, xbar_bank3_htu_addr, xbar_bank3_htu_data)) begin
         $finish;
       end
     end

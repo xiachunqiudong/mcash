@@ -18,7 +18,7 @@ gen_code:
 
 golden:
 	make -C ../../golden all
-
+ 
 vcs: golden
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \

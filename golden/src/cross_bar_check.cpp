@@ -2,11 +2,11 @@
 #include "mcash_para.h"
 #include "mcash_utils.h"
 
-uint8_t read_ptr, write_ptr, buffer_size[CHANNLE_SIZE];
+uint8_t read_ptr, chs_write_ptr[CHANNLE_SIZE], buffer_size[CHANNLE_SIZE];
 Mcash_req_t xbar_ch_buffers[CHANNLE_SIZE][XBAR_BUFFER_SIZE];
 
 
-int xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t op, uint32_t addr, uint64_t data) {
+int xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t write_ptr, uint8_t op, uint32_t addr, uint64_t data) {
 
   if (ch_id >= CHANNLE_SIZE) {
     return 1;
@@ -17,10 +17,18 @@ int xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t op, uint32_t add
     return 1;
   }
 
-  ch_buffer[write_ptr] = {1, op, addr, data};
-  LOG_INFO(cycle, "[CHANNEL %d] buffer push success, op: %d, addr: 0x%x, data: 0x%lx", ch_id, ch_buffer[write_ptr].op, ch_buffer[write_ptr].addr, ch_buffer[write_ptr].data);
+  uint8_t golden_write_ptr = chs_write_ptr[ch_id];
+
+  if (golden_write_ptr != write_ptr) {
+    return 1;
+  }
+
+  uint8_t ch_bank_id = (uint8_t)get_bits((uint64_t)addr, 8, 9);
+  
+  ch_buffer[golden_write_ptr] = {1, op, addr, data};
+  LOG_INFO(cycle, "[CHANNEL %d] buffer push success, op: %d, bank_id: %d, addr: 0x%x, data: 0x%lx", ch_id, ch_buffer[golden_write_ptr].op, ch_bank_id, ch_buffer[golden_write_ptr].addr, ch_buffer[golden_write_ptr].data);
   buffer_size[ch_id] = buffer_size[ch_id] + 1;
-  write_ptr = (write_ptr + 1) % XBAR_BUFFER_SIZE;
+  chs_write_ptr[ch_id] = (golden_write_ptr + 1) % XBAR_BUFFER_SIZE;
 
   return 0;
 }
@@ -97,8 +105,8 @@ int xbar_bank_htu_req_check(uint64_t cycle, uint8_t bank_id, uint8_t ch_id, uint
 
 extern "C" {
 
-  int c_xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t op, uint32_t addr, uint64_t data) {
-    return xbar_ch_buffers_push(cycle, ch_id, op, addr, data);
+  int c_xbar_ch_buffers_push(uint64_t cycle, uint8_t ch_id, uint8_t write_ptr, uint8_t op, uint32_t addr, uint64_t data) {
+    return xbar_ch_buffers_push(cycle, ch_id, write_ptr, op, addr, data);
   }
 
   int c_xbar_bank_htu_req_check(uint64_t cycle, uint8_t bank_id, uint8_t ch_id, uint8_t entry_id, uint8_t op, uint32_t addr, uint64_t data) {
