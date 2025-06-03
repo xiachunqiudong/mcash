@@ -30,11 +30,11 @@ vcs: golden
 
 sim:
 	./build/simv \
-	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_NAME).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CODE_FILE=$(CASE_PATH)/$(CASE_NAME).hex
+	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_NAME).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CASE_PATH=$(CASE_PATH)
 
 simb: vcs
 	./build/simv \
-	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_NAME).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CODE_FILE=$(CASE_PATH)/$(CASE_NAME).hex
+	+MCASH_DUMP_LOG=$(CASE_PATH)/$(CASE_PATH).log +FSDB_FILE=$(CASE_PATH)/$(CASE_NAME) +CASE_PATH=$(CASE_PATH)
 
 vd:
 	verdi -elab ./build/simv.daidir/kdb \

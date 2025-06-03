@@ -9,15 +9,21 @@ module mcash_tb;
   parameter WIDTH_SID  =(WIDTH_CID+WIDTH_ID); // ID for slave
 
   string fsdb_file;
-  string code_file;
+  string case_path;
+  string ch0_case_path;
+  string ch1_case_path;
+  string ch2_case_path;
 
   initial begin
     if(!$value$plusargs("FSDB_FILE=%s", fsdb_file)) begin
       fsdb_file = "mcash_tb.fsdb";
     end
-    if(!$value$plusargs("CODE_FILE=%s", code_file)) begin
-      code_file = "code.hex";
+    if(!$value$plusargs("CASE_PATH=%s", case_path)) begin
+      case_path = "/project/mcash/simulation/case";
     end
+    ch0_case_path = {case_path, "/channe0.bin"};
+    ch1_case_path = {case_path, "/channe1.bin"};
+    ch2_case_path = {case_path, "/channe2.bin"};
   end
 
   reg clk;
@@ -33,14 +39,22 @@ module mcash_tb;
     #5 rst = 1'b0;
   end
 
-  integer i;
-  parameter N = 100;
+  integer ch0_index;
+  integer ch1_index;
+  integer ch2_index;
+  parameter NUM_INST = 10000;
 
-  reg [163:0] code_list [N-1:0];
+  reg [163:0] ch0_code_list [NUM_INST-1:0];
+  reg [163:0] ch1_code_list [NUM_INST-1:0];
+  reg [163:0] ch2_code_list [NUM_INST-1:0];
 
   initial begin
-    i = 0;
-    $readmemb(code_file, code_list);
+    ch0_index = 0;
+    ch1_index = 0;
+    ch2_index = 0;
+    $readmemb(ch0_case_path, ch0_code_list);
+    $readmemb(ch1_case_path, ch1_code_list);
+    $readmemb(ch2_case_path, ch2_code_list);
   end
 
   reg [63:0] cycle_cnt_Q;
@@ -334,7 +348,6 @@ module mcash_tb;
   initial begin
     mcash_ch0_req_valid = 1'b0;
     mcash_ch0_req_addr  = 28'b0;
-    mcash_ch0_req_op    = 2'b0;
     mcash_ch1_req_valid = 1'b0;
     mcash_ch1_req_addr  = 28'b0;
     mcash_ch2_req_valid = 1'b0;
@@ -343,13 +356,13 @@ module mcash_tb;
 
   always @(posedge clk) begin
     
-    if (i < 32) begin
+    if (ch0_index < NUM_INST) begin
       if (mcash_ch0_req_allowIn) begin
-        mcash_ch0_req_valid       <= code_list[i][163];
-        mcash_ch0_req_op[2:0]     <= code_list[i][162:160];
-        mcash_ch0_req_data[127:0] <= code_list[i][159:32];
-        mcash_ch0_req_addr[31:4]  <= code_list[i][31:4];
-        i++;
+        mcash_ch0_req_valid       <= ch0_code_list[ch0_index][163];
+        mcash_ch0_req_op[2:0]     <= ch0_code_list[ch0_index][162:160];
+        mcash_ch0_req_data[127:0] <= ch0_code_list[ch0_index][159:32];
+        mcash_ch0_req_addr[31:4]  <= ch0_code_list[ch0_index][31:4];
+        ch0_index++;
       end
     end
     else begin
@@ -358,14 +371,50 @@ module mcash_tb;
       mcash_ch0_req_data[127:0] <= '0;
       mcash_ch0_req_addr[31:4]  <= '0;
     end
-  
-    if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
-      mcash_ch1_req_addr[31:4] <= 28'b10;
-    end
-    if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
-      mcash_ch2_req_addr[31:4] <= 28'b10;
-    end
+
   end
+
+  always @(posedge clk) begin
+    
+    if (ch1_index < NUM_INST) begin
+      if (mcash_ch1_req_allowIn) begin
+        mcash_ch1_req_valid       <= ch1_code_list[ch1_index][163];
+        mcash_ch1_req_op[2:0]     <= ch1_code_list[ch1_index][162:160];
+        mcash_ch1_req_data[127:0] <= ch1_code_list[ch1_index][159:32];
+        mcash_ch1_req_addr[31:4]  <= ch1_code_list[ch1_index][31:4];
+        ch1_index++;
+      end
+    end
+    else begin
+      mcash_ch1_req_valid       <= '0;
+      mcash_ch1_req_op[2:0]     <= '0;
+      mcash_ch1_req_data[127:0] <= '0;
+      mcash_ch1_req_addr[31:4]  <= '0;
+    end
+
+  end
+
+  always @(posedge clk) begin
+    
+    if (ch2_index < NUM_INST) begin
+      if (mcash_ch2_req_allowIn) begin
+        mcash_ch2_req_valid       <= ch2_code_list[ch2_index][163];
+        mcash_ch2_req_op[2:0]     <= ch2_code_list[ch2_index][162:160];
+        mcash_ch2_req_data[127:0] <= ch2_code_list[ch2_index][159:32];
+        mcash_ch2_req_addr[31:4]  <= ch2_code_list[ch2_index][31:4];
+        ch2_index++;
+      end
+    end
+    else begin
+      mcash_ch2_req_valid       <= '0;
+      mcash_ch2_req_op[2:0]     <= '0;
+      mcash_ch2_req_data[127:0] <= '0;
+      mcash_ch2_req_addr[31:4]  <= '0;
+    end
+
+  end
+
+
 
 
   mcash_top
