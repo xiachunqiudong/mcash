@@ -434,7 +434,7 @@ module mcash_diff(
       c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_req_write_ptr, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data);
     end
     if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_req_write_ptr, mcash_ch1_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
+      c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_req_write_ptr, mcash_ch2_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
     end
 
     // check xbar to bank0 req

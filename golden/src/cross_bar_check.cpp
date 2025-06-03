@@ -2,7 +2,7 @@
 #include "mcash_para.h"
 #include "mcash_utils.h"
 
-uint8_t read_ptr, chs_write_ptr[CHANNLE_SIZE], buffer_size[CHANNLE_SIZE];
+uint8_t read_ptr[CHANNLE_SIZE], chs_write_ptr[CHANNLE_SIZE], buffer_size[CHANNLE_SIZE];
 Mcash_req_t xbar_ch_buffers[CHANNLE_SIZE][XBAR_BUFFER_SIZE];
 
 
@@ -45,7 +45,7 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
     chs_valid_entry_id[ch] = 0;
     Mcash_req_t* ch_buffer = xbar_ch_buffers[ch];
     for (int en = 0; en < XBAR_BUFFER_SIZE; en++) {
-      int act_en = (en + read_ptr) % XBAR_BUFFER_SIZE;
+      int act_en = (en + read_ptr[ch]) % XBAR_BUFFER_SIZE;
       uint8_t ch_bank_id = (uint8_t)get_bits((uint64_t)ch_buffer[act_en].addr, 8, 9);
       if (ch_buffer[act_en].valid && ch_bank_id == bank_id) {
         chs_has_valid_entry[ch] = true;
@@ -75,8 +75,8 @@ void bank_ch_rr(uint8_t bank_id, bool& has_req, uint8_t& ch_id, uint8_t& entry_i
 
   for (int ch = 0; ch < CHANNLE_SIZE; ch++) {
     Mcash_req_t* ch_buffer = xbar_ch_buffers[ch];
-    if (ch_buffer[read_ptr].valid == 0 && buffer_size[ch] != 0) {
-      read_ptr = (read_ptr + 1) % XBAR_BUFFER_SIZE;
+    if (ch_buffer[read_ptr[ch]].valid == 0 && buffer_size[ch] != 0) {
+      read_ptr[ch] = (read_ptr[ch] + 1) % XBAR_BUFFER_SIZE;
       buffer_size[ch]--;
     }
   }
@@ -92,12 +92,12 @@ int xbar_bank_htu_req_check(uint64_t cycle, uint8_t bank_id, uint8_t ch_id, uint
   auto bank_req_entry = xbar_ch_buffers[bank_ch_id][bank_entry_id];
   
   if (!bank_has_req || bank_ch_id != ch_id || bank_entry_id != entry_id || bank_req_entry.op != op || bank_req_entry.addr != addr || bank_req_entry.data != data) {
-    LOG_ERROR(cycle, "[BANK %d] check fail!", bank_id);
+    LOG_ERROR(cycle, "[BANK %d] xbar to htu pop check fail!", bank_id);
     LOG_ERROR(cycle, "GOLDEN: bank_has_req: %d, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx", bank_has_req, bank_ch_id, bank_entry_id, bank_req_entry.op, bank_req_entry.addr, bank_req_entry.data);
     LOG_ERROR(cycle, "RTL:    bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx", ch_id, entry_id, op, addr, data);
     return 1;
   }
-  LOG_INFO(cycle, "[BANK %d] check pass: bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx", bank_id, ch_id, entry_id, op, addr, data);
+  LOG_INFO(cycle, "[BANK %d] xbar to htu pop check pass: bank_has_req: 1, ch_id: %d, bank_entry_id: %d, op: %d, addr: 0x%x, data: 0x%lx", bank_id, ch_id, entry_id, op, addr, data);
 
   return 0;
 }

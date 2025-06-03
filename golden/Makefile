@@ -1,5 +1,5 @@
 
-VCS_INC = /home/synopsys/vcs/O-2018.09-SP2/include
+VCS_INC ?= /home/synopsys/vcs/O-2018.09-SP2/include
 # VCS_INC = /opt/Synopsys/vcs/V-2023.12-SP2/include
 
 CXXFLAGS = -Wall -Werror -Iinclude -shared -std=c++11 -fPIC \
