@@ -422,21 +422,8 @@ module mcash_diff(
   end
 
 
-
-
   // xbar -> bank check
   always_ff @(posedge clk) begin
-    // push data into cross bar buffer
-    if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch0_req_write_ptr, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data);
-    end
-    if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_req_write_ptr, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data);
-    end
-    if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
-      c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_req_write_ptr, mcash_ch2_req_op, mcash_ch2_req_addr, mcash_ch2_req_data);
-    end
-
     // check xbar to bank0 req
     if (xbar_bank0_htu_valid & xbar_bank0_htu_allowIn) begin
       if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank0_htu_ch_id, xbar_bank0_ch_entryID, xbar_bank0_htu_opcode, xbar_bank0_htu_addr, xbar_bank0_htu_data)) begin
@@ -462,9 +449,48 @@ module mcash_diff(
       end
     end
 
+    // push data into cross bar buffer
+    if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
+      if(c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch0_req_write_ptr, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data)) begin
+        $finish;
+      end
+    end
+    if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
+      if(c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_req_write_ptr, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data)) begin
+        $finish;
+      end
+    end
+    if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
+      if(c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_req_write_ptr, mcash_ch2_req_op, mcash_ch2_req_addr, mcash_ch2_req_data))begin
+        $finish;
+      end
+    end
+
   end
 
   always_ff @(posedge clk) begin
+
+    if (bank0_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 0, bank0_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+    if (bank1_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 1, bank1_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+    if (bank2_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+    if (bank3_bottom_ptr_kickoff) begin
+      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
+        $finish;
+      end
+    end
+
     if (bank0_htu_isu_valid & bank0_htu_isu_allowIn) begin
       if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
                        bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
@@ -502,28 +528,6 @@ module mcash_diff(
                        bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
                        bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
                        bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64]);
-    end
-
-    if (bank0_bottom_ptr_kickoff) begin
-      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 0, bank0_bottom_ptr_Q)) begin
-        $finish;
-      end
-    end
-
-    if (bank1_bottom_ptr_kickoff) begin
-      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 1, bank1_bottom_ptr_Q)) begin
-        $finish;
-      end
-    end
-    if (bank2_bottom_ptr_kickoff) begin
-      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
-        $finish;
-      end
-    end
-    if (bank3_bottom_ptr_kickoff) begin
-      if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
-        $finish;
-      end
     end
   
     if (bank0_biu_isu_rvalid) begin

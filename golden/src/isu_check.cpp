@@ -60,13 +60,15 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
 }
 
 int iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
-  bool golden_bottom_wen = banks_iq_size[bank] != 0 && !banks_iq[bank][bottom_ptr].valid;
-  if (!golden_bottom_wen) {
-    LOG_ERROR(cycle, "bottom ptr update fail, RTL need update but GOLDEN not!");
+  uint16_t golden_bottom_ptr = banks_iq_bottom_ptr[bank];
+  if (bottom_ptr != golden_bottom_ptr) {
+    LOG_ERROR(cycle, "[BANK %d] bottom ptr check fail, GOLDEN bottom ptr %d RTL bottom ptr %d",bank, golden_bottom_ptr, bottom_ptr);
     return 1;
   }
-  if (bottom_ptr != banks_iq_bottom_ptr[bank]) {
-    LOG_ERROR(cycle, "bottom ptr check fail, GOLDEN bottom ptr %d RTL bottom ptr %d", banks_iq_bottom_ptr[bank], bottom_ptr);
+  bool golden_bottom_wen = banks_iq_size[bank] != 0 && !banks_iq[bank][bottom_ptr].valid;
+  if (!golden_bottom_wen) {
+    LOG_ERROR(cycle, "[BANK %d] bottom ptr update fail, RTL need update but GOLDEN not!", bank);
+    LOG_ERROR(cycle, "GOLDEN bank iq size: %d, old bottom ptr:%d, entry valid is: %d", banks_iq_size[bank], banks_iq_bottom_ptr[bank], banks_iq[bank][bottom_ptr].valid);
     return 1;
   }
   // update golden bottom ptr
