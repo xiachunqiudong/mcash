@@ -34,7 +34,9 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
     banks_chs_rob[bank][ch_id] = (golden_rob_id + 1) % CH_BANK_ROB_SIZE;
     // check
     if (golden_rob_id != rob_id || golden_inflight != cacheline_inflight) {
-      LOG_ERROR(cycle, "[BANK %d] isu iq enqueue check fail! GOLDEN rob id: %d inflight: %d, RTL rob id: %d inflight: %d", bank, golden_rob_id, golden_inflight, rob_id, cacheline_inflight);
+      LOG_ERROR(cycle, "[BANK %d] isu iq enqueue check fail! set_way: %d", bank, set_way);
+      LOG_ERROR(cycle, "[BANK %d] GOLDEN -> rob id: %d inflight: %d", bank, golden_rob_id, golden_inflight);
+      LOG_ERROR(cycle, "[BANK %d] RTL    -> rob id: %d inflight: %d", bank, rob_id,        cacheline_inflight);
       return 1;
     }
   }
@@ -172,7 +174,7 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
         banks_mshr_allow_array[bank][i] = 1;
       }
     }
-    banks_inflight_array[bank][rid] = 1;
+    banks_inflight_array[bank][rid] = 0;
     // update linefill buffer
     banks_linefill_data_array[bank][rid][0] = rdata0;
     banks_linefill_data_array[bank][rid][1] = rdata1;

@@ -33,7 +33,6 @@ module mcash_diff(
   logic         mcash_ch0_req_valid;
   logic         mcash_ch0_req_allowIn;
   logic [2:0]   mcash_ch0_req_op;
-  logic [2:0]   mcash_ch0_buffer_size;
   logic [31:0]  mcash_ch0_req_addr;
   logic [127:0] mcash_ch0_req_data;
   logic         mcash_ch1_req_valid;
