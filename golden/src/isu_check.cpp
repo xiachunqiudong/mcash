@@ -160,7 +160,7 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
 
 
 
-  LOG_INFO(cycle, "ISU IQ checke pass, opcode %d", opcode);
+  LOG_INFO(cycle, "[BANK%d] ISU IQ checke pass, opcode %d",bank, opcode);
 
   return 0;
 }
