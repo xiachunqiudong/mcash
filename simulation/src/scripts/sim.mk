@@ -1,4 +1,4 @@
-MCASH_SIM_PATH = /home/ICer/project/mcash/simulation/sim
+MCASH_SIM_PATH = $(MCASH_HOME)/simulation/sim
 
 CASE_PATH ?= /home/ICer/project/mcash_sim/case/random_test_100000_0
 CASE_NAME ?= random_test_100000_0
