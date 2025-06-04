@@ -129,11 +129,11 @@ module cross_bar_core_buffer(
 
 // channel read ptr
   assign ch_rd_ptr_kickoff = ch_used_entry_Q[2:0] != 3'd0
-                            & ch_last_entry_already_pop;
+                           & ch_last_entry_already_pop;
 
   assign ch_rd_ptr_In[2:0] = ch_rd_ptr_Q[2:0] == 3'd4
-                            ? 3'd0
-                            : ch_rd_ptr_Q[2:0] + 3'd1;
+                           ? 3'd0
+                           : ch_rd_ptr_Q[2:0] + 3'd1;
 
   always @(posedge clk_i or posedge rst_i) begin
     if (rst_i) begin
