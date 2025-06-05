@@ -547,6 +547,10 @@ module mcash_diff(
 
 
   end
+  int bank0_isu_iq_dequeue_ret;
+  int bank1_isu_iq_dequeue_ret;
+  int bank2_isu_iq_dequeue_ret;
+  int bank3_isu_iq_dequeue_ret;
 
   always_ff @(posedge clk) begin
 
@@ -604,31 +608,43 @@ module mcash_diff(
     end
 
     if (bank0_isu_sc_valid & bank0_isu_sc_ready) begin
-      c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
-                       bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
-                       bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
-                       bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64]);
+      bank0_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
+                                                  bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
+                                                  bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
+                                                  bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64]);
+      if (bank0_isu_iq_dequeue_ret) begin
+        $finish;
+      end
     end
 
     if (bank1_isu_sc_valid & bank1_isu_sc_ready) begin
-      c_isu_iq_dequeue(cycle_cnt_Q, 1, bank1_select_ptr, bank1_isu_sc_channel_id, bank1_isu_sc_opcode, bank1_isu_sc_set_way_offset, bank1_isu_sc_wbuffer_id, 
-                       bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
-                       bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
-                       bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64]);
+      bank1_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 1, bank1_select_ptr, bank1_isu_sc_channel_id, bank1_isu_sc_opcode, bank1_isu_sc_set_way_offset, bank1_isu_sc_wbuffer_id, 
+                                                  bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
+                                                  bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
+                                                  bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64]);
+      if (bank1_isu_iq_dequeue_ret) begin
+        $finish;
+      end
     end
 
     if (bank2_isu_sc_valid & bank2_isu_sc_ready) begin
-      c_isu_iq_dequeue(cycle_cnt_Q, 2, bank2_select_ptr, bank2_isu_sc_channel_id, bank2_isu_sc_opcode, bank2_isu_sc_set_way_offset, bank2_isu_sc_wbuffer_id, 
-                       bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
-                       bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
-                       bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64]);
+      bank2_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 2, bank2_select_ptr, bank2_isu_sc_channel_id, bank2_isu_sc_opcode, bank2_isu_sc_set_way_offset, bank2_isu_sc_wbuffer_id, 
+                                                  bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
+                                                  bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
+                                                  bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64]);
+      if (bank2_isu_iq_dequeue_ret) begin
+        $finish;
+      end
     end
 
     if (bank3_isu_sc_valid & bank3_isu_sc_ready) begin
-      c_isu_iq_dequeue(cycle_cnt_Q, 3, bank3_select_ptr, bank3_isu_sc_channel_id, bank3_isu_sc_opcode, bank3_isu_sc_set_way_offset, bank3_isu_sc_wbuffer_id, 
-                       bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
-                       bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
-                       bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64]);
+      bank3_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 3, bank3_select_ptr, bank3_isu_sc_channel_id, bank3_isu_sc_opcode, bank3_isu_sc_set_way_offset, bank3_isu_sc_wbuffer_id, 
+                                                  bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
+                                                  bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
+                                                  bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64]);
+      if (bank3_isu_iq_dequeue_ret) begin
+        $finish;
+      end
     end
 
     if (bank0_biu_isu_rvalid) begin
