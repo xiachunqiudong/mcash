@@ -2,7 +2,7 @@ module cross_bar_core_buffer(
   input  wire         clk_i,
   input  wire         rst_i,
   input  wire         mcash_ch_req_valid_i,
-  input  wire         mcash_ch_req_allowIn_o,
+  output wire         mcash_ch_req_allowIn_o,
   input  wire [1:0]   mcash_ch_req_op_i,
   input  wire [31:4]  mcash_ch_req_addr_i,
   input  wire [127:0] mcash_ch_req_data_i,

@@ -3,19 +3,19 @@ module cross_bar_core(
   input wire          rst_i,
   // channel0
   input  wire         mcash_ch0_req_valid_i,
-  input  wire         mcash_ch0_req_allowIn_o,
+  output wire         mcash_ch0_req_allowIn_o,
   input  wire [1:0]   mcash_ch0_req_op_i,
   input  wire [31:4]  mcash_ch0_req_addr_i,
   input  wire [127:0] mcash_ch0_req_data_i,
   // channel1
   input  wire         mcash_ch1_req_valid_i,
-  input  wire         mcash_ch1_req_allowIn_o,
+  output wire         mcash_ch1_req_allowIn_o,
   input  wire [1:0]   mcash_ch1_req_op_i,
   input  wire [31:4]  mcash_ch1_req_addr_i,
   input  wire [127:0] mcash_ch1_req_data_i,
   // channel2
   input  wire         mcash_ch2_req_valid_i,
-  input  wire         mcash_ch2_req_allowIn_o,
+  output wire         mcash_ch2_req_allowIn_o,
   input  wire [1:0]   mcash_ch2_req_op_i,
   input  wire [31:4]  mcash_ch2_req_addr_i,
   input  wire [127:0] mcash_ch2_req_data_i,
