@@ -232,9 +232,15 @@ module mcash_diff(
     else     cycle_cnt_Q <= cycle_cnt_Q + 'd1;
   end
 
-  function longint sv_get_cycle();
+  function automatic longint sv_get_cycle();
     return cycle_cnt_Q;
   endfunction
+
+task end_simulation();
+  $display("Mcash simulation end!");
+  #100
+  $finish;
+endtask
 
   export "DPI-C" function sv_get_cycle;
 
@@ -455,22 +461,22 @@ module mcash_diff(
     // check xbar to banks req
     if (xbar_bank0_htu_valid & xbar_bank0_htu_allowIn) begin
       if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 0, xbar_bank0_htu_ch_id, xbar_bank0_ch_entryID, xbar_bank0_htu_opcode, xbar_bank0_htu_addr, xbar_bank0_htu_data)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (xbar_bank1_htu_valid & xbar_bank1_htu_allowIn) begin
       if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 1, xbar_bank1_htu_ch_id, xbar_bank1_ch_entryID, xbar_bank1_htu_opcode, xbar_bank1_htu_addr, xbar_bank1_htu_data)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (xbar_bank2_htu_valid & xbar_bank2_htu_allowIn) begin
       if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 2, xbar_bank2_htu_ch_id, xbar_bank2_ch_entryID, xbar_bank2_htu_opcode, xbar_bank2_htu_addr, xbar_bank2_htu_data)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (xbar_bank3_htu_valid & xbar_bank3_htu_allowIn) begin
       if(c_xbar_bank_htu_req_check(cycle_cnt_Q, 3, xbar_bank3_htu_ch_id, xbar_bank3_ch_entryID, xbar_bank3_htu_opcode, xbar_bank3_htu_addr, xbar_bank3_htu_data)) begin
-        $finish;
+        end_simulation();
       end
     end
 
@@ -478,17 +484,17 @@ module mcash_diff(
     if (mcash_ch0_req_valid & mcash_ch0_req_allowIn) begin
       if(c_xbar_ch_buffers_push(cycle_cnt_Q, 0, mcash_ch0_buffer_size, mcash_ch0_req_write_ptr, mcash_ch0_req_op, mcash_ch0_req_addr, mcash_ch0_req_data)) begin
         // $display("cycle %d buffer size %d", cycle_cnt_Q, mcash_ch0_buffer_size);
-        $finish;
+        end_simulation();
       end
     end
     if (mcash_ch1_req_valid & mcash_ch1_req_allowIn) begin
       if(c_xbar_ch_buffers_push(cycle_cnt_Q, 1, mcash_ch1_buffer_size, mcash_ch1_req_write_ptr, mcash_ch1_req_op, mcash_ch1_req_addr, mcash_ch1_req_data)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (mcash_ch2_req_valid & mcash_ch2_req_allowIn) begin
       if(c_xbar_ch_buffers_push(cycle_cnt_Q, 2, mcash_ch2_buffer_size, mcash_ch2_req_write_ptr, mcash_ch2_req_op, mcash_ch2_req_addr, mcash_ch2_req_data))begin
-        $finish;
+        end_simulation();
       end
     end
 
@@ -514,7 +520,7 @@ module mcash_diff(
     end
 
     if (ch0_buffer_info_check_ret) begin
-      $finish;
+      end_simulation();
     end
 
     if (mcash_ch1_read_ptr_kickoff & mcash_ch1_write_ptr_kickoff) begin
@@ -528,7 +534,7 @@ module mcash_diff(
     end
 
     if (ch1_buffer_info_check_ret) begin
-      $finish;
+      end_simulation();
     end
 
     if (mcash_ch2_read_ptr_kickoff & mcash_ch2_write_ptr_kickoff) begin
@@ -542,7 +548,7 @@ module mcash_diff(
     end
 
     if (ch2_buffer_info_check_ret) begin
-      $finish;
+      end_simulation();
     end
 
 
@@ -552,22 +558,22 @@ module mcash_diff(
 
     if (bank0_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 0, bank0_bottom_ptr_Q)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (bank1_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 1, bank1_bottom_ptr_Q)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (bank2_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
-        $finish;
+        end_simulation();
       end
     end
     if (bank3_bottom_ptr_kickoff) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
-        $finish;
+        end_simulation();
       end
     end
 
@@ -575,7 +581,7 @@ module mcash_diff(
       if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
                        bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
                        bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0])) begin
-          $finish;
+          end_simulation();
         end
     end
 
@@ -583,7 +589,7 @@ module mcash_diff(
       if (c_isu_iq_enqueue(cycle_cnt_Q, 1, bank1_htu_isu_cacheline_inflight, bank1_htu_isu_need_linefill, bank1_htu_isu_rob_id[2:0], 
                        bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
                        bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0])) begin
-          $finish;
+          end_simulation();
         end
     end
 
@@ -591,7 +597,7 @@ module mcash_diff(
       if (c_isu_iq_enqueue(cycle_cnt_Q, 2, bank2_htu_isu_cacheline_inflight, bank2_htu_isu_need_linefill, bank2_htu_isu_rob_id[2:0], 
                        bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
                        bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0])) begin
-          $finish;
+          end_simulation();
         end
     end
 
@@ -599,7 +605,7 @@ module mcash_diff(
       if (c_isu_iq_enqueue(cycle_cnt_Q, 3, bank3_htu_isu_cacheline_inflight, bank3_htu_isu_need_linefill, bank3_htu_isu_rob_id[2:0], 
                        bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
                        bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0])) begin
-          $finish;
+          end_simulation();
         end
     end
 
