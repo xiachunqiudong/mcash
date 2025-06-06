@@ -1,6 +1,9 @@
 #include "mcash_type.h"
 #include "mcash_para.h"
 #include "mcash_utils.h"
+#include "sstream"
+#include "cstring"
+#include "iomanip"
 
 
 uint8_t banks_inflight_array[BANK_SIZE][64];
@@ -89,12 +92,55 @@ uint16_t get_issue_index(uint8_t bank) {
   return ISU_IQ_SIZE;
 }
 
+void trans_num_to_array(uint64_t num, bool *arr) {
+  for (int i = 0; i < 64; i++) {
+    arr[i] = ((num >> i) & 1) == 1;
+  }
+}
+
+void iq_array_dump(bool *iq_array, int n) {
+  std::ostringstream indexStream;
+  std::ostringstream contextStream;
+  for (int i = 0; i < n; i++) {
+    indexStream << std::setw(3) << i;
+  }
+  for (int i = 0; i < n; i++) {
+    contextStream << std::setw(3) << iq_array[i];
+  }
+
+  size_t index_size = indexStream.tellp();
+  size_t context_size = contextStream.tellp();
+
+  char index_char_arr[index_size+1];
+  char context_char_arr[context_size+1];
+
+  std::strcpy(index_char_arr, indexStream.str().c_str());
+  std::strcpy(context_char_arr, contextStream.str().c_str());
+
+  LOG_DEBUG(0, "index -> %s", index_char_arr);
+  LOG_DEBUG(0, "contx -> %s", context_char_arr);
+}
+
 int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
                    uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                   uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3) {
+                   uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3,
+                   uint64_t mshr_allow_array) {
+
+  bool rtl_mash_allow_array[ISU_IQ_SIZE];
+
+  trans_num_to_array(mshr_allow_array, rtl_mash_allow_array);
+
+  for (int i = 0; i < ISU_IQ_SIZE; i++) {
+    if (banks_mshr_allow_array[bank][i] != rtl_mash_allow_array[i]) {
+      LOG_ERROR(cycle, "[BANK %d] isu iq MSHR allow array check fail!", bank);
+      iq_array_dump();
+
+      return 1;
+    }
+  }
 
   uint16_t golden_issue_ptr = get_issue_index(bank);
-  
+
   auto golden_issue_entry = banks_iq[bank][issue_ptr];
 
   // ptr check
@@ -186,14 +232,18 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
 
 extern "C" {
   int c_isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
-                   uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state) {
+                       uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state) {
     return isu_iq_enqueue(cycle, bank, cacheline_inflight, need_linefill, rob_id, ch_id, opcode, set_way_offset, wbuffer_id, offset0_state, offset1_state);
   }
 
   int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
-                    uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                    uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3) {
-    return isu_iq_dequeue(cycle, bank, issue_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, linefill_data0, linefill_data1, linefill_data2, linefill_data3);
+                       uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
+                       uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3,
+                       uint64_t mshr_allow_array) {
+    
+    return isu_iq_dequeue(cycle, bank, issue_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, 
+                          linefill_data0, linefill_data1, linefill_data2, linefill_data3,
+                          mshr_allow_array);
   }
 
   int c_iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
