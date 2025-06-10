@@ -20,7 +20,8 @@ module mcash_diff(
 
 // ISU check DPIC
   import "DPI-C" function int c_isu_iq_enqueue(longint cycle, byte bank, byte cacheline_inflight, byte need_linefill, byte rob_id, byte ch_id,
-                                               byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state);
+                                               byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state,
+                                               longint mshr_allow_array_Q, longint mshr_allow_array_In, int write_ptr);
   import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int select_ptr, byte ch_id, byte opcode,
                                                byte set_way_offset, byte wbuffer_id, byte rob_id, byte offset0_state, byte offset1_state,
                                                longint linefill_data0, longint linefill_data1, longint linefill_data2, longint linefill_data3,
@@ -157,11 +158,19 @@ module mcash_diff(
   logic [1:0]   bank3_htu_isu_offset0_state;
   logic [1:0]   bank3_htu_isu_offset1_state;
 
-  logic [IQ_DEPTH-1:0]    bank0_iq_mshr_allow_array;
-  logic [IQ_DEPTH-1:0]    bank1_iq_mshr_allow_array;
-  logic [IQ_DEPTH-1:0]    bank2_iq_mshr_allow_array;
-  logic [IQ_DEPTH-1:0]    bank3_iq_mshr_allow_array;
+  logic [IQ_DEPTH-1:0]    bank0_iq_mshr_allow_array_In;
+  logic [IQ_DEPTH-1:0]    bank1_iq_mshr_allow_array_In;
+  logic [IQ_DEPTH-1:0]    bank2_iq_mshr_allow_array_In;
+  logic [IQ_DEPTH-1:0]    bank3_iq_mshr_allow_array_In;
+  logic [IQ_DEPTH-1:0]    bank0_iq_mshr_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank1_iq_mshr_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank2_iq_mshr_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank3_iq_mshr_allow_array_Q;
 
+  logic [IQ_PTR_WIDTH-1:0] bank0_write_ptr_Q;
+  logic [IQ_PTR_WIDTH-1:0] bank1_write_ptr_Q;
+  logic [IQ_PTR_WIDTH-1:0] bank2_write_ptr_Q;
+  logic [IQ_PTR_WIDTH-1:0] bank3_write_ptr_Q;
   logic                    bank0_bottom_ptr_kickoff;
   logic [IQ_PTR_WIDTH-1:0] bank0_bottom_ptr_Q;
   logic                    bank1_bottom_ptr_kickoff;
@@ -245,7 +254,6 @@ module mcash_diff(
 
 task end_simulation();
   $display("Mcash simulation end!");
-  #100
   $finish;
 endtask
 
@@ -365,10 +373,18 @@ endtask
   assign bank3_htu_isu_wbuffer_id[7:0]        = `BANK3_ISU_TOP.htu_isu_wbuffer_id_i[7:0];
   assign bank3_htu_isu_offset0_state[1:0]     = `BANK3_ISU_TOP.htu_isu_cacheline_offset0_state_i[1:0];
   assign bank3_htu_isu_offset1_state[1:0]     = `BANK3_ISU_TOP.htu_isu_cacheline_offset1_state_i[1:0];
-  assign bank0_iq_mshr_allow_array            = `BANK0_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
-  assign bank1_iq_mshr_allow_array            = `BANK1_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
-  assign bank2_iq_mshr_allow_array            = `BANK2_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
-  assign bank3_iq_mshr_allow_array            = `BANK3_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank0_iq_mshr_allow_array_In         = `BANK0_ISU_TOP.u_isu_iq.mshr_allow_array_In;
+  assign bank1_iq_mshr_allow_array_In         = `BANK1_ISU_TOP.u_isu_iq.mshr_allow_array_In;
+  assign bank2_iq_mshr_allow_array_In         = `BANK2_ISU_TOP.u_isu_iq.mshr_allow_array_In;
+  assign bank3_iq_mshr_allow_array_In         = `BANK3_ISU_TOP.u_isu_iq.mshr_allow_array_In;
+  assign bank0_iq_mshr_allow_array_Q          = `BANK0_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank1_iq_mshr_allow_array_Q          = `BANK1_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank2_iq_mshr_allow_array_Q          = `BANK2_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank3_iq_mshr_allow_array_Q          = `BANK3_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank0_write_ptr_Q                    = `BANK0_ISU_TOP.u_isu_iq.writePtr_Q;
+  assign bank1_write_ptr_Q                    = `BANK1_ISU_TOP.u_isu_iq.writePtr_Q;
+  assign bank2_write_ptr_Q                    = `BANK2_ISU_TOP.u_isu_iq.writePtr_Q;
+  assign bank3_write_ptr_Q                    = `BANK3_ISU_TOP.u_isu_iq.writePtr_Q;
   assign bank0_bottom_ptr_kickoff             = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
   assign bank0_bottom_ptr_Q                   = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_Q;
   assign bank1_bottom_ptr_kickoff             = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
@@ -598,7 +614,7 @@ endtask
                                                   bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
                                                   bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
                                                   bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
-                                                  bank0_iq_mshr_allow_array);
+                                                  bank0_iq_mshr_allow_array_Q);
       if (bank0_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -609,7 +625,7 @@ endtask
                                                   bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
                                                   bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
                                                   bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
-                                                  bank1_iq_mshr_allow_array);
+                                                  bank1_iq_mshr_allow_array_Q);
       if (bank1_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -620,7 +636,7 @@ endtask
                                                   bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
                                                   bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
                                                   bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
-                                                  bank2_iq_mshr_allow_array);
+                                                  bank2_iq_mshr_allow_array_Q);
       if (bank2_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -631,7 +647,7 @@ endtask
                                                   bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
                                                   bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
                                                   bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
-                                                  bank3_iq_mshr_allow_array);
+                                                  bank3_iq_mshr_allow_array_Q);
       if (bank3_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -640,32 +656,32 @@ endtask
     // ISU iq enqueue
     if (bank0_htu_isu_valid & bank0_htu_isu_allowIn) begin
       if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
-                       bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
-                       bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0])) begin
+                           bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
+                           bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0], bank0_iq_mshr_allow_array_Q[63:0], bank0_iq_mshr_allow_array_In[63:0], bank0_write_ptr_Q)) begin
           end_simulation();
         end
     end
 
     if (bank1_htu_isu_valid & bank1_htu_isu_allowIn) begin
       if (c_isu_iq_enqueue(cycle_cnt_Q, 1, bank1_htu_isu_cacheline_inflight, bank1_htu_isu_need_linefill, bank1_htu_isu_rob_id[2:0], 
-                       bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
-                       bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0])) begin
+                           bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
+                           bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0], bank1_iq_mshr_allow_array_Q[63:0], bank1_iq_mshr_allow_array_In[63:0], bank1_write_ptr_Q)) begin
           end_simulation();
         end
     end
 
     if (bank2_htu_isu_valid & bank2_htu_isu_allowIn) begin
       if (c_isu_iq_enqueue(cycle_cnt_Q, 2, bank2_htu_isu_cacheline_inflight, bank2_htu_isu_need_linefill, bank2_htu_isu_rob_id[2:0], 
-                       bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
-                       bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0])) begin
+                           bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
+                           bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0], bank2_iq_mshr_allow_array_Q[63:0], bank2_iq_mshr_allow_array_In[63:0], bank2_write_ptr_Q)) begin
           end_simulation();
         end
     end
 
     if (bank3_htu_isu_valid & bank3_htu_isu_allowIn) begin
       if (c_isu_iq_enqueue(cycle_cnt_Q, 3, bank3_htu_isu_cacheline_inflight, bank3_htu_isu_need_linefill, bank3_htu_isu_rob_id[2:0], 
-                       bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
-                       bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0])) begin
+                           bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
+                           bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0], bank3_iq_mshr_allow_array_Q[63:0], bank3_iq_mshr_allow_array_In[63:0], bank3_write_ptr_Q)) begin
           end_simulation();
         end
     end

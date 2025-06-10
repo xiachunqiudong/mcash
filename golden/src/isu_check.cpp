@@ -13,94 +13,11 @@ uint8_t banks_chs_rob[BANK_SIZE][CHANNLE_SIZE];
 
 uint16_t banks_iq_write_ptr[BANK_SIZE], banks_iq_bottom_ptr[BANK_SIZE], banks_iq_size[BANK_SIZE];
 
-bool banks_mshr_allow_array[BANK_SIZE][ISU_IQ_SIZE];
+bool banks_mshr_allow_array[BANK_SIZE][ISU_IQ_SIZE] = {};
 
 Isu_iq_entry_t banks_iq[BANK_SIZE][ISU_IQ_SIZE];
 
-
-int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
-                   uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state) {
-
-  if (banks_iq_size[bank] >= ISU_IQ_SIZE) {
-    LOG_ERROR(cycle, "[BANK %d] Golden isu iq push fail!", bank);
-    return 1;
-  }
-
-  int set_way = (int)(set_way_offset >> 1);
-
-  uint8_t golden_inflight = banks_inflight_array[bank][set_way];
-
-  // check cacheline inflight
-  if (golden_inflight != cacheline_inflight) {
-    LOG_ERROR(cycle, "[BANK %d] cacheline inflight state check fail!", bank);
-    LOG_ERROR(cycle, "[BANK %d] GOLDEN -> inflight: %d", bank, golden_inflight);
-    LOG_ERROR(cycle, "[BANK %d] RTL    -> inflight: %d", bank, cacheline_inflight);
-    return 1;
-  }
-
-  // check rob id only when opcode is read.
-  if ((opcode & 1) == 0) {
-
-    uint8_t golden_rob_id = banks_chs_rob[bank][ch_id];
-    banks_chs_rob[bank][ch_id] = (golden_rob_id + 1) % CH_BANK_ROB_SIZE;
-    // check
-    if (golden_rob_id != rob_id || golden_inflight != cacheline_inflight) {
-      LOG_ERROR(cycle, "[BANK %d] isu iq enqueue check fail! set_way: %d", bank, set_way);
-      LOG_ERROR(cycle, "[BANK %d] GOLDEN -> rob id: %d inflight: %d", bank, golden_rob_id, golden_inflight);
-      LOG_ERROR(cycle, "[BANK %d] RTL    -> rob id: %d inflight: %d", bank, rob_id,        cacheline_inflight);
-      return 1;
-    }
-  }
-
-  // update inflight array
-  if (need_linefill == 1) {
-    banks_inflight_array[bank][set_way] = 1;
-  }
-
-  uint16_t iq_write_ptr = banks_iq_write_ptr[bank];
-
-  banks_mshr_allow_array[bank][iq_write_ptr] = !(need_linefill == 1 || golden_inflight == 1);
-
-  banks_iq[bank][iq_write_ptr] = {true, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state};
-
-  LOG_INFO(cycle, "[BANK %d] push htu req into iq, write_ptr: %d rob_id: %d ch_id %d opcode %d need_linefill %d set_way_offset %d wbuffer_id %d offset0_state %d offset1_state %d mshr allow: %d",
-           bank, iq_write_ptr, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state, banks_mshr_allow_array[bank][iq_write_ptr]);
-
-  banks_iq_write_ptr[bank] = (banks_iq_write_ptr[bank] + 1) % ISU_IQ_SIZE;
-  banks_iq_size[bank]++;
-
-  return 0;
-}
-
-int iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
-  uint16_t golden_bottom_ptr = banks_iq_bottom_ptr[bank];
-  if (bottom_ptr != golden_bottom_ptr) {
-    LOG_ERROR(cycle, "[BANK %d] bottom ptr check fail, GOLDEN bottom ptr %d RTL bottom ptr %d",bank, golden_bottom_ptr, bottom_ptr);
-    return 1;
-  }
-  bool golden_bottom_wen = banks_iq_size[bank] != 0 && !banks_iq[bank][bottom_ptr].valid;
-  if (!golden_bottom_wen) {
-    LOG_ERROR(cycle, "[BANK %d] bottom ptr update fail, RTL need update but GOLDEN not!", bank);
-    LOG_ERROR(cycle, "GOLDEN bank iq size: %d, old bottom ptr:%d, entry valid is: %d", banks_iq_size[bank], banks_iq_bottom_ptr[bank], banks_iq[bank][bottom_ptr].valid);
-    return 1;
-  }
-  // update golden bottom ptr
-  banks_iq_bottom_ptr[bank] = (banks_iq_bottom_ptr[bank] + 1) % ISU_IQ_SIZE;
-  LOG_INFO(cycle, "[BANK %d] bottom ptr update check pass, bottom ptr %d -> %d", bank, bottom_ptr, banks_iq_bottom_ptr[bank]);
-  return 0;
-}
-
-uint16_t get_issue_index(uint8_t bank) {
-  uint16_t issue_ptr;
-  for (uint16_t i = 0; i < ISU_IQ_SIZE; i++) {
-    issue_ptr = (i + banks_iq_bottom_ptr[bank]) % ISU_IQ_SIZE;
-    if (banks_iq[bank][issue_ptr].valid && (banks_mshr_allow_array[bank][issue_ptr] || ((banks_iq[bank][issue_ptr].opcode >> 1) == 1)))
-      return issue_ptr;
-  }
-  return ISU_IQ_SIZE;
-}
-
-void trans_num_to_array(uint64_t num, bool *arr) {
+void trans_uint64_to_bool_array(uint64_t num, bool *arr) {
   for (int i = 0; i < 64; i++) {
     arr[i] = ((num >> i) & 1) == 1;
   }
@@ -154,7 +71,7 @@ bool iq_array_check(uint64_t cycle, uint8_t bank, uint8_t check_type, uint64_t r
   bool *golden_array;
   bool rtl_bool_array[ISU_IQ_SIZE];
   char *array_name;
-  trans_num_to_array(rtl_array, rtl_bool_array);
+  trans_uint64_to_bool_array(rtl_array, rtl_bool_array);
   switch(check_type) {
     case 0: 
       golden_array = banks_mshr_allow_array[bank];
@@ -169,6 +86,108 @@ bool iq_array_check(uint64_t cycle, uint8_t bank, uint8_t check_type, uint64_t r
     }
   }
   return true;
+}
+
+int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
+                   uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state,
+                   uint64_t mshr_allow_array_Q, uint64_t mshr_allow_array_In, uint16_t write_ptr) {
+
+  if (banks_iq_size[bank] >= ISU_IQ_SIZE) {
+    LOG_ERROR(cycle, "[BANK %d] Golden isu iq push fail!", bank);
+    return 1;
+  }
+
+  uint16_t golden_write_ptr = banks_iq_write_ptr[bank];
+
+  // check write ptr
+  if (golden_write_ptr != write_ptr) {
+    LOG_ERROR(cycle, "[BANK %d] isu iq enqueue write ptr check fail! GOLDEN -> %d RTL -> %d", bank, golden_write_ptr, write_ptr);
+  }
+
+  // check mash allow array befor update
+  if (!iq_array_check(cycle, bank, 0, mshr_allow_array_Q)) {
+    LOG_ERROR(cycle, "ISU iq enqueue: check mshr_allow_array_Q fail! write ptr %d", golden_write_ptr);
+    return 1;
+  }
+
+  int set_way = (int)(set_way_offset >> 1);
+
+  uint8_t golden_inflight = banks_inflight_array[bank][set_way];
+
+  // check cacheline inflight
+  if (golden_inflight != cacheline_inflight) {
+    LOG_ERROR(cycle, "[BANK %d] cacheline inflight state check fail!", bank);
+    LOG_ERROR(cycle, "[BANK %d] GOLDEN -> inflight: %d", bank, golden_inflight);
+    LOG_ERROR(cycle, "[BANK %d] RTL    -> inflight: %d", bank, cacheline_inflight);
+    return 1;
+  }
+
+  // check rob id only when opcode is read.
+  if ((opcode & 1) == 0) {
+
+    uint8_t golden_rob_id = banks_chs_rob[bank][ch_id];
+    banks_chs_rob[bank][ch_id] = (golden_rob_id + 1) % CH_BANK_ROB_SIZE;
+    // check
+    if (golden_rob_id != rob_id || golden_inflight != cacheline_inflight) {
+      LOG_ERROR(cycle, "[BANK %d] isu iq enqueue check fail! set_way: %d", bank, set_way);
+      LOG_ERROR(cycle, "[BANK %d] GOLDEN -> rob id: %d inflight: %d", bank, golden_rob_id, golden_inflight);
+      LOG_ERROR(cycle, "[BANK %d] RTL    -> rob id: %d inflight: %d", bank, rob_id,        cacheline_inflight);
+      return 1;
+    }
+  }
+
+  // update inflight array
+  if (need_linefill == 1) {
+    banks_inflight_array[bank][set_way] = 1;
+  }
+
+  banks_mshr_allow_array[bank][golden_write_ptr] = !(need_linefill == 1 || golden_inflight == 1);
+
+  // check mash allow array after update
+  if (!iq_array_check(cycle, bank, 0, mshr_allow_array_In)) {
+    LOG_ERROR(cycle, "ISU iq enqueue: check mshr_allow_array_In fail! write ptr %d", golden_write_ptr);
+    LOG_ERROR(cycle, "RTL    -> need linefill: %d inflight: %d", need_linefill, cacheline_inflight);
+    LOG_ERROR(cycle, "GOLDEN -> need linefill: %d inflight: %d", need_linefill, golden_inflight);
+    return 1;
+  }
+
+  banks_iq[bank][golden_write_ptr] = {true, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state};
+
+  LOG_INFO(cycle, "[BANK %d] push htu req into iq, write_ptr: %d rob_id: %d ch_id %d opcode %d need_linefill %d set_way_offset %d wbuffer_id %d offset0_state %d offset1_state %d mshr allow: %d",
+           bank, golden_write_ptr, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state, banks_mshr_allow_array[bank][golden_write_ptr]);
+
+  banks_iq_write_ptr[bank] = (banks_iq_write_ptr[bank] + 1) % ISU_IQ_SIZE;
+  banks_iq_size[bank]++;
+
+  return 0;
+}
+
+int iq_bottom_ptr_update (uint64_t cycle, uint8_t bank, uint16_t bottom_ptr) {
+  uint16_t golden_bottom_ptr = banks_iq_bottom_ptr[bank];
+  if (bottom_ptr != golden_bottom_ptr) {
+    LOG_ERROR(cycle, "[BANK %d] bottom ptr check fail, GOLDEN bottom ptr %d RTL bottom ptr %d",bank, golden_bottom_ptr, bottom_ptr);
+    return 1;
+  }
+  bool golden_bottom_wen = banks_iq_size[bank] != 0 && !banks_iq[bank][bottom_ptr].valid;
+  if (!golden_bottom_wen) {
+    LOG_ERROR(cycle, "[BANK %d] bottom ptr update fail, RTL need update but GOLDEN not!", bank);
+    LOG_ERROR(cycle, "GOLDEN bank iq size: %d, old bottom ptr:%d, entry valid is: %d", banks_iq_size[bank], banks_iq_bottom_ptr[bank], banks_iq[bank][bottom_ptr].valid);
+    return 1;
+  }
+  // update golden bottom ptr
+  banks_iq_bottom_ptr[bank] = (banks_iq_bottom_ptr[bank] + 1) % ISU_IQ_SIZE;
+  LOG_INFO(cycle, "[BANK %d] bottom ptr update check pass, bottom ptr %d -> %d", bank, bottom_ptr, banks_iq_bottom_ptr[bank]);
+  return 0;
+}
+
+uint16_t get_issue_index(uint8_t bank) {
+  uint16_t issue_ptr;
+  for (uint16_t i = 0; i < ISU_IQ_SIZE; i++) {
+    issue_ptr = (i + banks_iq_bottom_ptr[bank]) % ISU_IQ_SIZE;
+    if (banks_iq[bank][issue_ptr].valid && (banks_mshr_allow_array[bank][issue_ptr] || ((banks_iq[bank][issue_ptr].opcode >> 1) == 1)))
+      return issue_ptr;
+  }
+  return ISU_IQ_SIZE;
 }
 
 int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
@@ -273,8 +292,10 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
 
 extern "C" {
   int c_isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
-                       uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state) {
-    return isu_iq_enqueue(cycle, bank, cacheline_inflight, need_linefill, rob_id, ch_id, opcode, set_way_offset, wbuffer_id, offset0_state, offset1_state);
+                       uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state, 
+                       uint64_t mshr_allow_array_Q, uint64_t mshr_allow_array_In, uint16_t write_ptr) {
+    return isu_iq_enqueue(cycle, bank, cacheline_inflight, need_linefill, rob_id, ch_id, opcode, set_way_offset,
+                          wbuffer_id, offset0_state, offset1_state, mshr_allow_array_Q, mshr_allow_array_In, write_ptr);
   }
 
   int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
