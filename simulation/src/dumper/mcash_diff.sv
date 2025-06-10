@@ -592,38 +592,7 @@ endtask
       end
     end
 
-    if (bank0_htu_isu_valid & bank0_htu_isu_allowIn) begin
-      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
-                       bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
-                       bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0])) begin
-          end_simulation();
-        end
-    end
-
-    if (bank1_htu_isu_valid & bank1_htu_isu_allowIn) begin
-      if (c_isu_iq_enqueue(cycle_cnt_Q, 1, bank1_htu_isu_cacheline_inflight, bank1_htu_isu_need_linefill, bank1_htu_isu_rob_id[2:0], 
-                       bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
-                       bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0])) begin
-          end_simulation();
-        end
-    end
-
-    if (bank2_htu_isu_valid & bank2_htu_isu_allowIn) begin
-      if (c_isu_iq_enqueue(cycle_cnt_Q, 2, bank2_htu_isu_cacheline_inflight, bank2_htu_isu_need_linefill, bank2_htu_isu_rob_id[2:0], 
-                       bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
-                       bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0])) begin
-          end_simulation();
-        end
-    end
-
-    if (bank3_htu_isu_valid & bank3_htu_isu_allowIn) begin
-      if (c_isu_iq_enqueue(cycle_cnt_Q, 3, bank3_htu_isu_cacheline_inflight, bank3_htu_isu_need_linefill, bank3_htu_isu_rob_id[2:0], 
-                       bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
-                       bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0])) begin
-          end_simulation();
-        end
-    end
-
+    // ISU iq dequeue
     if (bank0_isu_sc_valid & bank0_isu_sc_ready) begin
       bank0_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
                                                   bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
@@ -666,6 +635,39 @@ endtask
       if (bank3_isu_iq_dequeue_ret) begin
         end_simulation();
       end
+    end
+
+    // ISU iq enqueue
+    if (bank0_htu_isu_valid & bank0_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 0, bank0_htu_isu_cacheline_inflight, bank0_htu_isu_need_linefill, bank0_htu_isu_rob_id[2:0], 
+                       bank0_htu_isu_ch_id[1:0], bank0_htu_isu_opcode[1:0], bank0_htu_isu_set_way_offset[6:0], bank0_htu_isu_wbuffer_id[7:0],
+                       bank0_htu_isu_offset0_state[1:0], bank0_htu_isu_offset1_state[1:0])) begin
+          end_simulation();
+        end
+    end
+
+    if (bank1_htu_isu_valid & bank1_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 1, bank1_htu_isu_cacheline_inflight, bank1_htu_isu_need_linefill, bank1_htu_isu_rob_id[2:0], 
+                       bank1_htu_isu_ch_id[1:0], bank1_htu_isu_opcode[1:0], bank1_htu_isu_set_way_offset[6:0], bank1_htu_isu_wbuffer_id[7:0],
+                       bank1_htu_isu_offset0_state[1:0], bank1_htu_isu_offset1_state[1:0])) begin
+          end_simulation();
+        end
+    end
+
+    if (bank2_htu_isu_valid & bank2_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 2, bank2_htu_isu_cacheline_inflight, bank2_htu_isu_need_linefill, bank2_htu_isu_rob_id[2:0], 
+                       bank2_htu_isu_ch_id[1:0], bank2_htu_isu_opcode[1:0], bank2_htu_isu_set_way_offset[6:0], bank2_htu_isu_wbuffer_id[7:0],
+                       bank2_htu_isu_offset0_state[1:0], bank2_htu_isu_offset1_state[1:0])) begin
+          end_simulation();
+        end
+    end
+
+    if (bank3_htu_isu_valid & bank3_htu_isu_allowIn) begin
+      if (c_isu_iq_enqueue(cycle_cnt_Q, 3, bank3_htu_isu_cacheline_inflight, bank3_htu_isu_need_linefill, bank3_htu_isu_rob_id[2:0], 
+                       bank3_htu_isu_ch_id[1:0], bank3_htu_isu_opcode[1:0], bank3_htu_isu_set_way_offset[6:0], bank3_htu_isu_wbuffer_id[7:0],
+                       bank3_htu_isu_offset0_state[1:0], bank3_htu_isu_offset1_state[1:0])) begin
+          end_simulation();
+        end
     end
 
     if (bank0_biu_isu_rvalid) begin
