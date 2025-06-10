@@ -1,6 +1,6 @@
 
 
-PTR_WIDTH = 8
+PTR_WIDTH = 6
 DEPTH = 1 << PTR_WIDTH
 
 def main():

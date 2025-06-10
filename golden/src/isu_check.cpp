@@ -98,27 +98,69 @@ void trans_num_to_array(uint64_t num, bool *arr) {
   }
 }
 
-void iq_array_dump(bool *iq_array, int n) {
+void iq_array_dump(uint64_t cycle, bool *golden_iq_array, bool *rtl_iq_array, int n, int first_wrong_ptr) {
   std::ostringstream indexStream;
-  std::ostringstream contextStream;
+  std::ostringstream golden_iq_stream;
+  std::ostringstream rtl_iq_stream;
+  std::ostringstream mark_stream;
+
   for (int i = 0; i < n; i++) {
     indexStream << std::setw(3) << i;
   }
+
   for (int i = 0; i < n; i++) {
-    contextStream << std::setw(3) << iq_array[i];
+    golden_iq_stream << std::setw(3) << golden_iq_array[i];
+    rtl_iq_stream << std::setw(3) << rtl_iq_array[i];
+  }
+
+  for (int i = 0; i < n; i++) {
+    if (i == first_wrong_ptr) {
+      mark_stream << std::setw(3) << "^";
+    } else {
+      mark_stream << std::setw(3) << " ";
+    }
   }
 
   size_t index_size = indexStream.tellp();
-  size_t context_size = contextStream.tellp();
+  size_t golden_size = golden_iq_stream.tellp();
+  size_t rtl_size = rtl_iq_stream.tellp();
+  size_t mark_size = mark_stream.tellp();
 
   char index_char_arr[index_size+1];
-  char context_char_arr[context_size+1];
+  char golden_char_arr[golden_size+1];
+  char rtl_char_arr[rtl_size+1];
+  char mark_char_arr[mark_size+1];
 
   std::strcpy(index_char_arr, indexStream.str().c_str());
-  std::strcpy(context_char_arr, contextStream.str().c_str());
+  std::strcpy(golden_char_arr, golden_iq_stream.str().c_str());
+  std::strcpy(rtl_char_arr, rtl_iq_stream.str().c_str());
+  std::strcpy(mark_char_arr, mark_stream.str().c_str());
 
-  LOG_DEBUG(0, "index -> %s", index_char_arr);
-  LOG_DEBUG(0, "contx -> %s", context_char_arr);
+  LOG_DEBUG(cycle, "INDEX  -> %s", index_char_arr);
+  LOG_DEBUG(cycle, "GOLDEN -> %s", golden_char_arr);
+  LOG_DEBUG(cycle, "RLT    -> %s", rtl_char_arr);
+  LOG_DEBUG(cycle, "          %s", mark_char_arr);
+}
+
+bool iq_array_check(uint64_t cycle, uint8_t bank, uint8_t check_type, uint64_t rtl_array) {
+  bool *golden_array;
+  bool rtl_bool_array[ISU_IQ_SIZE];
+  char *array_name;
+  trans_num_to_array(rtl_array, rtl_bool_array);
+  switch(check_type) {
+    case 0: 
+      golden_array = banks_mshr_allow_array[bank];
+      array_name = (char *)"MSHR";
+    default: golden_array = banks_mshr_allow_array[bank];
+  }
+  for (int i = 0; i < ISU_IQ_SIZE; i++) {
+    if (golden_array[i] != rtl_bool_array[i]) {
+      LOG_ERROR(cycle, "[BANK %d] isu iq %s check fail!", bank, array_name);
+      iq_array_dump(cycle, golden_array, rtl_bool_array, ISU_IQ_SIZE, i);
+      return false;
+    }
+  }
+  return true;
 }
 
 int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
@@ -126,17 +168,8 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
                    uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3,
                    uint64_t mshr_allow_array) {
 
-  bool rtl_mash_allow_array[ISU_IQ_SIZE];
-
-  trans_num_to_array(mshr_allow_array, rtl_mash_allow_array);
-
-  for (int i = 0; i < ISU_IQ_SIZE; i++) {
-    if (banks_mshr_allow_array[bank][i] != rtl_mash_allow_array[i]) {
-      LOG_ERROR(cycle, "[BANK %d] isu iq MSHR allow array check fail!", bank);
-      iq_array_dump();
-
-      return 1;
-    }
+  if (!iq_array_check(cycle, bank, 0, mshr_allow_array)) {
+    return 1;
   }
 
   uint16_t golden_issue_ptr = get_issue_index(bank);

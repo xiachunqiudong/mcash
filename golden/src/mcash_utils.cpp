@@ -27,7 +27,7 @@ std::string get_log_level_string(LogLevel level) {
 
 std::string get_color_by_log_level(LogLevel level) {
     switch(level) {
-        case LogLevel::DEBUG: return COLOR_BLUE;
+        case LogLevel::DEBUG: return COLOR_MAGENTA;
         case LogLevel::INFO:  return COLOR_GREEN;
         case LogLevel::ERROR: return COLOR_RED;
         default: return COLOR_RESET;

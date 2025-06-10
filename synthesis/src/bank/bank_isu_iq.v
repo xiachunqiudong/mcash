@@ -250,7 +250,7 @@ module bank_isu_iq #(
                                   & (mshr_allow_array_Q[DEPTH-1:0] | iq_need_evit_array_Q[DEPTH-1:0])
                                   & credit_allow_array[DEPTH-1:0];
 
-  shift_priority_arb_256
+  shift_priority_arb_64
   u_shift_priority_arb(
     .valid_array_i(execute_array[DEPTH-1:0]),
     .bottom_ptr_i(bottom_ptr_Q[PTR_WIDTH-1:0]),

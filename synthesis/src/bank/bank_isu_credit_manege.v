@@ -127,8 +127,8 @@ module bank_isu_credit_manage #(
 //--------------------------------------------------------------
   generate
     for (CHANNEL = 0; CHANNEL < CHANNEL_NUM; CHANNEL = CHANNEL + 1) begin
-      shift_priority_arb_256
-      channel_shift_priority_arb_256(
+      shift_priority_arb_64
+      channel_shift_priority_arb_64(
         .valid_array_i(channel_no_credit_array[CHANNEL]    ),
         .bottom_ptr_i (iq_bottom_ptr                       ),
         .select_ptr_o (channel_credit_allocate_ptr[CHANNEL])
