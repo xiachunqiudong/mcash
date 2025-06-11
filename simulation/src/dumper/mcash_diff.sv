@@ -25,7 +25,7 @@ module mcash_diff(
   import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int select_ptr, byte ch_id, byte opcode,
                                                byte set_way_offset, byte wbuffer_id, byte rob_id, byte offset0_state, byte offset1_state,
                                                longint linefill_data0, longint linefill_data1, longint linefill_data2, longint linefill_data3,
-                                               longint mshr_allow_array);
+                                               longint mshr_allow_array, longint credit_allow_array);
 
   import "DPI-C" function int c_iq_bottom_ptr_update(longint cycle, byte bank, int bottom_ptr);
 
@@ -166,6 +166,11 @@ module mcash_diff(
   logic [IQ_DEPTH-1:0]    bank1_iq_mshr_allow_array_Q;
   logic [IQ_DEPTH-1:0]    bank2_iq_mshr_allow_array_Q;
   logic [IQ_DEPTH-1:0]    bank3_iq_mshr_allow_array_Q;
+
+  logic [IQ_DEPTH-1:0]    bank0_iq_credit_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank1_iq_credit_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank2_iq_credit_allow_array_Q;
+  logic [IQ_DEPTH-1:0]    bank3_iq_credit_allow_array_Q;
 
   logic [IQ_PTR_WIDTH-1:0] bank0_write_ptr_Q;
   logic [IQ_PTR_WIDTH-1:0] bank1_write_ptr_Q;
@@ -381,6 +386,10 @@ endtask
   assign bank1_iq_mshr_allow_array_Q          = `BANK1_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
   assign bank2_iq_mshr_allow_array_Q          = `BANK2_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
   assign bank3_iq_mshr_allow_array_Q          = `BANK3_ISU_TOP.u_isu_iq.mshr_allow_array_Q;
+  assign bank0_iq_credit_allow_array_Q        = `BANK0_ISU_TOP.u_isu_iq.credit_allow_array;
+  assign bank1_iq_credit_allow_array_Q        = `BANK1_ISU_TOP.u_isu_iq.credit_allow_array;
+  assign bank2_iq_credit_allow_array_Q        = `BANK2_ISU_TOP.u_isu_iq.credit_allow_array;
+  assign bank3_iq_credit_allow_array_Q        = `BANK3_ISU_TOP.u_isu_iq.credit_allow_array;
   assign bank0_write_ptr_Q                    = `BANK0_ISU_TOP.u_isu_iq.writePtr_Q;
   assign bank1_write_ptr_Q                    = `BANK1_ISU_TOP.u_isu_iq.writePtr_Q;
   assign bank2_write_ptr_Q                    = `BANK2_ISU_TOP.u_isu_iq.writePtr_Q;
@@ -614,7 +623,7 @@ endtask
                                                   bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
                                                   bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
                                                   bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
-                                                  bank0_iq_mshr_allow_array_Q);
+                                                  bank0_iq_mshr_allow_array_Q, bank0_iq_credit_allow_array_Q);
       if (bank0_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -625,7 +634,7 @@ endtask
                                                   bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
                                                   bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
                                                   bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
-                                                  bank1_iq_mshr_allow_array_Q);
+                                                  bank1_iq_mshr_allow_array_Q, bank1_iq_credit_allow_array_Q);
       if (bank1_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -636,7 +645,7 @@ endtask
                                                   bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
                                                   bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
                                                   bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
-                                                  bank2_iq_mshr_allow_array_Q);
+                                                  bank2_iq_mshr_allow_array_Q, bank2_iq_credit_allow_array_Q);
       if (bank2_isu_iq_dequeue_ret) begin
         end_simulation();
       end
@@ -647,7 +656,7 @@ endtask
                                                   bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
                                                   bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
                                                   bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
-                                                  bank3_iq_mshr_allow_array_Q);
+                                                  bank3_iq_mshr_allow_array_Q, bank3_iq_credit_allow_array_Q);
       if (bank3_isu_iq_dequeue_ret) begin
         end_simulation();
       end
