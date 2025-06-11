@@ -141,7 +141,10 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
     banks_inflight_array[bank][set_way] = 1;
   }
 
-  banks_mshr_allow_array[bank][golden_write_ptr] = !(need_linefill == 1 || golden_inflight == 1);
+  bool old_golden_mshr_state = banks_mshr_allow_array[bank][golden_write_ptr];
+  bool new_golden_mshr_state = !(need_linefill == 1 || golden_inflight == 1);
+  banks_mshr_allow_array[bank][golden_write_ptr] = new_golden_mshr_state;
+  LOG_INFO(cycle, "[BANK %d] ISU iq enqueue update mash array state, index: %d %d -> %d", bank, golden_write_ptr, old_golden_mshr_state, new_golden_mshr_state);
 
   // check mash allow array after update
   // if (!iq_array_check(cycle, bank, 0, mshr_allow_array_In)) {
@@ -276,7 +279,7 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
   int update_inflight_array (uint64_t cycle, uint8_t bank, uint8_t rid, uint64_t rdata0, uint64_t rdata1, uint64_t rdata2, uint64_t rdata3) {
     // update golden inflight array
     for (int i = 0; i < ISU_IQ_SIZE; i++) {
-      if ((banks_iq[bank][i].set_way_offset >> 1) == rid) {
+      if (banks_iq[bank][i].valid && ((banks_iq[bank][i].set_way_offset >> 1) == rid)) {
         banks_mshr_allow_array[bank][i] = 1;
       }
     }
