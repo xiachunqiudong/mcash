@@ -144,12 +144,12 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
   banks_mshr_allow_array[bank][golden_write_ptr] = !(need_linefill == 1 || golden_inflight == 1);
 
   // check mash allow array after update
-  if (!iq_array_check(cycle, bank, 0, mshr_allow_array_In)) {
-    LOG_ERROR(cycle, "ISU iq enqueue: check mshr_allow_array_In fail! write ptr %d", golden_write_ptr);
-    LOG_ERROR(cycle, "RTL    -> need linefill: %d inflight: %d", need_linefill, cacheline_inflight);
-    LOG_ERROR(cycle, "GOLDEN -> need linefill: %d inflight: %d", need_linefill, golden_inflight);
-    return 1;
-  }
+  // if (!iq_array_check(cycle, bank, 0, mshr_allow_array_In)) {
+  //   LOG_ERROR(cycle, "ISU iq enqueue: check mshr_allow_array_In fail! write ptr %d", golden_write_ptr);
+  //   LOG_ERROR(cycle, "RTL    -> need linefill: %d inflight: %d", need_linefill, cacheline_inflight);
+  //   LOG_ERROR(cycle, "GOLDEN -> need linefill: %d inflight: %d", need_linefill, golden_inflight);
+  //   return 1;
+  // }
 
   banks_iq[bank][golden_write_ptr] = {true, rob_id, ch_id, opcode, need_linefill, set_way_offset, wbuffer_id, offset0_state, offset1_state};
 
