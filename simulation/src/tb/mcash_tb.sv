@@ -414,7 +414,15 @@ module mcash_tb;
 
   end
 
-
+  always_ff @(posedge clk) begin
+    if (ch0_index >= NUM_INST && ch1_index >= NUM_INST && ch2_index >= NUM_INST) begin
+      $display("MCASH TB -> All inst issue done, CASE PASS!");
+      $display("CHANNEL 0 issue inst num: %d", NUM_INST);
+      $display("CHANNEL 1 issue inst num: %d", NUM_INST);
+      $display("CHANNEL 2 issue inst num: %d", NUM_INST);
+      $finish;
+    end
+  end
 
 
   mcash_top
@@ -1040,7 +1048,7 @@ module mcash_tb;
   end
 
   initial begin
-    #100000
+    #100000000
     $fsdbDumpoff;
     $finish;
   end
