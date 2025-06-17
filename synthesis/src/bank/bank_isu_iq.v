@@ -247,8 +247,8 @@ module bank_isu_iq #(
   end
 
   assign execute_array[DEPTH-1:0] = valid_array_Q[DEPTH-1:0]
-                                  & (mshr_allow_array_Q[DEPTH-1:0] | iq_need_evit_array_Q[DEPTH-1:0])
-                                  & credit_allow_array[DEPTH-1:0];
+                                  & (  (mshr_allow_array_Q[DEPTH-1:0] & credit_allow_array[DEPTH-1:0])
+                                      | iq_need_evit_array_Q[DEPTH-1:0]); // evit inst do not need mash allow and credit allow
 
   shift_priority_arb_64
   u_shift_priority_arb(

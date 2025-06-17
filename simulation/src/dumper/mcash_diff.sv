@@ -622,7 +622,7 @@ endtask
       bank0_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
                                                   bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
                                                   bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
-                                                  bank0_isu_sc_linefill_data_offset0[63:0], bank0_isu_sc_linefill_data_offset0[127:64],
+                                                  bank0_isu_sc_linefill_data_offset1[63:0], bank0_isu_sc_linefill_data_offset1[127:64],
                                                   bank0_iq_mshr_allow_array_Q, bank0_iq_credit_allow_array_Q);
       if (bank0_isu_iq_dequeue_ret) begin
         end_simulation();
@@ -633,7 +633,7 @@ endtask
       bank1_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 1, bank1_select_ptr, bank1_isu_sc_channel_id, bank1_isu_sc_opcode, bank1_isu_sc_set_way_offset, bank1_isu_sc_wbuffer_id, 
                                                   bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
                                                   bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
-                                                  bank1_isu_sc_linefill_data_offset0[63:0], bank1_isu_sc_linefill_data_offset0[127:64],
+                                                  bank1_isu_sc_linefill_data_offset1[63:0], bank1_isu_sc_linefill_data_offset1[127:64],
                                                   bank1_iq_mshr_allow_array_Q, bank1_iq_credit_allow_array_Q);
       if (bank1_isu_iq_dequeue_ret) begin
         end_simulation();
@@ -644,7 +644,7 @@ endtask
       bank2_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 2, bank2_select_ptr, bank2_isu_sc_channel_id, bank2_isu_sc_opcode, bank2_isu_sc_set_way_offset, bank2_isu_sc_wbuffer_id, 
                                                   bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
                                                   bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
-                                                  bank2_isu_sc_linefill_data_offset0[63:0], bank2_isu_sc_linefill_data_offset0[127:64],
+                                                  bank2_isu_sc_linefill_data_offset1[63:0], bank2_isu_sc_linefill_data_offset1[127:64],
                                                   bank2_iq_mshr_allow_array_Q, bank2_iq_credit_allow_array_Q);
       if (bank2_isu_iq_dequeue_ret) begin
         end_simulation();
@@ -655,7 +655,7 @@ endtask
       bank3_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 3, bank3_select_ptr, bank3_isu_sc_channel_id, bank3_isu_sc_opcode, bank3_isu_sc_set_way_offset, bank3_isu_sc_wbuffer_id, 
                                                   bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
                                                   bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
-                                                  bank3_isu_sc_linefill_data_offset0[63:0], bank3_isu_sc_linefill_data_offset0[127:64],
+                                                  bank3_isu_sc_linefill_data_offset1[63:0], bank3_isu_sc_linefill_data_offset1[127:64],
                                                   bank3_iq_mshr_allow_array_Q, bank3_iq_credit_allow_array_Q);
       if (bank3_isu_iq_dequeue_ret) begin
         end_simulation();
