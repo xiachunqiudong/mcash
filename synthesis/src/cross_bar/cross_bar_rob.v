@@ -107,7 +107,7 @@ module cross_bar_rob #(
     if (rst_i) begin
       bank2_rob_num_Q <= 'd0;
     end
-    else if (bank1_spw_buffer_ren) begin
+    else if (bank2_spw_buffer_ren) begin
       bank2_rob_num_Q <= bank2_rob_num_Q + 'd1;
     end
   end
@@ -116,7 +116,7 @@ module cross_bar_rob #(
     if (rst_i) begin
       bank3_rob_num_Q <= 'd0;
     end
-    else if (bank1_spw_buffer_ren) begin
+    else if (bank3_spw_buffer_ren) begin
       bank3_rob_num_Q <= bank3_rob_num_Q + 'd1;
     end
   end
