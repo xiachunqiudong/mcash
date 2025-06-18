@@ -60,20 +60,20 @@ module bank_biu_top #(
   wire         biu_out_valid;
   wire         biu_fifo_pop;
   wire         biu_fifo_allowIn;
-  wire [32:0]  biu_din0;
-  wire [32:0]  biu_din1;
-  wire [32:0]  biu_dout;
+  wire [33:0]  biu_din0;
+  wire [33:0]  biu_din1;
+  wire [33:0]  biu_dout;
 
 //-------------------------------------------------------------------------
 // BIU FIFO
 // 2 inputs, 1 output
 //-------------------------------------------------------------------------
-  assign biu_din0[32]    = 1'b1;
-  assign biu_din0[31:27] = htu_biu_set_way_i[5:0];
+  assign biu_din0[33]    = 1'b1;
+  assign biu_din0[32:27] = htu_biu_set_way_i[5:0];
   assign biu_din0[26:0]  = htu_biu_awaddr_i[31:5];
 
-  assign biu_din1[32]    = 1'b0;
-  assign biu_din1[31:27] = htu_biu_set_way_i[5:0];
+  assign biu_din1[33]    = 1'b0;
+  assign biu_din1[32:27] = htu_biu_set_way_i[5:0];
   assign biu_din1[26:0]  = htu_biu_araddr_i[31:5];
 
   assign biu_fifo_pop  = biu_axi3_arvalid_o & biu_axi3_arready_i
@@ -83,7 +83,7 @@ module bank_biu_top #(
 
   biu_fifo_2i1o #(
     .AW(4 ),
-    .DW(33)
+    .DW(34)
   ) biu_ctrl_fifo(
     .clk       (clk_i            ),
     .rst       (rst_i            ),
@@ -101,8 +101,8 @@ module bank_biu_top #(
 //                            AR channel
 // to add fifo to release timing
 //-------------------------------------------------------------------------
-  assign biu_axi3_arvalid_o                = biu_out_valid & ~biu_dout[32];
-  assign biu_axi3_arid_o[5:0]              = {2'b00, biu_dout[31:27]};
+  assign biu_axi3_arvalid_o                = biu_out_valid & ~biu_dout[33];
+  assign biu_axi3_arid_o[5:0]              = biu_dout[32:27];
   assign biu_axi3_araddr_o[ADDR_WIDTH-1:0] = {biu_dout[26:0], 5'b00000};
   assign biu_axi3_arsize_o[2:0]            = 3'b101;  // 32 Byte
   assign biu_axi3_arlen_o[3:0]             = 4'b0000;
@@ -111,8 +111,8 @@ module bank_biu_top #(
 //-------------------------------------------------------------------------
 //                             AW channel
 //-------------------------------------------------------------------------
-  assign biu_axi3_awvalid_o                = biu_out_valid & biu_dout[32];
-  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = {2'b00, biu_dout[31:27]};
+  assign biu_axi3_awvalid_o                = biu_out_valid & biu_dout[33];
+  assign biu_axi3_awid_o[ID_WIDTH-1:0]     = biu_dout[32:27];
   assign biu_axi3_awaddr_o[ADDR_WIDTH-1:0] = {biu_dout[26:0], 5'b00000};
   assign biu_axi3_awlen_o[3:0]             = 4'b0000;
   assign biu_axi3_awsize_o[2:0]            = 3'b101;

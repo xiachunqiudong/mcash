@@ -10,7 +10,7 @@ def mcash_req_hex(tag, cache_bank, cache_set, offset, data, op):
   return valid_bin + op_bin + data_bin + addr_bin
 
 def gen_random_inst():
-  tag = random.randint(0, 10000)
+  tag = random.randrange(0, 4)
   cache_bank = random.randrange(0, 4)
   cache_set = random.randrange(0, 8)
   offset = random.randrange(0, 2)
