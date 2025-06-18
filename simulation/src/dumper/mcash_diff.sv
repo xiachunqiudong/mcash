@@ -400,10 +400,10 @@ endtask
   assign bank1_write_ptr_Q                    = `BANK1_ISU_TOP.u_isu_iq.writePtr_Q;
   assign bank2_write_ptr_Q                    = `BANK2_ISU_TOP.u_isu_iq.writePtr_Q;
   assign bank3_write_ptr_Q                    = `BANK3_ISU_TOP.u_isu_iq.writePtr_Q;
-  assign bank0_iq_size_Q                    = `BANK0_ISU_TOP.u_isu_iq.queue_size_Q;
-  assign bank1_iq_size_Q                    = `BANK1_ISU_TOP.u_isu_iq.queue_size_Q;
-  assign bank2_iq_size_Q                    = `BANK2_ISU_TOP.u_isu_iq.queue_size_Q;
-  assign bank3_iq_size_Q                    = `BANK3_ISU_TOP.u_isu_iq.queue_size_Q;
+  assign bank0_iq_size_Q                      = `BANK0_ISU_TOP.u_isu_iq.queue_size_Q;
+  assign bank1_iq_size_Q                      = `BANK1_ISU_TOP.u_isu_iq.queue_size_Q;
+  assign bank2_iq_size_Q                      = `BANK2_ISU_TOP.u_isu_iq.queue_size_Q;
+  assign bank3_iq_size_Q                      = `BANK3_ISU_TOP.u_isu_iq.queue_size_Q;
   assign bank0_bottom_ptr_kickoff             = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
   assign bank0_bottom_ptr_Q                   = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_Q;
   assign bank1_bottom_ptr_kickoff             = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
@@ -743,5 +743,51 @@ endtask
     end
 
   end
+
+
+
+// 
+
+//---------------------------------------------------------------------------
+//
+//
+
+  parameter NUM_BANK = 4;
+
+  logic [NUM_BANK-1:0] banks_iq_full;
+  logic [9:0]          banks_iq_full_cnt_Q [NUM_BANK-1:0];
+
+  assign banks_iq_full[0] = bank0_iq_size_Q == IQ_DEPTH;
+  assign banks_iq_full[1] = bank1_iq_size_Q == IQ_DEPTH;
+  assign banks_iq_full[2] = bank2_iq_size_Q == IQ_DEPTH;
+  assign banks_iq_full[3] = bank3_iq_size_Q == IQ_DEPTH;
+
+generate
+  for (genvar i = 0; i < NUM_BANK; i++) begin
+    // Bank iq full cnt
+    always_ff @(posedge clk or posedge rst) begin
+      if (rst) begin
+        banks_iq_full_cnt_Q[i] <= 'd0;
+      end
+      else if (banks_iq_full[i]) begin
+        banks_iq_full_cnt_Q[i] <= banks_iq_full_cnt_Q[i] + 'd1;
+      end
+      else begin
+        banks_iq_full_cnt_Q[i] <= 'd0;
+      end
+    end
+    
+    // Bank iq full cnt
+    always_ff @(posedge clk) begin
+      if (&banks_iq_full_cnt_Q[i]) begin
+        $display("MCASH DEBUG -> BANK%0d isu iq full over %d cycle, stop simulation!", i, banks_iq_full_cnt_Q[i]);
+        $finish;
+      end
+    end
+  end
+
+endgenerate
+
+
 
 endmodule
