@@ -6,6 +6,8 @@ module cross_bar_core_buffer(
   input  wire [1:0]   mcash_ch_req_op_i,
   input  wire [31:4]  mcash_ch_req_addr_i,
   input  wire [127:0] mcash_ch_req_data_i,
+  output wire         ch_keep_order_fifo_push_o,
+  input  wire         ch_keep_order_fifo_allowIn_i,
   output wire         ch_has_entry_want_send_to_bank0_o,
   output wire         ch_has_entry_want_send_to_bank1_o,
   output wire         ch_has_entry_want_send_to_bank2_o,
@@ -104,7 +106,14 @@ module cross_bar_core_buffer(
 //                 channel req buffer ctrl
 //--------------------------------------------------------------
 // channel write ptr
-  assign mcash_ch_req_allowIn_o = ch_used_entry_Q[2:0] < 3'd5;
+  assign ch_keep_order_fifo_push_o = mcash_ch_req_valid_i
+                                   & (ch_used_entry_Q[2:0] < 3'd5)
+                                   & mcash_ch_req_op_i == 2'b00;
+
+  assign mcash_ch_req_allowIn_o = ch_used_entry_Q[2:0] < 3'd5
+                                & (   mcash_ch_req_op_i != 2'b00
+                                    | ch_keep_order_fifo_allowIn_i
+                                  );
 
   assign ch_wr_ptr_kickoff = mcash_ch_req_valid_i & mcash_ch_req_allowIn_o;
   

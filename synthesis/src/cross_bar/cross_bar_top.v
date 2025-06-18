@@ -82,70 +82,76 @@ module cross_bar_top (
   output wire [2:0]   bank3_channel_spw_pop_o
 );
 
-  wire mcash_ch0_read_req_kickoff;
-  wire mcash_ch1_read_req_kickoff;
-  wire mcash_ch2_read_req_kickoff;
+  wire ch0_keep_order_fifo_push;
+  wire ch1_keep_order_fifo_push;
+  wire ch2_keep_order_fifo_push;
+  wire ch0_keep_order_fifo_allowIn;
+  wire ch1_keep_order_fifo_allowIn;
+  wire ch2_keep_order_fifo_allowIn;
 
   cross_bar_core
   u_cross_bar_core(
-    .clk_i                      (clk_i                           ),
-    .rst_i                      (rst_i                           ),
-    .mcash_ch0_req_valid_i      (mcash_ch0_req_valid_i           ),
-    .mcash_ch0_req_allowIn_o    (mcash_ch0_req_allowIn_o         ),
-    .mcash_ch0_req_addr_i       (mcash_ch0_req_addr_i[31:4]      ),
-    .mcash_ch0_req_data_i       (mcash_ch0_req_data_i[127:0]     ),
-    .mcash_ch0_req_op_i         (mcash_ch0_req_op_i[1:0]         ),
-    .mcash_ch1_req_valid_i      (mcash_ch1_req_valid_i           ),
-    .mcash_ch1_req_allowIn_o    (mcash_ch1_req_allowIn_o         ),
-    .mcash_ch1_req_op_i         (mcash_ch1_req_op_i[1:0]         ),
-    .mcash_ch1_req_addr_i       (mcash_ch1_req_addr_i[31:4]      ),
-    .mcash_ch1_req_data_i       (mcash_ch1_req_data_i[127:0]     ),
-    .mcash_ch2_req_valid_i      (mcash_ch2_req_valid_i           ),
-    .mcash_ch2_req_op_i         (mcash_ch2_req_op_i[1:0]         ),
-    .mcash_ch2_req_allowIn_o    (mcash_ch2_req_allowIn_o         ),
-    .mcash_ch2_req_addr_i       (mcash_ch2_req_addr_i[31:4]      ),
-    .mcash_ch2_req_data_i       (mcash_ch2_req_data_i[127:0]     ),
-    .xbar_bank0_htu_valid_o     (xbar_bank0_htu_valid_o          ),
-    .xbar_bank0_htu_allowIn_i   (xbar_bank0_htu_allowIn_i        ),
-    .xbar_bank0_htu_ch_id_o     (xbar_bank0_htu_ch_id_o[1:0]     ),
-    .xbar_bank0_htu_opcode_o    (xbar_bank0_htu_opcode_o[1:0]    ),
-    .xbar_bank0_htu_addr_o      (xbar_bank0_htu_addr_o[31:4]     ),
-    .xbar_bank0_htu_data_o      (xbar_bank0_htu_data_o[127:0]    ),
-    .xbar_bank0_htu_wbuffer_id_o(xbar_bank0_htu_wbuffer_id_o[7:0]),
-    .xbar_bank1_htu_valid_o     (xbar_bank1_htu_valid_o          ),
-    .xbar_bank1_htu_allowIn_i   (xbar_bank1_htu_allowIn_i        ),
-    .xbar_bank1_htu_ch_id_o     (xbar_bank1_htu_ch_id_o[1:0]     ),
-    .xbar_bank1_htu_opcode_o    (xbar_bank1_htu_opcode_o[1:0]    ),
-    .xbar_bank1_htu_addr_o      (xbar_bank1_htu_addr_o[31:4]     ),
-    .xbar_bank1_htu_data_o      (xbar_bank1_htu_data_o[127:0]    ),
-    .xbar_bank1_htu_wbuffer_id_o(xbar_bank1_htu_wbuffer_id_o[7:0]),
-    .xbar_bank2_htu_valid_o     (xbar_bank2_htu_valid_o          ),
-    .xbar_bank2_htu_allowIn_i   (xbar_bank2_htu_allowIn_i        ),
-    .xbar_bank2_htu_ch_id_o     (xbar_bank2_htu_ch_id_o[1:0]     ),
-    .xbar_bank2_htu_opcode_o    (xbar_bank2_htu_opcode_o[1:0]    ),
-    .xbar_bank2_htu_addr_o      (xbar_bank2_htu_addr_o[31:4]     ),
-    .xbar_bank2_htu_data_o      (xbar_bank2_htu_data_o[127:0]    ),
-    .xbar_bank2_htu_wbuffer_id_o(xbar_bank2_htu_wbuffer_id_o[7:0]),
-    .xbar_bank3_htu_valid_o     (xbar_bank3_htu_valid_o          ),
-    .xbar_bank3_htu_allowIn_i   (xbar_bank3_htu_allowIn_i        ),
-    .xbar_bank3_htu_ch_id_o     (xbar_bank3_htu_ch_id_o[1:0]     ),
-    .xbar_bank3_htu_opcode_o    (xbar_bank3_htu_opcode_o[1:0]    ),
-    .xbar_bank3_htu_addr_o      (xbar_bank3_htu_addr_o[31:4]     ),
-    .xbar_bank3_htu_data_o      (xbar_bank3_htu_data_o[127:0]    ),
-    .xbar_bank3_htu_wbuffer_id_o(xbar_bank3_htu_wbuffer_id_o[7:0])
+    .clk_i                        (clk_i                           ),
+    .rst_i                        (rst_i                           ),
+    .mcash_ch0_req_valid_i        (mcash_ch0_req_valid_i           ),
+    .mcash_ch0_req_allowIn_o      (mcash_ch0_req_allowIn_o         ),
+    .mcash_ch0_req_addr_i         (mcash_ch0_req_addr_i[31:4]      ),
+    .mcash_ch0_req_data_i         (mcash_ch0_req_data_i[127:0]     ),
+    .mcash_ch0_req_op_i           (mcash_ch0_req_op_i[1:0]         ),
+    .ch0_keep_order_fifo_push_o   (ch0_keep_order_fifo_push        ),
+    .ch0_keep_order_fifo_allowIn_i(ch0_keep_order_fifo_allowIn     ),
+    .mcash_ch1_req_valid_i        (mcash_ch1_req_valid_i           ),
+    .mcash_ch1_req_allowIn_o      (mcash_ch1_req_allowIn_o         ),
+    .mcash_ch1_req_op_i           (mcash_ch1_req_op_i[1:0]         ),
+    .mcash_ch1_req_addr_i         (mcash_ch1_req_addr_i[31:4]      ),
+    .mcash_ch1_req_data_i         (mcash_ch1_req_data_i[127:0]     ),
+    .ch1_keep_order_fifo_push_o   (ch1_keep_order_fifo_push        ),
+    .ch1_keep_order_fifo_allowIn_i(ch1_keep_order_fifo_allowIn     ),
+    .mcash_ch2_req_valid_i        (mcash_ch2_req_valid_i           ),
+    .mcash_ch2_req_op_i           (mcash_ch2_req_op_i[1:0]         ),
+    .mcash_ch2_req_allowIn_o      (mcash_ch2_req_allowIn_o         ),
+    .mcash_ch2_req_addr_i         (mcash_ch2_req_addr_i[31:4]      ),
+    .mcash_ch2_req_data_i         (mcash_ch2_req_data_i[127:0]     ),
+    .ch2_keep_order_fifo_push_o   (ch2_keep_order_fifo_push        ),
+    .ch2_keep_order_fifo_allowIn_i(ch2_keep_order_fifo_allowIn     ),
+    .xbar_bank0_htu_valid_o       (xbar_bank0_htu_valid_o          ),
+    .xbar_bank0_htu_allowIn_i     (xbar_bank0_htu_allowIn_i        ),
+    .xbar_bank0_htu_ch_id_o       (xbar_bank0_htu_ch_id_o[1:0]     ),
+    .xbar_bank0_htu_opcode_o      (xbar_bank0_htu_opcode_o[1:0]    ),
+    .xbar_bank0_htu_addr_o        (xbar_bank0_htu_addr_o[31:4]     ),
+    .xbar_bank0_htu_data_o        (xbar_bank0_htu_data_o[127:0]    ),
+    .xbar_bank0_htu_wbuffer_id_o  (xbar_bank0_htu_wbuffer_id_o[7:0]),
+    .xbar_bank1_htu_valid_o       (xbar_bank1_htu_valid_o          ),
+    .xbar_bank1_htu_allowIn_i     (xbar_bank1_htu_allowIn_i        ),
+    .xbar_bank1_htu_ch_id_o       (xbar_bank1_htu_ch_id_o[1:0]     ),
+    .xbar_bank1_htu_opcode_o      (xbar_bank1_htu_opcode_o[1:0]    ),
+    .xbar_bank1_htu_addr_o        (xbar_bank1_htu_addr_o[31:4]     ),
+    .xbar_bank1_htu_data_o        (xbar_bank1_htu_data_o[127:0]    ),
+    .xbar_bank1_htu_wbuffer_id_o  (xbar_bank1_htu_wbuffer_id_o[7:0]),
+    .xbar_bank2_htu_valid_o       (xbar_bank2_htu_valid_o          ),
+    .xbar_bank2_htu_allowIn_i     (xbar_bank2_htu_allowIn_i        ),
+    .xbar_bank2_htu_ch_id_o       (xbar_bank2_htu_ch_id_o[1:0]     ),
+    .xbar_bank2_htu_opcode_o      (xbar_bank2_htu_opcode_o[1:0]    ),
+    .xbar_bank2_htu_addr_o        (xbar_bank2_htu_addr_o[31:4]     ),
+    .xbar_bank2_htu_data_o        (xbar_bank2_htu_data_o[127:0]    ),
+    .xbar_bank2_htu_wbuffer_id_o  (xbar_bank2_htu_wbuffer_id_o[7:0]),
+    .xbar_bank3_htu_valid_o       (xbar_bank3_htu_valid_o          ),
+    .xbar_bank3_htu_allowIn_i     (xbar_bank3_htu_allowIn_i        ),
+    .xbar_bank3_htu_ch_id_o       (xbar_bank3_htu_ch_id_o[1:0]     ),
+    .xbar_bank3_htu_opcode_o      (xbar_bank3_htu_opcode_o[1:0]    ),
+    .xbar_bank3_htu_addr_o        (xbar_bank3_htu_addr_o[31:4]     ),
+    .xbar_bank3_htu_data_o        (xbar_bank3_htu_data_o[127:0]    ),
+    .xbar_bank3_htu_wbuffer_id_o  (xbar_bank3_htu_wbuffer_id_o[7:0])
   );
-
-  assign mcash_ch0_read_req_kickoff = mcash_ch0_req_valid_i & mcash_ch0_req_allowIn_o & mcash_ch0_req_op_i == 2'b00;
-  assign mcash_ch1_read_req_kickoff = mcash_ch1_req_valid_i & mcash_ch1_req_allowIn_o & mcash_ch1_req_op_i == 2'b00;
-  assign mcash_ch2_read_req_kickoff = mcash_ch2_req_valid_i & mcash_ch2_req_allowIn_o & mcash_ch2_req_op_i == 2'b00;
 
   cross_bar_rob #(
     .CHANNEL_ID(0)
   ) ch0_rob(
     .clk_i                       (clk_i                       ),
     .rst_i                       (rst_i                       ),
-    .mcash_ch0_read_req_kickoff_i(mcash_ch0_read_req_kickoff  ),
-    .mcash_ch0_read_req_bank_id_i(mcash_ch0_req_addr_i[9:8]   ),
+    .keep_order_fifo_push_i      (ch0_keep_order_fifo_push    ),
+    .mcash_ch_read_req_bank_id_i (mcash_ch0_req_addr_i[9:8]   ),
+    .keep_order_fifo_allowIn_o   (ch0_keep_order_fifo_allowIn ),
     .bank0_sc_xbar_valid_i       (bank0_sc_xbar_valid_i       ),
     .bank0_sc_xbar_ch_id_i       (bank0_sc_xbar_ch_id_i[1:0]  ),
     .bank0_sc_xbar_rob_num_i     (bank0_sc_xbar_rob_num_i[2:0]),
@@ -176,8 +182,9 @@ module cross_bar_top (
   ) ch1_rob(
     .clk_i                       (clk_i                       ),
     .rst_i                       (rst_i                       ),
-    .mcash_ch0_read_req_kickoff_i(mcash_ch1_read_req_kickoff  ),
-    .mcash_ch0_read_req_bank_id_i(mcash_ch1_req_addr_i[9:8]   ),
+    .keep_order_fifo_push_i      (ch1_keep_order_fifo_push    ),
+    .mcash_ch_read_req_bank_id_i (mcash_ch1_req_addr_i[9:8]   ),
+    .keep_order_fifo_allowIn_o   (ch1_keep_order_fifo_allowIn ),
     .bank0_sc_xbar_valid_i       (bank0_sc_xbar_valid_i       ),
     .bank0_sc_xbar_ch_id_i       (bank0_sc_xbar_ch_id_i[1:0]  ),
     .bank0_sc_xbar_rob_num_i     (bank0_sc_xbar_rob_num_i[2:0]),
@@ -208,8 +215,9 @@ module cross_bar_top (
   ) ch2_rob(
     .clk_i                       (clk_i                       ),
     .rst_i                       (rst_i                       ),
-    .mcash_ch0_read_req_kickoff_i(mcash_ch2_read_req_kickoff  ),
-    .mcash_ch0_read_req_bank_id_i(mcash_ch2_req_addr_i[9:8]   ),
+    .keep_order_fifo_push_i      (ch2_keep_order_fifo_push    ),
+    .mcash_ch_read_req_bank_id_i (mcash_ch2_req_addr_i[9:8]   ),
+    .keep_order_fifo_allowIn_o   (ch2_keep_order_fifo_allowIn ),
     .bank0_sc_xbar_valid_i       (bank0_sc_xbar_valid_i       ),
     .bank0_sc_xbar_ch_id_i       (bank0_sc_xbar_ch_id_i[1:0]  ),
     .bank0_sc_xbar_rob_num_i     (bank0_sc_xbar_rob_num_i[2:0]),

@@ -3,8 +3,9 @@ module cross_bar_rob #(
 )(
   input  wire         clk_i,
   input  wire         rst_i,
-  input  wire         mcash_ch0_read_req_kickoff_i,
-  input  wire [1:0]   mcash_ch0_read_req_bank_id_i,
+  input  wire         keep_order_fifo_push_i,
+  input  wire [1:0]   mcash_ch_read_req_bank_id_i,
+  output wire         keep_order_fifo_allowIn_o,
   input  wire         bank0_sc_xbar_valid_i,
   input  wire [1:0]   bank0_sc_xbar_ch_id_i,
   input  wire [2:0]   bank0_sc_xbar_rob_num_i,
@@ -67,15 +68,17 @@ module cross_bar_rob #(
     .AW (4),
     .DW (2)
   ) keep_order_fifo(
-      .clk   (clk_i                            ),
-      .rst   (rst_i                            ),
-      .push  (mcash_ch0_read_req_kickoff_i     ),
-      .din   (mcash_ch0_read_req_bank_id_i[1:0]),
-      .pop   (keep_order_fifo_pop              ),
-      .dout  (keep_order_fifo_dout[1:0]        ),
-      .empry (keep_order_fifo_empty            ),
-      .full  (keep_order_fifo_full             )
+      .clk   (clk_i                           ),
+      .rst   (rst_i                           ),
+      .push  (keep_order_fifo_push_i          ),
+      .din   (mcash_ch_read_req_bank_id_i[1:0]),
+      .pop   (keep_order_fifo_pop             ),
+      .dout  (keep_order_fifo_dout[1:0]       ),
+      .empry (keep_order_fifo_empty           ),
+      .full  (keep_order_fifo_full            )
   );
+
+  assign keep_order_fifo_allowIn_o = ~keep_order_fifo_full;
 
   assign kof_use_bank0 = keep_order_fifo_dout[1:0] == 2'b00;
   assign kof_use_bank1 = keep_order_fifo_dout[1:0] == 2'b01;
