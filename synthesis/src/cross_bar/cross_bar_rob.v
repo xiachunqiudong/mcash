@@ -207,10 +207,11 @@ module cross_bar_rob #(
     .read_data_o      (bank3_spw_buffer_rdata[127:0])
   );
 
-  assign ch_rtn_data_valid_o = bank0_spw_buffer_rvalid
-                             | bank1_spw_buffer_rvalid
-                             | bank2_spw_buffer_rvalid
-                             | bank3_spw_buffer_rvalid;
+  assign ch_rtn_data_valid_o = ~keep_order_fifo_empty
+                             & (  bank0_spw_buffer_rvalid & kof_use_bank0
+                                | bank1_spw_buffer_rvalid & kof_use_bank1
+                                | bank2_spw_buffer_rvalid & kof_use_bank2
+                                | bank3_spw_buffer_rvalid & kof_use_bank3);
 
   assign ch_rtn_data_o[127:0] = {128{kof_use_bank0}} & bank0_spw_buffer_rdata[127:0]
                               | {128{kof_use_bank1}} & bank1_spw_buffer_rdata[127:0]

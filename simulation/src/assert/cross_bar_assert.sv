@@ -121,18 +121,18 @@ module cross_bar_assert(
   assign mcash_ch2_rtn_bank3 = `CROSS_BAR_TOP_CH2_ROB.bank3_spw_buffer_rvalid & `CROSS_BAR_TOP_CH2_ROB.kof_use_bank3;
   
   // spw
-  assign mcash_ch0_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH0_ROB.bank0_sc_xbar_valid_i;
-  assign mcash_ch0_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH0_ROB.bank1_sc_xbar_valid_i;
-  assign mcash_ch0_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH0_ROB.bank2_sc_xbar_valid_i;
-  assign mcash_ch0_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH0_ROB.bank3_sc_xbar_valid_i;
-  assign mcash_ch1_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH1_ROB.bank0_sc_xbar_valid_i;
-  assign mcash_ch1_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH1_ROB.bank1_sc_xbar_valid_i;
-  assign mcash_ch1_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH1_ROB.bank2_sc_xbar_valid_i;
-  assign mcash_ch1_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH1_ROB.bank3_sc_xbar_valid_i;
-  assign mcash_ch2_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH2_ROB.bank0_sc_xbar_valid_i;
-  assign mcash_ch2_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH2_ROB.bank1_sc_xbar_valid_i;
-  assign mcash_ch2_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH2_ROB.bank2_sc_xbar_valid_i;
-  assign mcash_ch2_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH2_ROB.bank3_sc_xbar_valid_i;
+  assign mcash_ch0_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH0_ROB.bank0_spw_buffer_wen;
+  assign mcash_ch0_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH0_ROB.bank1_spw_buffer_wen;
+  assign mcash_ch0_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH0_ROB.bank2_spw_buffer_wen;
+  assign mcash_ch0_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH0_ROB.bank3_spw_buffer_wen;
+  assign mcash_ch1_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH1_ROB.bank0_spw_buffer_wen;
+  assign mcash_ch1_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH1_ROB.bank1_spw_buffer_wen;
+  assign mcash_ch1_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH1_ROB.bank2_spw_buffer_wen;
+  assign mcash_ch1_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH1_ROB.bank3_spw_buffer_wen;
+  assign mcash_ch2_spw_buffer_push_bank0 = `CROSS_BAR_TOP_CH2_ROB.bank0_spw_buffer_wen;
+  assign mcash_ch2_spw_buffer_push_bank1 = `CROSS_BAR_TOP_CH2_ROB.bank1_spw_buffer_wen;
+  assign mcash_ch2_spw_buffer_push_bank2 = `CROSS_BAR_TOP_CH2_ROB.bank2_spw_buffer_wen;
+  assign mcash_ch2_spw_buffer_push_bank3 = `CROSS_BAR_TOP_CH2_ROB.bank3_spw_buffer_wen;
 
   assign mcash_ch0_spw_buffer_pop_bank0 = `CROSS_BAR_TOP_CH0_ROB.bank0_spw_buffer_pop_o;
   assign mcash_ch0_spw_buffer_pop_bank1 = `CROSS_BAR_TOP_CH0_ROB.bank1_spw_buffer_pop_o;
