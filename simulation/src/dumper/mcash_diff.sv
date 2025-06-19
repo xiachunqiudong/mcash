@@ -781,11 +781,30 @@ generate
     always_ff @(posedge clk) begin
       if (&banks_iq_full_cnt_Q[i]) begin
         $display("MCASH DEBUG -> BANK%0d isu iq full over %d cycle, stop simulation!", i, banks_iq_full_cnt_Q[i]);
+        if (i == 0) begin
+          $display("MCASH DEBUG -> BANK0 Bottom Pointer Num is %0d!", bank0_bottom_ptr_Q);
+          $display("MCASH DEBUG -> BANK0 credit_allow_array[%0d] is %0s!", bank0_bottom_ptr_Q, bank0_iq_credit_allow_array_Q[bank0_bottom_ptr_Q] ? "Active" : "Unactive");
+          $display("MCASH DEBUG -> BANK0 mshr_allow_array[%0d] is %0s!", bank0_bottom_ptr_Q, bank0_iq_mshr_allow_array_Q[bank0_bottom_ptr_Q] ? "Active" : "Unactive");
+        end
+        else if (i == 1) begin
+          $display("MCASH DEBUG -> BANK1 Bottom Pointer Num is %0d!", bank1_bottom_ptr_Q);
+          $display("MCASH DEBUG -> BANK1 credit_allow_array[%0d] is %0s!", bank1_bottom_ptr_Q, bank1_iq_credit_allow_array_Q[bank1_bottom_ptr_Q] ? "Active" : "Unactive");
+          $display("MCASH DEBUG -> BANK1 mshr_allow_array[%0d] is %0s!", bank1_bottom_ptr_Q, bank1_iq_mshr_allow_array_Q[bank1_bottom_ptr_Q] ? "Active" : "Unactive");
+        end
+        else if (i == 2) begin
+          $display("MCASH DEBUG -> BANK2 Bottom Pointer Num is %0d!", bank2_bottom_ptr_Q);
+          $display("MCASH DEBUG -> BANK2 credit_allow_array[%0d] is %0s!", bank2_bottom_ptr_Q, bank2_iq_credit_allow_array_Q[bank2_bottom_ptr_Q] ? "Active" : "Unactive");
+          $display("MCASH DEBUG -> BANK2 mshr_allow_array[%0d] is %0s!", bank2_bottom_ptr_Q, bank2_iq_mshr_allow_array_Q[bank2_bottom_ptr_Q] ? "Active" : "Unactive");
+        end
+        else begin
+          $display("MCASH DEBUG -> BANK3 Bottom Pointer Num is %0d!", bank3_bottom_ptr_Q);
+          $display("MCASH DEBUG -> BANK3 credit_allow_array[%0d] is %0s!", bank3_bottom_ptr_Q, bank3_iq_credit_allow_array_Q[bank3_bottom_ptr_Q] ? "Active" : "Unactive");
+          $display("MCASH DEBUG -> BANK3 mshr_allow_array[%0d] is %0s!", bank3_bottom_ptr_Q, bank3_iq_mshr_allow_array_Q[bank3_bottom_ptr_Q] ? "Active" : "Unactive");
+        end
         $finish;
       end
     end
   end
-
 endgenerate
 
 
