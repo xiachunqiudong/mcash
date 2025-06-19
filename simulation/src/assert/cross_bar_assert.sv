@@ -148,8 +148,8 @@ module cross_bar_assert(
   assign mcash_ch2_spw_buffer_pop_bank3 = `CROSS_BAR_TOP_CH2_ROB.bank3_spw_buffer_pop_o;
 
   assign ch0_read_req_kickoff = mcash_ch0_req_valid_i & mcash_ch0_req_allowIn_o & mcash_ch0_req_op_i[2:0] == 3'b0;
-  assign ch1_read_req_kickoff = mcash_ch1_req_valid_i & mcash_ch1_req_allowIn_o & mcash_ch0_req_op_i[2:0] == 3'b0;
-  assign ch2_read_req_kickoff = mcash_ch2_req_valid_i & mcash_ch2_req_allowIn_o & mcash_ch0_req_op_i[2:0] == 3'b0;
+  assign ch1_read_req_kickoff = mcash_ch1_req_valid_i & mcash_ch1_req_allowIn_o & mcash_ch1_req_op_i[2:0] == 3'b0;
+  assign ch2_read_req_kickoff = mcash_ch2_req_valid_i & mcash_ch2_req_allowIn_o & mcash_ch2_req_op_i[2:0] == 3'b0;
 
   assign ch0_read_resp_kickoff = mcash_ch0_rtn_valid_o;
   assign ch1_read_resp_kickoff = mcash_ch1_rtn_valid_o;
