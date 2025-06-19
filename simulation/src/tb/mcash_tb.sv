@@ -1059,3 +1059,5 @@ endmodule
 bind mcash_tb mcash_dumper u_mcash_dumper(clk);
 
 bind mcash_tb mcash_diff u_mcash_diff(clk, rst);
+
+bind cross_bar_top cross_bar_assert u_cross_bar_assert(.*);

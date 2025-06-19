@@ -1,6 +1,7 @@
 $MCASH_HOME/simulation/src/tb/mcash_tb.sv
 $MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
 $MCASH_HOME/simulation/src/dumper/mcash_diff.sv
+$MCASH_HOME/simulation/src/assert/cross_bar_assert.sv
 $MCASH_HOME/golden/build/golden.so
 
 $MCASH_HOME/synthesis/src/commons/sync_fifo.v
