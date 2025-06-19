@@ -106,7 +106,9 @@ module cross_bar_core_buffer(
 //                 channel req buffer ctrl
 //--------------------------------------------------------------
 // channel write ptr
-  assign ch_keep_order_fifo_push_o = mcash_ch_req_valid_i & mcash_ch_req_allowIn_o;
+  assign ch_keep_order_fifo_push_o = mcash_ch_req_valid_i
+                                   & mcash_ch_req_allowIn_o
+                                   & mcash_ch_req_op_i == 2'b00;
 
   assign mcash_ch_req_allowIn_o = ch_used_entry_Q[2:0] < 3'd5
                                 & (   mcash_ch_req_op_i != 2'b00
