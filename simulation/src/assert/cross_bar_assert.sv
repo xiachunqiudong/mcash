@@ -17,6 +17,8 @@ module cross_bar_assert(
   input  logic       mcash_ch1_rtn_valid_o,
   input  logic       mcash_ch2_rtn_valid_o
 );
+  
+  `include "mcash_assert_defines.svh"
 
   `define CROSS_BAR_TOP_CH0_ROB mcash_tb.u_mcash_top.u_cross_bar_top.ch0_rob
   `define CROSS_BAR_TOP_CH1_ROB mcash_tb.u_mcash_top.u_cross_bar_top.ch1_rob
@@ -368,5 +370,27 @@ module cross_bar_assert(
       end
     end
   end
+
+  ch0_cnt_must_be_non_negative : assert property (
+    @(posedge clk_i) 
+        1'b1
+     |->
+        ch0_rob_bank0_read_resp_cnt_Q[9] != 1'b1
+    ) else begin
+        string msg = "CH0_CNT_MUST_BE_NON_NEGATIVEmcash_assert_error";
+        `mcash_assert_error(msg);
+      end
+
+  ch0_bank0_kofCnt_must_lessThan_spwCnt: assert property (
+    @(posedge clk_i) 
+        1'b1
+     |->
+        ch0_rob_bank0_read_resp_cnt_Q <= ch0_bank0_read_req_cnt_Q
+    ) else begin
+      string msg = $sformatf("ASSERT_ERROR: Bank0 SPWCnt is bigger than KOFCnt negative!!! SPWCnt Value: %0d, KOFCnt Value: %0d",
+                             ch0_rob_bank0_read_resp_cnt_Q,
+                             ch0_bank0_read_req_cnt_Q);
+      `mcash_assert_error(msg);
+    end
 
 endmodule

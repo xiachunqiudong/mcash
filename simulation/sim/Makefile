@@ -22,7 +22,7 @@ golden:
 vcs: clean
 	mkdir -p $(BUILD_DIR) && \
 	cd $(abspath $(BUILD_DIR)) && \
-	vcs -full64 -timescale=1ns/1ns +lint=TFIPC-L -debug_acc+all -debug_access -sverilog \
+	vcs -assert svaext -full64 -timescale=1ns/1ns +lint=TFIPC-L -debug_acc+all -debug_access -sverilog \
 	-kdb -lca -DVCS \
 	+vcs+loopreport+10000 \
 	$(FILELIST) \

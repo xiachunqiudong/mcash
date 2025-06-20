@@ -1,10 +1,11 @@
-$MCASH_HOME/simulation/src/tb/mcash_tb.sv
++incdir+$MCASH_HOME/simulation/src/assert/include
 $MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
 $MCASH_HOME/simulation/src/dumper/mcash_diff.sv
 $MCASH_HOME/simulation/src/assert/cross_bar_assert.sv
 $MCASH_HOME/simulation/src/assert/cross_bar_rob_assert.sv
 $MCASH_HOME/simulation/src/assert/spw_buffer_assert.sv
 $MCASH_HOME/simulation/src/assert/assert_binder.sv
+$MCASH_HOME/simulation/src/tb/mcash_tb.sv
 $MCASH_HOME/golden/build/golden.so
 
 $MCASH_HOME/synthesis/src/commons/sync_fifo.v
