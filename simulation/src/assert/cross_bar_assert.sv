@@ -174,95 +174,70 @@ module cross_bar_assert(
       ch2_bank3_read_req_cnt_Q <= 'd0;
     end
     else begin
-      // channel 0
-      if (ch0_read_req_kickoff & ~ch0_read_resp_kickoff) begin
-        if (mcash_ch0_req_bank0) begin
-          ch0_bank0_read_req_cnt_Q <= ch0_bank0_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch0_req_bank1) begin
-          ch0_bank1_read_req_cnt_Q <= ch0_bank1_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch0_req_bank2) begin
-          ch0_bank2_read_req_cnt_Q <= ch0_bank2_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch0_req_bank3) begin
-          ch0_bank3_read_req_cnt_Q <= ch0_bank3_read_req_cnt_Q + 'd1;
-        end
-      end
-      else if (~ch0_read_req_kickoff & ch0_read_resp_kickoff) begin
-        if (mcash_ch0_rtn_bank0) begin
-          ch0_bank0_read_req_cnt_Q <= ch0_bank0_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch0_rtn_bank1) begin
-          ch0_bank1_read_req_cnt_Q <= ch0_bank1_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch0_rtn_bank2) begin
-          ch0_bank2_read_req_cnt_Q <= ch0_bank2_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch0_rtn_bank3) begin
-          ch0_bank3_read_req_cnt_Q <= ch0_bank3_read_req_cnt_Q - 'd1;
-        end
-      end
-      // channel 1
-      if (ch1_read_req_kickoff & ~ch1_read_resp_kickoff) begin
-        if (mcash_ch1_req_bank0) begin
-          ch1_bank0_read_req_cnt_Q <= ch1_bank0_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch1_req_bank1) begin
-          ch1_bank1_read_req_cnt_Q <= ch1_bank1_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch1_req_bank2) begin
-          ch1_bank2_read_req_cnt_Q <= ch1_bank2_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch1_req_bank3) begin
-          ch1_bank3_read_req_cnt_Q <= ch1_bank3_read_req_cnt_Q + 'd1;
-        end
-      end
-      else if (~ch1_read_req_kickoff & ch1_read_resp_kickoff) begin
-        if (mcash_ch1_rtn_bank0) begin
-          ch1_bank0_read_req_cnt_Q <= ch1_bank0_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch1_rtn_bank1) begin
-          ch1_bank1_read_req_cnt_Q <= ch1_bank1_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch1_rtn_bank2) begin
-          ch1_bank2_read_req_cnt_Q <= ch1_bank2_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch1_rtn_bank3) begin
-          ch1_bank3_read_req_cnt_Q <= ch1_bank3_read_req_cnt_Q - 'd1;
-        end
-      end
-      // channel 2
-      if (ch2_read_req_kickoff & ~ch2_read_resp_kickoff) begin
-        if (mcash_ch2_req_bank0) begin
-          ch2_bank0_read_req_cnt_Q <= ch2_bank0_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch2_req_bank1) begin
-          ch2_bank1_read_req_cnt_Q <= ch2_bank1_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch2_req_bank2) begin
-          ch2_bank2_read_req_cnt_Q <= ch2_bank2_read_req_cnt_Q + 'd1;
-        end
-        else if (mcash_ch2_req_bank3) begin
-          ch2_bank3_read_req_cnt_Q <= ch2_bank3_read_req_cnt_Q + 'd1;
-        end
-      end
-      else if (~ch2_read_req_kickoff & ch2_read_resp_kickoff) begin
-        if (mcash_ch2_rtn_bank0) begin
-          ch2_bank0_read_req_cnt_Q <= ch2_bank0_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch2_rtn_bank1) begin
-          ch2_bank1_read_req_cnt_Q <= ch2_bank1_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch2_rtn_bank2) begin
-          ch2_bank2_read_req_cnt_Q <= ch2_bank2_read_req_cnt_Q - 'd1;
-        end
-        else if (mcash_ch2_rtn_bank3) begin
-          ch2_bank3_read_req_cnt_Q <= ch2_bank3_read_req_cnt_Q - 'd1;
-        end
-      end
+      // channel0 bank0
+      if ((ch0_read_req_kickoff & mcash_ch0_req_bank0) & ~(ch0_read_resp_kickoff & mcash_ch0_rtn_bank0))
+        ch0_bank0_read_req_cnt_Q <= ch0_bank0_read_req_cnt_Q + 'd1;
+      else if (~(ch0_read_req_kickoff & mcash_ch0_req_bank0) & (ch0_read_resp_kickoff & mcash_ch0_rtn_bank0)) 
+        ch0_bank0_read_req_cnt_Q <= ch0_bank0_read_req_cnt_Q -'d1;
+      // channel0 bank1
+      if ((ch0_read_req_kickoff & mcash_ch0_req_bank1) & ~(ch0_read_resp_kickoff & mcash_ch0_rtn_bank1))
+        ch0_bank1_read_req_cnt_Q <= ch0_bank1_read_req_cnt_Q + 'd1;
+      else if (~(ch0_read_req_kickoff & mcash_ch0_req_bank1) & (ch0_read_resp_kickoff & mcash_ch0_rtn_bank1))
+        ch0_bank1_read_req_cnt_Q <= ch0_bank1_read_req_cnt_Q -'d1;
+      // channel0 bank2
+      if ((ch0_read_req_kickoff & mcash_ch0_req_bank2) & ~(ch0_read_resp_kickoff & mcash_ch0_rtn_bank2))
+        ch0_bank2_read_req_cnt_Q <= ch0_bank2_read_req_cnt_Q + 'd1;
+      else if (~(ch0_read_req_kickoff & mcash_ch0_req_bank2) & (ch0_read_resp_kickoff & mcash_ch0_rtn_bank2))
+        ch0_bank2_read_req_cnt_Q <= ch0_bank2_read_req_cnt_Q -'d1;
+      // channel0 bank3
+      if ((ch0_read_req_kickoff & mcash_ch0_req_bank3) & ~(ch0_read_resp_kickoff & mcash_ch0_rtn_bank3))
+        ch0_bank3_read_req_cnt_Q <= ch0_bank3_read_req_cnt_Q + 'd1;
+      else if (~(ch0_read_req_kickoff & mcash_ch0_req_bank3) & (ch0_read_resp_kickoff & mcash_ch0_rtn_bank3))
+        ch0_bank3_read_req_cnt_Q <= ch0_bank3_read_req_cnt_Q -'d1;
+
+      // channel1 bank0
+      if ((ch1_read_req_kickoff & mcash_ch1_req_bank0) & ~(ch1_read_resp_kickoff & mcash_ch1_rtn_bank0))
+        ch1_bank0_read_req_cnt_Q <= ch1_bank0_read_req_cnt_Q + 'd1;
+      else if (~(ch1_read_req_kickoff & mcash_ch1_req_bank0) & (ch1_read_resp_kickoff & mcash_ch1_rtn_bank0)) 
+        ch1_bank0_read_req_cnt_Q <= ch1_bank0_read_req_cnt_Q -'d1;
+      // channel1 bank1
+      if ((ch1_read_req_kickoff & mcash_ch1_req_bank1) & ~(ch1_read_resp_kickoff & mcash_ch1_rtn_bank1))
+        ch1_bank1_read_req_cnt_Q <= ch1_bank1_read_req_cnt_Q + 'd1;
+      else if (~(ch1_read_req_kickoff & mcash_ch1_req_bank1) & (ch1_read_resp_kickoff & mcash_ch1_rtn_bank1))
+        ch1_bank1_read_req_cnt_Q <= ch1_bank1_read_req_cnt_Q -'d1;
+      // channel1 bank2
+      if ((ch1_read_req_kickoff & mcash_ch1_req_bank2) & ~(ch1_read_resp_kickoff & mcash_ch1_rtn_bank2))
+        ch1_bank2_read_req_cnt_Q <= ch1_bank2_read_req_cnt_Q + 'd1;
+      else if (~(ch1_read_req_kickoff & mcash_ch1_req_bank2) & (ch1_read_resp_kickoff & mcash_ch1_rtn_bank2))
+        ch1_bank2_read_req_cnt_Q <= ch1_bank2_read_req_cnt_Q -'d1;
+      // channel1 bank3
+      if ((ch1_read_req_kickoff & mcash_ch1_req_bank3) & ~(ch1_read_resp_kickoff & mcash_ch1_rtn_bank3))
+        ch1_bank3_read_req_cnt_Q <= ch1_bank3_read_req_cnt_Q + 'd1;
+      else if (~(ch1_read_req_kickoff & mcash_ch1_req_bank3) & (ch1_read_resp_kickoff & mcash_ch1_rtn_bank3))
+        ch1_bank3_read_req_cnt_Q <= ch1_bank3_read_req_cnt_Q -'d1;
+
+      // channel2 bank0
+      if ((ch2_read_req_kickoff & mcash_ch2_req_bank0) & ~(ch2_read_resp_kickoff & mcash_ch2_rtn_bank0))
+        ch2_bank0_read_req_cnt_Q <= ch2_bank0_read_req_cnt_Q + 'd1;
+      else if (~(ch2_read_req_kickoff & mcash_ch2_req_bank0) & (ch2_read_resp_kickoff & mcash_ch2_rtn_bank0)) 
+        ch2_bank0_read_req_cnt_Q <= ch2_bank0_read_req_cnt_Q -'d1;
+      // channel2 bank1
+      if ((ch2_read_req_kickoff & mcash_ch2_req_bank1) & ~(ch2_read_resp_kickoff & mcash_ch2_rtn_bank1))
+        ch2_bank1_read_req_cnt_Q <= ch2_bank1_read_req_cnt_Q + 'd1;
+      else if (~(ch2_read_req_kickoff & mcash_ch2_req_bank1) & (ch2_read_resp_kickoff & mcash_ch2_rtn_bank1))
+        ch2_bank1_read_req_cnt_Q <= ch2_bank1_read_req_cnt_Q -'d1;
+      // channel2 bank2
+      if ((ch2_read_req_kickoff & mcash_ch2_req_bank2) & ~(ch2_read_resp_kickoff & mcash_ch2_rtn_bank2))
+        ch2_bank2_read_req_cnt_Q <= ch2_bank2_read_req_cnt_Q + 'd1;
+      else if (~(ch2_read_req_kickoff & mcash_ch2_req_bank2) & (ch2_read_resp_kickoff & mcash_ch2_rtn_bank2))
+        ch2_bank2_read_req_cnt_Q <= ch2_bank2_read_req_cnt_Q -'d1;
+      // channel2 bank3
+      if ((ch2_read_req_kickoff & mcash_ch2_req_bank3) & ~(ch2_read_resp_kickoff & mcash_ch2_rtn_bank3))
+        ch2_bank3_read_req_cnt_Q <= ch2_bank3_read_req_cnt_Q + 'd1;
+      else if (~(ch2_read_req_kickoff & mcash_ch2_req_bank3) & (ch2_read_resp_kickoff & mcash_ch2_rtn_bank3))
+        ch2_bank3_read_req_cnt_Q <= ch2_bank3_read_req_cnt_Q -'d1;
+
     end
-    
   end
 
   always_ff @(posedge clk_i or posedge rst_i) begin
