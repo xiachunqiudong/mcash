@@ -133,7 +133,7 @@ int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uin
   if ((opcode & 1) == 0) {
 
     uint8_t golden_rob_id = banks_chs_rob[bank][ch_id];
-    banks_chs_rob[bank][ch_id] = (golden_rob_id + 1) % CH_BANK_ROB_SIZE;
+    banks_chs_rob[bank][ch_id] = (golden_rob_id + 1) % XBAR_ROB_SIZE;
     // check
     if (golden_rob_id != rob_id || golden_inflight != cacheline_inflight) {
       LOG_ERROR(cycle, "[BANK %d] isu iq enqueue check fail! set_way: %d", bank, set_way);

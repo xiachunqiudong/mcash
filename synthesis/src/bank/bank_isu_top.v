@@ -126,7 +126,7 @@ module bank_isu_top (
   );
 
   bank_isu_iq #(
-    .PTR_WIDTH(`BANK_IQ_PTR_WIDTH)
+    .PTR_WIDTH(`ISU_IQ_PTR_WIDTH)
   ) u_isu_iq (
     .clk_i                          (clk_i                                 ),
     .rst_i                          (rst_i                                 ),
