@@ -7,13 +7,13 @@ $MCASH_HOME/simulation/src/assert/spw_buffer_assert.sv
 $MCASH_HOME/simulation/src/assert/assert_binder.sv
 $MCASH_HOME/simulation/src/tb/mcash_tb.sv
 $MCASH_HOME/golden/build/golden.so
-
 $MCASH_HOME/synthesis/src/commons/sync_fifo.v
 $MCASH_HOME/synthesis/src/commons/biu_fifo_2i1o.v
 $MCASH_HOME/simulation/src/commons/ram_sp.v
 $MCASH_HOME/synthesis/src/commons/round_robin_arbiter.v
 $MCASH_HOME/synthesis/src/commons/rob_id_gen.v
 
+$MCASH_HOME/synthesis/include/mcash_config.v
 $MCASH_HOME/synthesis/src/commons/mem/f_spsram_large.v
 $MCASH_HOME/synthesis/src/commons/mem/ram.v
 $MCASH_HOME/synthesis/src/commons/axi_slave_ram.v

@@ -1,4 +1,5 @@
 import configparser
+import sys
 
 sv_conf_list = []
 
@@ -14,6 +15,11 @@ for section_name in config.sections():
   for k, v in section.items():
     sv_conf_list.append(f"`define {k} {v}")
 
+if len(sys.argv) != 2:
+  print("Usage: python script.py <output_filename>")
+  sys.exit(1)
 
-with open('mcash_config.svh', 'w') as f:
+sv_conf_filename = sys.argv[1]
+
+with open(sv_conf_filename, 'w') as f:
   f.writelines(line + '\n' for line in sv_conf_list)
