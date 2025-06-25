@@ -1,8 +1,12 @@
 # mcash
-a multiport cache
+## 1. Introduction
+
+​	Mcash is a multi-port cache that supports parallel access from 3 channels and processes memory access requests through 4 banks.
+
+![mcash_top](.\images\mcash_top.png)
 
 
-## How to run mcash
+## 2. How to run mcash
 
 build golden.so 
 ```shell
