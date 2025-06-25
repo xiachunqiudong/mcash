@@ -3,7 +3,7 @@
 
 ​	Mcash is a multi-port cache that supports parallel access from 3 channels and processes memory access requests through 4 banks.
 
-![mcash_top](.\images\mcash_top.png)
+![mcash_top](./images/mcash_top.png)
 
 
 ## 2. How to run mcash
