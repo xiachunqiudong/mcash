@@ -47,6 +47,9 @@ module bank_isu_iq #(
   reg  [2:0]           rob_id_array_Q           [DEPTH-1:0];
   reg  [1:0]           ch_id_array_In           [DEPTH-1:0];
   reg  [1:0]           ch_id_array_Q            [DEPTH-1:0];
+  wire [DEPTH-1:0]     entry_is_ch0_array;
+  wire [DEPTH-1:0]     entry_is_ch1_array;
+  wire [DEPTH-1:0]     entry_is_ch2_array;
   reg                  iq_op_is_write_array_In  [DEPTH-1:0];
   reg                  iq_op_is_write_array_Q   [DEPTH-1:0];
   reg [DEPTH-1:0]      iq_need_evit_array_In;
@@ -212,6 +215,14 @@ module bank_isu_iq #(
     end
   end
 
+  generate
+    for (i = 0; i < DEPTH; i++) begin
+      assign entry_is_ch0_array[i] = ch_id_array_Q[i] == 'd0;
+      assign entry_is_ch1_array[i] = ch_id_array_Q[i] == 'd1;
+      assign entry_is_ch2_array[i] = ch_id_array_Q[i] == 'd2;
+    end
+  endgenerate
+
 //--------------------------------------------------------------
 //                    Credit allow array
 //--------------------------------------------------------------
@@ -226,8 +237,10 @@ module bank_isu_iq #(
     .htu_ch_id              (req_ch_id_i[1:0]             ),
     .iq_bottom_ptr          (bottom_ptr_Q                 ),
     .iq_valid_array         (valid_array_Q[DEPTH-1:0]     ),
-    .ch_id_array            (ch_id_array_Q[DEPTH-1:0]     ),
     .credit_allow_array     (credit_allow_array[DEPTH-1:0]),
+    .entry_is_ch0_array     (entry_is_ch0_array[DEPTH-1:0]),
+    .entry_is_ch1_array     (entry_is_ch1_array[DEPTH-1:0]),
+    .entry_is_ch2_array     (entry_is_ch2_array[DEPTH-1:0]),
     .channels_credit_release(channel_spw_pop_i[2:0]       )
   );
 

@@ -11,7 +11,9 @@ module bank_isu_credit_manage #(
   input  wire [1:0]             htu_ch_id,
   input  wire [PTR_WIDTH-1:0]   iq_bottom_ptr,
   input  wire [DEPTH-1:0]       iq_valid_array,
-  input  wire [1:0]             ch_id_array [DEPTH-1:0],
+  input  wire [DEPTH-1:0]       entry_is_ch0_array,
+  input  wire [DEPTH-1:0]       entry_is_ch1_array,
+  input  wire [DEPTH-1:0]       entry_is_ch2_array,
   output wire [DEPTH-1:0]       credit_allow_array,
   input  wire [CHANNEL_NUM-1:0] channels_credit_release
 );
@@ -109,18 +111,13 @@ module bank_isu_credit_manage #(
 
       assign channels_has_pending_inst[CHANNEL] = channels_pending_inst_num_Q[CHANNEL] != 'd0;
 
-      // channel no credit array
-      always @(*) begin
-        channel_no_credit_array[CHANNEL] = iq_no_credit_array[DEPTH-1:0];
-        for (int i = 0; i < DEPTH; i = i + 1) begin
-          if (ch_id_array[i] != CHANNEL) begin
-            channel_no_credit_array[CHANNEL][i] = 1'b0;
-          end
-        end
-      end
-
     end
   endgenerate
+
+  assign channel_no_credit_array[0] = entry_is_ch0_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+  assign channel_no_credit_array[1] = entry_is_ch1_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+  assign channel_no_credit_array[2] = entry_is_ch2_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+
 
 //--------------------------------------------------------------
 //             Allocate credit for pending inst
