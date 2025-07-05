@@ -5,11 +5,8 @@ MCASH_HOME = $(SIM_DIR)/../..
 
 export MCASH_HOME
 
-ifeq ($(TOP), arbiter_tb)
-FILELIST = -file $(MCASH_HOME)/simulation/src/filelist/arbiter.f
-else
-FILELIST = -file $(MCASH_HOME)/synthesis/filelist.f
-endif
+FILELIST += -file $(MCASH_HOME)/synthesis/filelist.f
+FILELIST += -file $(MCASH_HOME)/simulation/filelist.f
 
 BUILD_DIR = ./build
 
