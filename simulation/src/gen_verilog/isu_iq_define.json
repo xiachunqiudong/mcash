@@ -1,5 +1,5 @@
 {
-  "design": "isu_iq",
+  "design": "bank_isu_iq",
   "size": 128,
   "fields": {
     "rob_id": 3,
@@ -11,5 +11,5 @@
     "wbuffer_id": 8,
     "cacheline_state": 4
   },
-  "output_file": "data_queue.v"
+  "output_file": "/home/host/project/mcash/synthesis/src/bank"
 }
