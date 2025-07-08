@@ -1,5 +1,6 @@
 {
-  "module_name": "data_queue",
+  "design": "isu_iq",
+  "size": 128,
   "fields": {
     "rob_id": 3,
     "ch_id": 2,
