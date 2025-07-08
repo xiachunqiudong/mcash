@@ -266,28 +266,36 @@ module bank_sram_controller(
                      : s1_pop  ? 1'b0
                      :           s1_valid_Q;
   
-  always @(posedge clk_i or posedge rst_i) begin
-    if(rst_i) begin
-      s1_valid_Q <= 1'b0;
-    end
-    else begin
-      s1_valid_Q <= s1_valid_In;
-    end
-  end
+  DFF_RST0 #(.WIDTH(1)) s1_valid_reg (
+    .CLK(clk_i      ),
+    .RST(rst_i      ),
+    .WEN(1'b1       ),
+    .D  (s1_valid_In),
+    .Q  (s1_valid_Q )
+  );
 
-  always @(posedge clk_i) begin
-    if(s1_push) begin
-      s1_op_is_read_Q          <= s0_op_is_read;
-      s1_op_is_read_linefill_Q <= s0_op_is_read_linefill;
-      s1_op_is_write_back_Q    <= s0_op_is_write_back;
-      s1_offset0_dirty_Q       <= s0_offset0_dirty;
-      s1_offset1_dirty_Q       <= s0_offset1_dirty;
-      s1_set_way_Q[5:0]        <= s0_set_way[5:0];
-      s1_offset_Q              <= s0_offset;
-      s1_channel_id_Q[1:0]     <= s0_channel_id[1:0];
-      s1_rob_num_Q[2:0]        <= s0_rob_num[2:0];
-    end
-  end
+  DFF #(.WIDTH(17)) s1_info_reg (
+    .CLK(clk_i),
+    .WEN(s1_push),
+    .D  ({s0_op_is_read,
+          s0_op_is_read_linefill,
+          s0_op_is_write_back,
+          s0_offset0_dirty,
+          s0_offset1_dirty,
+          s0_set_way[5:0],
+          s0_offset,
+          s0_channel_id[1:0],
+          s0_rob_num[2:0]
+         }),
+    .Q  ({s1_op_is_read_Q,
+          s1_op_is_read_linefill_Q,
+          s1_op_is_write_back_Q,
+          s1_offset0_dirty_Q,
+          s1_offset1_dirty_Q,
+          s1_set_way_Q[5:0],
+          s1_offset_Q,
+          s1_channel_id_Q[1:0],
+          s1_rob_num_Q[2:0]}));
 
   assign data_array_en = s0_valid
                        & (   (s0_op_is_read_linefill | s0_op_is_write_back | s0_op_is_read) & sc_counter_Q[1:0] == 2'b00

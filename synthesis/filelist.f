@@ -1,3 +1,5 @@
+$MCASH_HOME//synthesis/src/commons/dff/DFF.v
+$MCASH_HOME//synthesis/src/commons/dff/DFF_RST0.v
 $MCASH_HOME/synthesis/src/commons/sync_fifo.v
 $MCASH_HOME/synthesis/src/commons/biu_fifo_2i1o.v
 $MCASH_HOME/simulation/src/commons/ram_sp.v
