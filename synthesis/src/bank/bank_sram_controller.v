@@ -11,8 +11,6 @@ module bank_sram_controller(
   input  wire [2:0]    isu_sc_xbar_rob_num_i,
   input  wire [1:0]    isu_sc_cacheline_dirty_offset0_i,
   input  wire [1:0]    isu_sc_cacheline_dirty_offset1_i,
-  input  wire [127:0]  isu_sc_linefill_data_offset0_i,
-  input  wire [127:0]  isu_sc_linefill_data_offset1_i,
   // sc >> xbar
   output wire          sc_xbar_valid_o,
   output wire [1:0]    sc_xbar_channel_id_o,
@@ -24,13 +22,27 @@ module bank_sram_controller(
   output wire [255:0]  sc_biu_data_o,
   output wire [31:0]   sc_biu_strb_o,
   output wire [5:0]    sc_biu_set_way_o,
-  // sc >> Wbuf
+  // sc <> linefill data buffer
+  output wire [5:0]    sc_linefill_data_buffer_id_o,
+  input  wire [255:0]  linefill_data_buffer_data_i,
+  // sc <> Wbuf
   output wire          sc_wbuf_req_valid_o,
   output wire [7:0]    sc_wbuf_req_wbuffer_id_o,
-  // Wbuf >> sc
   input  wire          sc_wbuf_rtn_valid_i,
   input  wire [127:0]  sc_wbuf_rtn_data_i
 );
+
+// parameter
+  parameter SC_INST_BUF_DW = 27;
+  parameter SC_BUFFFER_ADDR_WIDTH = 3;
+
+// sc request buffer
+  wire                      sc_inst_buffer_push;
+  wire                      sc_inst_buffer_pop;
+  wire                      sc_inst_buffer_full;
+  wire                      sc_inst_buffer_empty;
+  wire [SC_INST_BUF_DW-1:0] sc_inst_buffer_In;
+  wire [SC_INST_BUF_DW-1:0] sc_inst_buffer_Q;
 
 // s0 inst info
   wire         s0_can_go;
@@ -42,17 +54,19 @@ module bank_sram_controller(
   wire         s0_op_is_write_back;
   wire [5:0]   s0_set_way;
   wire [1:0]   s0_channel_id;
+  wire [7:0]   s0_wbuffer_id;
   wire [2:0]   s0_rob_num;
+  wire [1:0]   s0_offset0_state;
+  wire [1:0]   s0_offset1_state;
   wire         s0_offset;
 // cacheline info
-  wire [1:0]   isu_sc_select_offset_state;
-  wire [1:0]   isu_sc_unselect_offset_state;
-  wire         offset0_empty;
+  wire [1:0]   s0_unselect_offset_state;
+  wire         s0_offset0_empty;
   wire         s0_offset0_dirty;
-  wire         offset1_empty;
+  wire         s0_offset1_empty;
   wire         s0_offset1_dirty;
-  wire         unselect_offset_empty;
-  wire         unselect_offset_dirty;
+  wire         s0_unselect_offset_empty;
+  wire         s0_unselect_offset_dirty;
 
   wire [127:0] s0_linefill_data;
 
@@ -107,26 +121,54 @@ module bank_sram_controller(
   wire [127:0] s1_data_array_rdata;
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+// SC instruction buffer
+// WIDTH: 27
+// DEPTH: 8
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+  sync_fifo #(
+    .AW(SC_BUFFFER_ADDR_WIDTH),
+    .DW(SC_INST_BUF_DW)
+  ) sc_inst_buffer(
+    .clk  (clk_i                                ),
+    .rst  (rst_i                                ),
+    .push (sc_inst_buffer_push                  ),
+    .din  (sc_inst_buffer_In[SC_INST_BUF_DW-1:0]),
+    .pop  (sc_inst_buffer_pop                   ),
+    .dout (sc_inst_buffer_Q[SC_INST_BUF_DW-1:0] ),
+    .empry(sc_inst_buffer_empty                 ),
+    .full (sc_inst_buffer_full                  )
+  );
+
+  assign sc_inst_buffer_push = isu_sc_valid_i & isu_sc_ready_o;
+  assign sc_inst_buffer_pop  = s0_pop;
+
+  assign sc_inst_buffer_In[SC_INST_BUF_DW-1:0] = {isu_sc_channel_id_i[1:0],               // sc_inst_buffer_In[26:25] 2 bit
+                                                  isu_sc_opcode_i[2:0],                   // sc_inst_buffer_In[24:22] 3 bit
+                                                  isu_sc_set_way_offset_i[6:0],           // sc_inst_buffer_In[21:15] 7 bit
+                                                  isu_sc_wbuffer_id_i[7:0],               // sc_inst_buffer_In[14:7]  8 bit
+                                                  isu_sc_xbar_rob_num_i[2:0],             // sc_inst_buffer_In[6:4]   3 bit
+                                                  isu_sc_cacheline_dirty_offset0_i[1:0],  // sc_inst_buffer_In[3:2]   2 bit
+                                                  isu_sc_cacheline_dirty_offset1_i[1:0]}; // sc_inst_buffer_In[1:0]   2 bit
+
+//=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // ISU opcode
 // 0: WRITE
 // 1: READ
 // 2: READ_WITH_LINEFILL
 // 3: WRITE BACK
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  assign s0_op_is_write         = isu_sc_opcode_i[2:0] == 3'd0;
-  assign s0_op_is_read          = isu_sc_opcode_i[2:0] == 3'd1;
-  assign s0_op_is_read_linefill = isu_sc_opcode_i[2:0] == 3'd2;
-  assign s0_op_is_write_back    = isu_sc_opcode_i[2:0] == 3'd3;
-  assign s0_set_way[5:0]        = isu_sc_set_way_offset_i[6:1];
-  assign s0_offset              = isu_sc_set_way_offset_i[0];
-  assign s0_channel_id[1:0]     = isu_sc_channel_id_i[1:0];
-  assign s0_rob_num[2:0]        = isu_sc_xbar_rob_num_i[2:0];
-
-  assign isu_sc_select_offset_state[1:0] = s0_offset ? isu_sc_cacheline_dirty_offset1_i[1:0]
-                                                         : isu_sc_cacheline_dirty_offset0_i[1:0];
-
-  assign isu_sc_unselect_offset_state[1:0] = s0_offset ? isu_sc_cacheline_dirty_offset0_i[1:0]
-                                                           : isu_sc_cacheline_dirty_offset1_i[1:0];
+  assign s0_channel_id[1:0]     = sc_inst_buffer_Q[26:25];
+  assign s0_op_is_write         = sc_inst_buffer_Q[24:22] == 3'd0;
+  assign s0_op_is_read          = sc_inst_buffer_Q[24:22] == 3'd1;
+  assign s0_op_is_read_linefill = sc_inst_buffer_Q[24:22] == 3'd2;
+  assign s0_op_is_write_back    = sc_inst_buffer_Q[24:22] == 3'd3;
+  assign s0_set_way[5:0]        = sc_inst_buffer_Q[21:16];
+  assign s0_offset              = sc_inst_buffer_Q[15];
+  assign s0_wbuffer_id[7:0]     = sc_inst_buffer_Q[14:7];
+  assign s0_rob_num[2:0]        = sc_inst_buffer_Q[6:4];
+  assign s0_offset0_state[1:0]  = sc_inst_buffer_Q[3:2];
+  assign s0_offset1_state[1:0]  = sc_inst_buffer_Q[1:0];
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 // ISU cacheline state
@@ -134,15 +176,16 @@ module bank_sram_controller(
 // 1: sync
 // 2: dirty
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  assign offset0_empty = isu_sc_cacheline_dirty_offset0_i[1:0] == 2'b00;
-  assign s0_offset0_dirty = isu_sc_cacheline_dirty_offset0_i[1:0] == 2'b10;
+  assign s0_unselect_offset_state[1:0] = s0_offset ? s0_offset0_state[1:0]
+                                                   : s0_offset1_state[1:0];
 
-  assign offset1_empty = isu_sc_cacheline_dirty_offset1_i[1:0] == 2'b00;
-  assign s0_offset1_dirty = isu_sc_cacheline_dirty_offset1_i[1:0] == 2'b10;
+  assign s0_unselect_offset_empty = s0_unselect_offset_state[1:0] == 2'b00;
+  assign s0_unselect_offset_dirty = s0_unselect_offset_state[1:0] == 2'b10;
 
-// 2. unselect offset state
-  assign unselect_offset_empty = isu_sc_unselect_offset_state[1:0] == 2'b00;
-  assign unselect_offset_dirty = isu_sc_unselect_offset_state[1:0] == 2'b10;
+  assign s0_offset0_empty = s0_offset0_state[1:0] == 2'b00;
+  assign s0_offset0_dirty = s0_offset0_state[1:0] == 2'b10;
+  assign s0_offset1_empty = s0_offset1_state[1:0] == 2'b00;
+  assign s0_offset1_dirty = s0_offset1_state[1:0] == 2'b10;
 
 //---------------------------------------------------------
 // S0 stage
@@ -151,14 +194,14 @@ module bank_sram_controller(
 // 3. read with linefill: send en and wen to sram
 // 4. write back:         send en to sram
 //---------------------------------------------------------
-  assign s0_valid = isu_sc_valid_i;
+  assign s0_valid = ~sc_inst_buffer_empty;
 
   assign s0_can_go = ~s0_op_is_write
                    | (sc_counter_Q[1:0] != 2'b00);
 
   assign s0_pop = s0_valid & s1_allowIn & s0_can_go;
 
-  assign isu_sc_ready_o = s0_can_go & s1_allowIn;
+  assign isu_sc_ready_o = ~sc_inst_buffer_full;
 
 //==================================================================
 //                    S0 Ctrl flow
@@ -191,13 +234,18 @@ module bank_sram_controller(
   end
 
 //---------------------------------------------------------
-//               send request to wBuffer
+//              S0 send request to wBuffer
 //---------------------------------------------------------
   assign sc_wbuf_req_valid_o = s0_valid
                              & s0_op_is_write
                              & (sc_counter_Q[1:0] == 2'b00);
 
-  assign sc_wbuf_req_wbuffer_id_o[7:0] = isu_sc_wbuffer_id_i[7:0];
+  assign sc_wbuf_req_wbuffer_id_o[7:0] = s0_wbuffer_id[7:0];
+
+//---------------------------------------------------------
+//          S0 send request to linefill buffer
+//---------------------------------------------------------
+  assign sc_linefill_data_buffer_id_o[5:0] = s0_set_way[5:0];
 
 //---------------------------------------------------------
 // S1 stage
@@ -281,8 +329,8 @@ module bank_sram_controller(
                               | (s1_op_is_write_back_Q & s1_offset1_dirty_Q);
 
   assign s0_linefill_data[127:0] = s0_offset
-                                 ? isu_sc_linefill_data_offset1_i[127:0]
-                                 : isu_sc_linefill_data_offset0_i[127:0];
+                                 ? linefill_data_buffer_data_i[255:128]
+                                 : linefill_data_buffer_data_i[127:0];
 
   assign s1_data_bufferA_In[127:0] = s0_lf_data_push
                                    ? s0_linefill_data[127:0]
@@ -343,7 +391,7 @@ module bank_sram_controller(
 // Depth: 64
 //--------------------------------------------------------------------
   assign s0_offset0_data_array_touch = ~s0_offset
-                                     | (s0_op_is_read_linefill & offset0_empty)
+                                     | (s0_op_is_read_linefill & s0_offset0_empty)
                                      | (s0_op_is_write_back    & s0_offset0_dirty);
 
   assign s0_offset0_data_array_en = s0_offset0_data_array_touch & data_array_en;
@@ -352,7 +400,7 @@ module bank_sram_controller(
 
   assign s0_offset0_data_array_addr[5:0] = s0_set_way[5:0];
 
-  assign s0_offset0_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset0_i[127:0]
+  assign s0_offset0_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & linefill_data_buffer_data_i[127:0]
                                             | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
 
   ram_sp #(
@@ -373,16 +421,16 @@ module bank_sram_controller(
 // Depth: 64
 //--------------------------------------------------------------------
   assign s0_offset1_data_array_touch = s0_offset
-                                     | (s0_op_is_read_linefill & offset1_empty)
+                                     | (s0_op_is_read_linefill & s0_offset1_empty)
                                      | (s0_op_is_write_back    & s0_offset1_dirty);
 
   assign s0_offset1_data_array_en = s0_offset1_data_array_touch & data_array_en;
 
   assign s0_offset1_data_array_wen = s0_offset1_data_array_touch & data_array_wen;
 
-  assign s0_offset1_data_array_addr[5:0] = isu_sc_set_way_offset_i[6:1];
+  assign s0_offset1_data_array_addr[5:0] = s0_set_way[5:0];
 
-  assign s0_offset1_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & isu_sc_linefill_data_offset1_i[127:0]
+  assign s0_offset1_data_array_wdata[127:0] = {128{s0_op_is_read_linefill}} & linefill_data_buffer_data_i[255:128]
                                             | {128{s0_op_is_write}}         & sc_wbuf_rtn_data_i[127:0];
 
   ram_sp #(

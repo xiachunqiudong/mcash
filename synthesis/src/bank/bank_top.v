@@ -74,8 +74,6 @@ module bank_top(
   wire [2:0]   isu_sc_xbar_rob_num;
   wire [1:0]   isu_sc_cacheline_dirty_offset0;
   wire [1:0]   isu_sc_cacheline_dirty_offset1;
-  wire [127:0] isu_sc_linefill_data_offset0;
-  wire [127:0] isu_sc_linefill_data_offset1;
 
   wire         sc_biu_valid;
   wire         sc_biu_ready;
@@ -88,6 +86,8 @@ module bank_top(
   wire         sc_wbuf_rtn_valid;
   wire         sc_wbuf_rtn_ready;
   wire [127:0] sc_wbuf_rtn_data;
+  wire [5:0]   linefill_buffer_raddr;
+  wire [255:0] linefill_buffer_rdata;
   // biu signals
   wire         biu_isu_rvalid;
   wire         biu_isu_rready;
@@ -163,8 +163,6 @@ module bank_top(
     .isu_sc_xbar_rob_num_o            (isu_sc_xbar_rob_num[2:0]            ),
     .isu_sc_cacheline_dirty_offset0_o (isu_sc_cacheline_dirty_offset0[1:0] ),
     .isu_sc_cacheline_dirty_offset1_o (isu_sc_cacheline_dirty_offset1[1:0] ),
-    .isu_sc_linefill_data_offset0_o   (isu_sc_linefill_data_offset0[127:0] ),
-    .isu_sc_linefill_data_offset1_o   (isu_sc_linefill_data_offset1[127:0] ),
     .channel_spw_pop_i                (channel_spw_pop_i[2:0]              )
   );
 
@@ -242,8 +240,6 @@ module bank_top(
     .isu_sc_xbar_rob_num_i           (isu_sc_xbar_rob_num[2:0]           ),
     .isu_sc_cacheline_dirty_offset0_i(isu_sc_cacheline_dirty_offset0[1:0]),
     .isu_sc_cacheline_dirty_offset1_i(isu_sc_cacheline_dirty_offset1[1:0]),
-    .isu_sc_linefill_data_offset0_i  (isu_sc_linefill_data_offset0[127:0]),
-    .isu_sc_linefill_data_offset1_i  (isu_sc_linefill_data_offset1[127:0]),
     .sc_xbar_valid_o                 (bank_sc_xbar_valid_o               ),
     .sc_xbar_channel_id_o            (bank_sc_xbar_ch_id_o[1:0]          ),
     .sc_xbar_rob_num_o               (bank_sc_xbar_rob_num_o[2:0]        ),
@@ -253,6 +249,8 @@ module bank_top(
     .sc_biu_data_o                   (sc_biu_data[255:0]                 ),
     .sc_biu_strb_o                   (sc_biu_strb[31:0]                  ),
     .sc_biu_set_way_o                (sc_biu_set_way[5:0]                ),
+    .sc_linefill_data_buffer_id_o    (linefill_buffer_raddr[5:0]         ),
+    .linefill_data_buffer_data_i     (linefill_buffer_rdata[255:0]       ),
     .sc_wbuf_req_valid_o             (sc_wbuf_req_valid                  ),
     .sc_wbuf_req_wbuffer_id_o        (sc_wbuf_req_wbuffer_id[7:0]        ),
     .sc_wbuf_rtn_valid_i             (sc_wbuf_rtn_valid                  ),
@@ -260,7 +258,7 @@ module bank_top(
   );
 
 //---------------------------------------------------------------------------------
-//                              Write Buffer
+//                              Write data Buffer
 //---------------------------------------------------------------------------------
   bank_wbuffer
   wbuffer (
@@ -273,6 +271,20 @@ module bank_top(
     .wbuf_rd_id_i         (sc_wbuf_req_wbuffer_id[4:0]    ),
     .wbuf_rd_data_valid_o (sc_wbuf_rtn_valid              ),
     .wbuf_rd_data_o       (sc_wbuf_rtn_data[127:0]        )
+  );
+
+//---------------------------------------------------------------------------------
+//                              Linefill data buffer
+//---------------------------------------------------------------------------------
+  bank_isu_linefill_buffer
+  isu_linefill_buffer (
+    .clk_i  (clk_i                       ),
+    .wen_i  (biu_isu_rvalid              ),
+    .waddr_i(biu_isu_rid[5:0]            ),
+    .wdata_i(biu_isu_rdata[255:0]        ),
+    .ren_i  (                            ),
+    .raddr_i(linefill_buffer_raddr[5:0]  ),
+    .rdata_o(linefill_buffer_rdata[255:0])
   );
 
 endmodule

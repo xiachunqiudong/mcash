@@ -210,7 +210,6 @@ uint16_t get_issue_index(uint8_t bank, bool *credit_allow_bool_array) {
 
 int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
                    uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                   uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3,
                    uint64_t mshr_allow_array, uint64_t credit_allow_array) {
 
   if (!iq_array_check(cycle, bank, 0, mshr_allow_array)) {
@@ -277,23 +276,6 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
     banks_iq[bank][issue_ptr].valid = false;
   }
 
-  // linefill data check
-  uint8_t set_way = golden_issue_entry.set_way_offset >> 1;
-
-  uint64_t issue_linefill_data0 = banks_linefill_data_array[bank][set_way][0];
-  uint64_t issue_linefill_data1 = banks_linefill_data_array[bank][set_way][1];
-  uint64_t issue_linefill_data2 = banks_linefill_data_array[bank][set_way][2];
-  uint64_t issue_linefill_data3 = banks_linefill_data_array[bank][set_way][3];
-
-  if (issue_linefill_data0 != linefill_data0 || issue_linefill_data1 != linefill_data1
-    || issue_linefill_data2 != linefill_data2 || issue_linefill_data3 != linefill_data3) {
-      LOG_ERROR(cycle, "[BANK %d] isu to sc linefill data check fail! GOLDEN %016x%016x%016x%016x but RTL %016x%016x%016x%016x", bank, 
-                issue_linefill_data0, issue_linefill_data1, issue_linefill_data2, issue_linefill_data3, linefill_data0, linefill_data1, linefill_data2, linefill_data3);
-      return 1;
-  }
-
-
-
   LOG_INFO(cycle, "[BANK%d] ISU IQ checke pass, opcode %d",bank, opcode);
 
   return 0;
@@ -326,11 +308,9 @@ extern "C" {
 
   int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
                        uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t rob_id, uint8_t offset0_state, uint8_t offset1_state,
-                       uint64_t linefill_data0, uint64_t linefill_data1, uint64_t linefill_data2, uint64_t linefill_data3,
                        uint64_t mshr_allow_array, uint64_t credit_allow_array) {
     
     return isu_iq_dequeue(cycle, bank, issue_ptr, ch_id, opcode, set_way_offset, wbuffer_id, rob_id, offset0_state, offset1_state, 
-                          linefill_data0, linefill_data1, linefill_data2, linefill_data3,
                           mshr_allow_array, credit_allow_array);
   }
 
