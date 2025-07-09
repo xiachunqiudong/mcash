@@ -40,18 +40,23 @@ class Signal:
     left_space = " " * self.LEFT_ALIGN
     right_space = " " * (self.RIGHT_ALIGN - len(width_code))
 
+    code = ""
+
     if self.signal_type is SignalType.INPUT:
-      prefix = "  input  wire"
+      code += "  input  wire"
     elif self.signal_type is SignalType.OUTPUT:
-      prefix = "  output wire"
+      code += "  output wire"
     elif self.signal_type is SignalType.WIRE:
-      prefix = "  wire"
+      code += "  wire"
     else:
-      prefix = ""
+      code += ""
 
-    prefix += left_space
+    code += (left_space + width_code + f"{right_space}{self.name}")
 
-    return prefix + width_code + f"{right_space}{self.name}"
+    if self.signal_type is SignalType.WIRE:
+      code += ";"
+
+    return code
 
 class RTL:
 
@@ -60,6 +65,7 @@ class RTL:
     self.rtl_file_path = rtl_output_path + f"/{module_name}.v"
     self.interfaces = []
     self.declarations = []
+    self.logic_codes = []
     self.rtl_codes = []
 
   def add_interface(self, name: str, width: int, signal_type: SignalType):
@@ -90,6 +96,9 @@ class RTL:
       code_list.append(code)
     return code_list
 
+  def add_logic_codes(self, logic_codes):
+    self.logic_codes = logic_codes
+
   def gen_rtl_code(self):
     self.rtl_codes.append("// This RTL code is generate by RTL generator, please do not modify!")
     self.rtl_codes.append(f"module {self.module_name } (")
@@ -98,7 +107,12 @@ class RTL:
     self.rtl_codes.append(");")
     self.rtl_codes.append("")
     # generate declaration
-    self.rtl_codes += self.gen_declaration_code()
+    if len(self.declarations) != 0:
+      self.rtl_codes += self.gen_declaration_code()
+      self.rtl_codes.append("")
+    # push logic code
+    self.add_comment("LOGIC START")
+    self.rtl_codes += self.logic_codes
     self.rtl_codes.append("")
 
     self.rtl_codes.append("endmodule")
@@ -111,6 +125,7 @@ def gen_dff_instance(signal_name, signal_width):
   code_list = []
   space_num = len(str(signal_name))
   align_content = " " * space_num
+  code_list.append(f"// {signal_name.upper()} DFF: {signal_width} bits")
   code_list.append(f"  DFF #(.WIDTH({signal_width})) {signal_name}_reg (")
   code_list.append(f"  .CLK(clk{align_content}),")
   code_list.append(f"  .WEN(wen{align_content}),")
@@ -149,19 +164,15 @@ def gen_queue_entry(config_dict):
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
-  # add declaration
+  logic_codes = []
+
   for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_declaration(signal_name + "_In", signal_width)
-  for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_declaration(signal_name + "_Q", signal_width)
+    logic_codes += gen_dff_instance(signal_name, signal_width)
+    logic_codes .append("")
+
+  rtl.add_logic_codes(logic_codes)
 
   rtl.gen_rtl_code()
-
-  # generate dff module
-  # for signal_name, signal_width in config_dict['fields'].items():
-  #   code_list.append("")
-  #   code_list.append(f"// {signal_name} dff: {signal_width} bits")
-  #   code_list += gen_dff_instance(signal_name, signal_width)
 
 
 def gen_queue(config_dict):
