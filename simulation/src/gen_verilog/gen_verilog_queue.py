@@ -180,54 +180,42 @@ def gen_queue_entry(config_dict):
 
 
 def gen_queue(config_dict):
-  design_name = config_dict['design']
+  module_name = config_dict['design'] + "_array"
+  output_path = config_dict['output_file']
   queue_size = config_dict['size']
-  rtl_file_path = config_dict['output_file']
-  code_list = []
-  max_signal_width = max(len(str(v)) for v in config_dict['fields'].values())
 
-  code_list.append(f"module {design_name} (")
+  rtl = RTL(module_name, output_path)
 
   ptr_width = int(math.log2(queue_size))
 
-  # gen interface
-  # gen input
-  code_list.append("  input  wire clk,")
-  code_list.append(f"  input  wire [{ptr_width-1}:0] read_ptr,")
-  code_list.append(f"  input  wire [{ptr_width-1}:0] wire_ptr,")
-
-
-  # for signal_name, signal_width in config_dict['fields'].items():
-
-  # gen declear
+  # add interface
+  rtl.add_interface("clk", 1, 0)
+  rtl.add_interface("read_ptr", ptr_width, 0)
+  rtl.add_interface("wen", 1, 0)
+  rtl.add_interface("write_ptr", ptr_width, 0)
   for signal_name, signal_width in config_dict['fields'].items():
-    if signal_width == 1:
-      space_num = RIGHT_ALIGN_NUM - 1
-    else:
-      space_num = RIGHT_ALIGN_NUM - (len(str(signal_width-1)) + 5)
-    for entry in range(queue_size):
-      full_signal_name = f"{design_name}_entry{entry}_{signal_name}"
-      # code = gen_wire_declaration(full_signal_name, signal_width, space_num) + "_Q;"
-      # code_list.append(code)
+    rtl.add_interface(module_name + signal_name + "_In", signal_width, 0)
+  for signal_name, signal_width in config_dict['fields'].items():
+    rtl.add_interface(module_name + signal_name + "_Q", signal_width, 1)
 
-  space_num = RIGHT_ALIGN_NUM - (len(str(queue_size-1)) + 5)
-  code_list.append(f"  wire        [{queue_size-1}:0]" + " " * space_num + "array_entry_wen;")
-  code_list.append("")
+  max_index_width = len(str(queue_size-1))
+
+  for signal_name, signal_width in config_dict['fields'].items():
+    for i in range(queue_size):
+      rtl.add_declaration(f"entry{i:0{max_index_width}d}_" + signal_name, signal_width)
+
+  rtl.gen_rtl_code()
+
 
   # gen write logic
-  for entry in range(queue_size):
-      code_list.append(f"assign array_entry_wen[{entry}] = wire_ptr[{ptr_width-1}:0] == {ptr_width}'d{entry}")
+  # for entry in range(queue_size):
+  #     code_list.append(f"assign array_entry_wen[{entry}] = wire_ptr[{ptr_width-1}:0] == {ptr_width}'d{entry}")
 
   # gen entry instance
-  for entry in range(queue_size):
-    code_list += gen_entry_instance(design_name, config_dict['fields'].items(), entry);
+  # for entry in range(queue_size):
+  #   code_list += gen_entry_instance(design_name, config_dict['fields'].items(), entry)
 
-  code_list.append("")
-  code_list.append("endmodule")
 
-  output_file_path = rtl_file_path + '/' + f"{design_name}_array.v"
-  with open(output_file_path, 'w', encoding='utf-8') as file:
-      file.writelines([code + '\n' for code in code_list])
 
 
 config_dict = parse_config_file('../gen_verilog/isu_iq_define.json')

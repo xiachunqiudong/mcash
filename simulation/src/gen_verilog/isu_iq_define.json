@@ -1,6 +1,6 @@
 {
   "design": "bank_isu_iq",
-  "size": 128,
+  "size": 1024,
   "fields": {
     "rob_id": 3,
     "ch_id": 2,
