@@ -1,6 +1,11 @@
 import json
 import math
+from enum import Enum
 
+class SignalType(Enum):
+  INPUT = 0
+  OUTPUT = 1
+  WIRE = 2
 
 RIGHT_ALIGN_NUM = 16
 
@@ -16,39 +21,39 @@ def parse_config_file(config_file: str) -> dict:
       print(f"Error: wrong config file - {e}")
 
   return config_dict
-  
-
-def gen_wire_declaration(signal_name, signal_width, left_align):
-  code = ""
-  align_content = " " * space_num
-  if signal_width > 1:
-    code = f"  wire        [{signal_width-1}:0]{align_content}{signal_name}"
-  else:
-    code = f"  wire        {align_content}{signal_name}"
-  return code
 
 class Signal:
 
-  left_align = 8
-  rigth_align = 16
+  LEFG_ALIGN = 8
+  RIGHT_ALIGN = 16
 
-  def __init__(self, name, width, direction):
+  def __init__(self, name: str, width: int, type: SignalType):
     self.name = name
     self.width = width
-    self.direction = direction
+    self.type = type
 
-  def get_width_code(self):
-    if self.width == 1:
-      return ""
-    else:
-      return f"[{self.width}:0]"
+  def get_width_code(self) -> str:
+    return "" if self.width == 1 else f"[{self.width}:0]"
+
+  def _get_prefix_and_align(self, is_interface: bool) -> tuple[str, str, str, str]:
+    width_code = self.get_width_code()
+    left_space = " " * self.LEFT_ALIGN
+    right_space = " " * (self.RIGHT_ALIGN - len(width_code))
+
+    match type:
+      case SignalType.INPUT : prefix = "  input  wire"
+      case SignalType.OUTPUT: prefix = "  output wire"
+      case SignalType.WIRE  : prefix = "  wire"
+      case _:                 prefix = ""
+
+    return 
 
   def get_interface(self):
-    left_space = " " * self.left_align
+    left_space = " " * self.LEFG_ALIGN
     width_code = self.get_width_code()
-    right_space = " " * (self.rigth_align - len(width_code))
+    right_space = " " * (self.RIGHT_ALIGN - len(width_code))
     
-    if self.direction == 0:
+    if self.type == 0:
       code = f"  input{left_space} wire " + width_code + f"{right_space}{self.name}"
     else:
       code = f"  output{left_space}wire " + width_code + f"{right_space}{self.name}"
@@ -56,11 +61,11 @@ class Signal:
     return code
 
   def get_declaration(self):
-    left_space = " " * self.left_align
+    left_space = " " * self.LEFG_ALIGN
     width_code = self.get_width_code()
-    right_space = " " * (self.rigth_align - len(width_code))
+    right_space = " " * (self.RIGHT_ALIGN - len(width_code))
 
-    if self.direction == 0:
+    if self.type == 0:
       code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
     else:
       code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
