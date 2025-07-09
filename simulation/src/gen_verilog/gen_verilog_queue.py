@@ -24,54 +24,34 @@ def parse_config_file(config_file: str) -> dict:
 
 class Signal:
 
-  LEFG_ALIGN = 8
+  LEFT_ALIGN = 8
   RIGHT_ALIGN = 16
 
-  def __init__(self, name: str, width: int, type: SignalType):
+  def __init__(self, name: str, width: int, signal_type: SignalType):
     self.name = name
     self.width = width
-    self.type = type
+    self.signal_type = signal_type
 
   def get_width_code(self) -> str:
     return "" if self.width == 1 else f"[{self.width}:0]"
 
-  def _get_prefix_and_align(self, is_interface: bool) -> tuple[str, str, str, str]:
+  def get_prefix_and_align(self) -> str:
     width_code = self.get_width_code()
     left_space = " " * self.LEFT_ALIGN
     right_space = " " * (self.RIGHT_ALIGN - len(width_code))
 
-    match type:
-      case SignalType.INPUT : prefix = "  input  wire"
-      case SignalType.OUTPUT: prefix = "  output wire"
-      case SignalType.WIRE  : prefix = "  wire"
-      case _:                 prefix = ""
-
-    return 
-
-  def get_interface(self):
-    left_space = " " * self.LEFG_ALIGN
-    width_code = self.get_width_code()
-    right_space = " " * (self.RIGHT_ALIGN - len(width_code))
-    
-    if self.type == 0:
-      code = f"  input{left_space} wire " + width_code + f"{right_space}{self.name}"
+    if self.signal_type is SignalType.INPUT:
+      prefix = "  input  wire"
+    elif self.signal_type is SignalType.OUTPUT:
+      prefix = "  output wire"
+    elif self.signal_type is SignalType.WIRE:
+      prefix = "  wire"
     else:
-      code = f"  output{left_space}wire " + width_code + f"{right_space}{self.name}"
+      prefix = ""
 
-    return code
+    prefix += left_space
 
-  def get_declaration(self):
-    left_space = " " * self.LEFG_ALIGN
-    width_code = self.get_width_code()
-    right_space = " " * (self.RIGHT_ALIGN - len(width_code))
-
-    if self.type == 0:
-      code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
-    else:
-      code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
-
-    return code
-
+    return prefix + width_code + f"{right_space}{self.name}"
 
 class RTL:
 
@@ -82,11 +62,11 @@ class RTL:
     self.declarations = []
     self.rtl_codes = []
 
-  def add_interface(self, name, width, direction):
-    self.interfaces.append(Signal(name, width, direction))
+  def add_interface(self, name: str, width: int, signal_type: SignalType):
+    self.interfaces.append(Signal(name, width, signal_type))
 
   def add_declaration(self, name, width):
-    self.declarations.append(Signal(name, width, 0))
+    self.declarations.append(Signal(name, width, SignalType.WIRE))
 
   def add_comment(self, comment):
     self.rtl_codes.append("//" + ("-" * 80))
@@ -96,7 +76,7 @@ class RTL:
   def gen_interface_code(self):
     code_list = []
     for index, interface in enumerate(self.interfaces):
-      code = interface.get_interface()
+      code = interface.get_prefix_and_align()
       if index < len(self.interfaces) - 1:
         code += ","
       code_list.append(code)
@@ -106,7 +86,7 @@ class RTL:
     code_list = []
     self.add_comment("Wire declaration")
     for index, declaration in enumerate(self.declarations):
-      code = declaration.get_declaration()
+      code = declaration.get_prefix_and_align()
       code_list.append(code)
     return code_list
 
@@ -160,14 +140,14 @@ def gen_queue_entry(config_dict):
   rtl = RTL(module_name, output_path)
 
   # add interface
-  rtl.add_interface("clk", 1, 0)
-  rtl.add_interface("wen", 1, 0)
+  rtl.add_interface("clk", 1, SignalType.INPUT)
+  rtl.add_interface("wen", 1, SignalType.INPUT)
   # input
   for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_interface(signal_name + "_In", signal_width, 0)
+    rtl.add_interface(signal_name + "_In", signal_width, SignalType.INPUT)
   # output
   for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_interface(signal_name + "_Q", signal_width, 1)
+    rtl.add_interface(signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
   # add declaration
   for signal_name, signal_width in config_dict['fields'].items():
@@ -209,7 +189,7 @@ def gen_queue(config_dict):
     for i in range(queue_size):
       rtl.add_declaration(f"entry{i:0{max_index_width}d}_" + signal_name, signal_width)
 
-  rtl.gen_rtl_code()
+  # rtl.gen_rtl_code()
 
 
   # gen write logic
