@@ -18,7 +18,7 @@ def parse_config_file(config_file: str) -> dict:
   return config_dict
   
 
-def gen_wire_declaration(signal_name, signal_width, space_num):
+def gen_wire_declaration(signal_name, signal_width, left_align):
   code = ""
   align_content = " " * space_num
   if signal_width > 1:
@@ -27,22 +27,100 @@ def gen_wire_declaration(signal_name, signal_width, space_num):
     code = f"  wire        {align_content}{signal_name}"
   return code
 
-def gen_interface(signal_name, signal_width, space_num, type):
-  code = ""
-  align_content = " " * space_num
-  # gen input
-  if type == 0:
-    if signal_width > 1:
-      code = f"  input  wire [{signal_width-1}:0] {align_content}{signal_name}_In,"
+class Signal:
+
+  left_align = 8
+  rigth_align = 16
+
+  def __init__(self, name, width, direction):
+    self.name = name
+    self.width = width
+    self.direction = direction
+
+  def get_width_code(self):
+    if self.width == 1:
+      return ""
     else:
-      code = f"  input  wire {align_content}{signal_name}_In,"
-  # gen output
-  else:
-    if signal_width > 1:
-      code = f"  output wire [{signal_width-1}:0] {align_content}{signal_name}_Q,"
+      return f"[{self.width}:0]"
+
+  def get_interface(self):
+    left_space = " " * self.left_align
+    width_code = self.get_width_code()
+    right_space = " " * (self.rigth_align - len(width_code))
+    
+    if self.direction == 0:
+      code = f"  input{left_space} wire " + width_code + f"{right_space}{self.name}"
     else:
-      code = f"  output wire {align_content}{signal_name}_Q,"
-  return code
+      code = f"  output{left_space}wire " + width_code + f"{right_space}{self.name}"
+
+    return code
+
+  def get_declaration(self):
+    left_space = " " * self.left_align
+    width_code = self.get_width_code()
+    right_space = " " * (self.rigth_align - len(width_code))
+
+    if self.direction == 0:
+      code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
+    else:
+      code = f"  wire{left_space}" + width_code + f"{right_space}{self.name};"
+
+    return code
+
+
+class RTL:
+
+  def __init__(self, module_name, rtl_output_path):
+    self.module_name = module_name
+    self.rtl_file_path = rtl_output_path + f"/{module_name}.v"
+    self.interfaces = []
+    self.declarations = []
+    self.rtl_codes = []
+
+  def add_interface(self, name, width, direction):
+    self.interfaces.append(Signal(name, width, direction))
+
+  def add_declaration(self, name, width):
+    self.declarations.append(Signal(name, width, 0))
+
+  def add_comment(self, comment):
+    self.rtl_codes.append("//" + ("-" * 80))
+    self.rtl_codes.append("//" + (" " * 30) + comment)
+    self.rtl_codes.append("//" + ("-" * 80))
+
+  def gen_interface_code(self):
+    code_list = []
+    for index, interface in enumerate(self.interfaces):
+      code = interface.get_interface()
+      if index < len(self.interfaces) - 1:
+        code += ","
+      code_list.append(code)
+    return code_list
+
+  def gen_declaration_code(self):
+    code_list = []
+    self.add_comment("Wire declaration")
+    for index, declaration in enumerate(self.declarations):
+      code = declaration.get_declaration()
+      code_list.append(code)
+    return code_list
+
+  def gen_rtl_code(self):
+    self.rtl_codes.append("// This RTL code is generate by RTL generator, please do not modify!")
+    self.rtl_codes.append(f"module {self.module_name } (")
+    # generate interface
+    self.rtl_codes += self.gen_interface_code()
+    self.rtl_codes.append(");")
+    self.rtl_codes.append("")
+    # generate declaration
+    self.rtl_codes += self.gen_declaration_code()
+    self.rtl_codes.append("")
+
+    self.rtl_codes.append("endmodule")
+    
+    print(f"generate rtl success, RTL path: {self.rtl_file_path}")
+    with open(self.rtl_file_path, 'w', encoding='utf-8') as file:
+      file.writelines([code + '\n' for code in self.rtl_codes])
 
 def gen_dff_instance(signal_name, signal_width):
   code_list = []
@@ -71,45 +149,34 @@ def gen_entry_instance(module_name, singal_dict, index):
   return code_list
 
 def gen_queue_entry(config_dict):
-  design_name = config_dict['design']
-  rtl_file_path = config_dict['output_file']
+  module_name = config_dict['design'] + "_entry"
+  output_path = config_dict['output_file']
 
-  code_list = []
-  code_list.append(f"module {design_name}_entry (")
-  code_list.append("  input  wire       clk,")
-  code_list.append("  input  wire       wen,")
+  rtl = RTL(module_name, output_path)
 
-  max_signal_width = max(len(str(v)) for v in config_dict['fields'].values())
-
-  # generate interface
-  # generate input
+  # add interface
+  rtl.add_interface("clk", 1, 0)
+  rtl.add_interface("wen", 1, 0)
+  # input
   for signal_name, signal_width in config_dict['fields'].items():
-    space_num = max_signal_width - len(str(signal_width))
-    if signal_width == 1:
-      space_num = max_signal_width + 5
-    code_list.append(gen_interface(signal_name, signal_width, space_num, 0))
-  # generate output
+    rtl.add_interface(signal_name + "_In", signal_width, 0)
+  # output
   for signal_name, signal_width in config_dict['fields'].items():
-    space_num = max_signal_width - len(str(signal_width))
-    if signal_width == 1:
-      space_num = max_signal_width + 5
-    code_list.append(gen_interface(signal_name, signal_width, space_num, 1))
+    rtl.add_interface(signal_name + "_Q", signal_width, 1)
 
-  code_list[len(code_list) - 1] = code_list[len(code_list) - 1].replace(",","")
-  code_list.append(");")
+  # add declaration
+  for signal_name, signal_width in config_dict['fields'].items():
+    rtl.add_declaration(signal_name + "_In", signal_width)
+  for signal_name, signal_width in config_dict['fields'].items():
+    rtl.add_declaration(signal_name + "_Q", signal_width)
+
+  rtl.gen_rtl_code()
 
   # generate dff module
-  for signal_name, signal_width in config_dict['fields'].items():
-    code_list.append("")
-    code_list.append(f"// {signal_name} dff: {signal_width} bits")
-    code_list += gen_dff_instance(signal_name, signal_width)
-
-  code_list.append("")
-  code_list.append("endmodule")
-
-  output_file_path = rtl_file_path + '/' + f"{design_name}_entry.v"
-  with open(output_file_path, 'w', encoding='utf-8') as file:
-      file.writelines([code + '\n' for code in code_list])
+  # for signal_name, signal_width in config_dict['fields'].items():
+  #   code_list.append("")
+  #   code_list.append(f"// {signal_name} dff: {signal_width} bits")
+  #   code_list += gen_dff_instance(signal_name, signal_width)
 
 
 def gen_queue(config_dict):
@@ -128,19 +195,9 @@ def gen_queue(config_dict):
   code_list.append("  input  wire clk,")
   code_list.append(f"  input  wire [{ptr_width-1}:0] read_ptr,")
   code_list.append(f"  input  wire [{ptr_width-1}:0] wire_ptr,")
-  for signal_name, signal_width in config_dict['fields'].items():
-    space_num = max_signal_width - len(str(signal_width))
-    full_signal_name = f"{design_name}_{signal_name}"
-    code_list.append(gen_interface(full_signal_name, signal_width, space_num, 0))
-  # gen output
-  for signal_name, signal_width in config_dict['fields'].items():
-    space_num = max_signal_width - len(str(signal_width))
-    full_signal_name = f"{design_name}_{signal_name}"
-    code_list.append(gen_interface(full_signal_name, signal_width, space_num, 1))
 
-  code_list[len(code_list) - 1] = code_list[len(code_list) - 1].replace(",","")
-  code_list.append(");")
-  code_list.append("")
+
+  # for signal_name, signal_width in config_dict['fields'].items():
 
   # gen declear
   for signal_name, signal_width in config_dict['fields'].items():
@@ -150,8 +207,8 @@ def gen_queue(config_dict):
       space_num = RIGHT_ALIGN_NUM - (len(str(signal_width-1)) + 5)
     for entry in range(queue_size):
       full_signal_name = f"{design_name}_entry{entry}_{signal_name}"
-      code = gen_wire_declaration(full_signal_name, signal_width, space_num) + "_Q;"
-      code_list.append(code)
+      # code = gen_wire_declaration(full_signal_name, signal_width, space_num) + "_Q;"
+      # code_list.append(code)
 
   space_num = RIGHT_ALIGN_NUM - (len(str(queue_size-1)) + 5)
   code_list.append(f"  wire        [{queue_size-1}:0]" + " " * space_num + "array_entry_wen;")
