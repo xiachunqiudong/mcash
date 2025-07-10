@@ -82,8 +82,6 @@ def gen_queue(config_dict):
 
   ptr_width = int(math.log2(queue_size))
 
-  read_data_signals = []
-
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
   rtl.add_interface("read_ptr", ptr_width, SignalType.INPUT)
@@ -93,7 +91,6 @@ def gen_queue(config_dict):
     rtl.add_interface(module_name + "_" + signal_name + "_In", signal_width, SignalType.INPUT)
   for signal_name, signal_width in config_dict['fields'].items():
     read_data_signal = module_name + "_" + signal_name
-    read_data_signals.append(read_data_signal)
     rtl.add_interface(read_data_signal + "_rdata", signal_width, SignalType.OUTPUT)
 
   # add declaration
@@ -117,20 +114,36 @@ def gen_queue(config_dict):
   # wen array
   for i, wen in enumerate(wen_codes):
     logic_codes.append(f"  assign {wen} = write_ptr[{ptr_width-1}:0] == {ptr_width}'d{i};")
+  logic_codes.append("")
   # read ptr dcd
   for i in range(queue_size):
     logic_codes.append(f"  assign read_ptr_dcd[{i}] = read_ptr[{ptr_width-1}:0] == {ptr_width}'d{i};")
+  logic_codes.append("")
 
   # read data select
   read_data_logic = []
 
-  for read_data_signal in read_data_signals:
+  for signal_name, signal_width in config_dict['fields'].items():
+    left_space = ""
     for i in range(queue_size):
-      if i == 0:
-        read_data_logic.append(f"assign {read_data_signal}_rdata = read_ptr_dcd[{i}] & {read_data_signal.replace("array", "entry")}_entry{i:0{max_index_width}d}")
+      if signal_width == 1:
+        assign_expr = f"  assign {module_name}_{signal_name}_rdata "
+        read_ptr_expr = f"read_ptr_dcd[{i}]"
+        entry_expr = f"{entry_name}{i:0{max_index_width}d}_{signal_name}_Q"
       else:
-        read_data_logic.append(f"| read_ptr_dcd[{i}] & {read_data_signal}_entry{i:0{max_index_width}d}")
-    
+        assign_expr = f"  assign {module_name}_{signal_name}_rdata[{signal_width-1}:0] "
+        read_ptr_expr = f"{{{signal_width}{{read_ptr_dcd[{i}]}}}}"
+        entry_expr = f"{entry_name}{i:0{max_index_width}d}_{signal_name}_Q[{signal_width-1}:0]"
+      left_space = len(assign_expr) * " "
+
+      if i == 0:        
+        read_data_logic.append(assign_expr + f"= {read_ptr_expr} & {entry_expr}")
+      elif i != queue_size - 1:
+        read_data_logic.append(left_space + f"| {read_ptr_expr} & {entry_expr}")
+      else:
+        read_data_logic.append(left_space + f"| {read_ptr_expr} & {entry_expr};")
+        read_data_logic.append("")
+
   logic_codes += read_data_logic
   
 
