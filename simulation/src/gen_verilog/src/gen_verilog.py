@@ -17,7 +17,7 @@ class Signal:
     self.signal_type = signal_type
 
   def get_width_code(self) -> str:
-    return "" if self.width == 1 else f"[{self.width}:0]"
+    return "" if self.width == 1 else f"[{self.width-1}:0]"
 
   def get_prefix_and_align(self) -> str:
     width_code = self.get_width_code()

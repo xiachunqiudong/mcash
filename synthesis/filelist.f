@@ -30,6 +30,7 @@ $MCASH_HOME/synthesis/src/bank/bank_isu_top.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_inflight_array.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_iq.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_iq_entry.v
+$MCASH_HOME/synthesis/src/bank/bank_isu_iq_array.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_credit_manege.v
 $MCASH_HOME/synthesis/src/bank/bank_isu_linefill_buffer.v
 $MCASH_HOME/synthesis/src/bank/bank_sram_controller.v

@@ -38,26 +38,12 @@ module bank_isu_iq #(
   wire [PTR_WIDTH-1:0] writePtr_In;
   reg  [PTR_WIDTH-1:0] writePtr_Q;
   reg  [DEPTH-1:0]     valid_array_In;
-  reg  [DEPTH-1:0]     valid_array_Q;
-  reg  [2:0]           rob_id_array_In          [DEPTH-1:0];
-  reg  [2:0]           rob_id_array_Q           [DEPTH-1:0];
-  reg  [1:0]           ch_id_array_In           [DEPTH-1:0];
-  reg  [1:0]           ch_id_array_Q            [DEPTH-1:0];
-  wire [DEPTH-1:0]     entry_is_ch0_array;
-  wire [DEPTH-1:0]     entry_is_ch1_array;
-  wire [DEPTH-1:0]     entry_is_ch2_array;
-  reg                  iq_op_is_write_array_In  [DEPTH-1:0];
-  reg                  iq_op_is_write_array_Q   [DEPTH-1:0];
+  reg  [DEPTH-1:0]     valid_array_Q;;
+  wire [DEPTH-1:0]     iq_entry_req_from_ch0;
+  wire [DEPTH-1:0]     iq_entry_req_from_ch1;
+  wire [DEPTH-1:0]     iq_entry_req_from_ch2;
   reg [DEPTH-1:0]      iq_need_evit_array_In;
   reg [DEPTH-1:0]      iq_need_evit_array_Q;
-  reg                  iq_need_linefill_array_In[DEPTH-1:0];
-  reg                  iq_need_linefill_array_Q [DEPTH-1:0];
-  reg  [6:0]           set_way_offset_array_In  [DEPTH-1:0];
-  reg  [6:0]           set_way_offset_array_Q   [DEPTH-1:0];
-  reg  [6:0]           wbuffer_id_array_In      [DEPTH-1:0];
-  reg  [6:0]           wbuffer_id_array_Q       [DEPTH-1:0];
-  reg  [3:0]           cacheline_state_array_In [DEPTH-1:0];
-  reg  [3:0]           cacheline_state_array_Q  [DEPTH-1:0];
   reg  [DEPTH-1:0]     mshr_allow_array_validate;
   reg  [DEPTH-1:0]     mshr_allow_array_In;
   reg  [DEPTH-1:0]     mshr_allow_array_Q;
@@ -71,6 +57,44 @@ module bank_isu_iq #(
   wire                 select_need_evit;
   wire                 select_is_write;
 
+  wire [3:0]       iq_array_cacheline_state_In;
+  wire             iq_array_op_is_write_rdata;
+  wire             iq_array_op_need_linefill_rdata;
+  wire [3:0]       iq_array_cacheline_state_rdata;
+  wire [DEPTH-1:0] iq_biu_id_match_array;
+
+  assign iq_array_cacheline_state_In[3:0] = {req_cacheline_offset1_state_i[1:0],
+                                             req_cacheline_offset0_state_i[1:0]};
+
+  bank_isu_iq_array
+  iq_array(
+    .clk                                     (clk_i                              ),
+    .biu_rid_In                              (biu_isu_rid_i[5:0]                 ),
+    .read_ptr                                (select_ptr[PTR_WIDTH-1:0]          ),
+    .wen                                     (writePtr_kickoff                   ),
+    .write_ptr                               (writePtr_Q[PTR_WIDTH-1:0]          ),
+    .bank_isu_iq_array_rob_id_In             (req_rob_id_i[2:0]                  ),
+    .bank_isu_iq_array_ch_id_In              (req_ch_id_i[1:0]                   ),
+    .bank_isu_iq_array_op_is_write_In        (req_opcode_i[0]                    ),
+    .bank_isu_iq_array_op_need_linefill_In   (req_need_linefill_i                ),
+    .bank_isu_iq_array_set_way_offset_In     (req_set_way_offset_i[6:0]          ),
+    .bank_isu_iq_array_wbuffer_id_In         (req_wbuffer_id_i[7:0]              ),
+    .bank_isu_iq_array_cacheline_state_In    (iq_array_cacheline_state_In[3:0]   ),
+    .bank_isu_iq_array_rob_id_rdata          (iq_sc_xbar_rob_num_o[2:0]          ),
+    .bank_isu_iq_array_ch_id_rdata           (iq_sc_channel_id_o[1:0]            ),
+    .bank_isu_iq_array_op_is_write_rdata     (iq_array_op_is_write_rdata         ),
+    .bank_isu_iq_array_op_need_linefill_rdata(iq_array_op_need_linefill_rdata    ),
+    .bank_isu_iq_array_set_way_offset_rdata  (iq_sc_set_way_offset_o[6:0]        ),
+    .bank_isu_iq_array_wbuffer_id_rdata      (iq_sc_wbuffer_id_o[7:0]            ),
+    .bank_isu_iq_array_cacheline_state_rdata (iq_array_cacheline_state_rdata[3:0]),
+    .biu_id_match_array                      (iq_biu_id_match_array[DEPTH-1:0]   ),
+    .entry_req_from_ch0_array                (iq_entry_req_from_ch0[DEPTH-1:0]   ),
+    .entry_req_from_ch1_array                (iq_entry_req_from_ch1[DEPTH-1:0]   ),
+    .entry_req_from_ch2_array                (iq_entry_req_from_ch2[DEPTH-1:0]   )
+  );
+
+  assign iq_sc_cacheline_state_offset0_o[1:0] = iq_array_cacheline_state_rdata[1:0];
+  assign iq_sc_cacheline_state_offset1_o[1:0] = iq_array_cacheline_state_rdata[3:2];
 
 // queue size
   assign queue_size_wen = writePtr_kickoff | bottom_ptr_kickoff;
@@ -129,31 +153,6 @@ module bank_isu_iq #(
   end
 
   always @(*) begin
-    // default value
-    rob_id_array_In                      = rob_id_array_Q;
-    ch_id_array_In                       = ch_id_array_Q;
-    set_way_offset_array_In              = set_way_offset_array_Q;
-    wbuffer_id_array_In                  = wbuffer_id_array_Q;
-    cacheline_state_array_In             = cacheline_state_array_Q;
-    // update value
-    rob_id_array_In[writePtr_Q]          = req_rob_id_i;
-    ch_id_array_In[writePtr_Q]           = req_ch_id_i;
-    set_way_offset_array_In[writePtr_Q]  = req_set_way_offset_i;
-    wbuffer_id_array_In[writePtr_Q]      = req_wbuffer_id_i;
-    cacheline_state_array_In[writePtr_Q] = {req_cacheline_offset1_state_i[1:0],
-                                            req_cacheline_offset0_state_i[1:0]};
-  end
-
-  always @(*) begin
-    // default value
-    iq_op_is_write_array_In   = iq_op_is_write_array_Q;
-    iq_need_linefill_array_In = iq_need_linefill_array_Q;
-    // update value
-    iq_op_is_write_array_In[writePtr_Q]   = req_opcode_i[0];
-    iq_need_linefill_array_In[writePtr_Q] = req_need_linefill_i;
-  end
-
-  always @(*) begin
     iq_need_evit_array_In = iq_need_evit_array_Q;
     if (writePtr_kickoff) begin
       iq_need_evit_array_In[writePtr_Q] = req_opcode_i[1];
@@ -167,29 +166,10 @@ module bank_isu_iq #(
     iq_need_evit_array_Q <= iq_need_evit_array_In;
   end
 
-  always @(posedge clk_i) begin
-    if (writePtr_kickoff) begin // update array when write
-      iq_op_is_write_array_Q   <= iq_op_is_write_array_In;
-      iq_need_linefill_array_Q <= iq_need_linefill_array_In;
-      rob_id_array_Q           <= rob_id_array_In;
-      ch_id_array_Q            <= ch_id_array_In;
-      set_way_offset_array_Q   <= set_way_offset_array_In;
-      wbuffer_id_array_Q       <= wbuffer_id_array_In;
-      cacheline_state_array_Q  <= cacheline_state_array_In;
-    end
-  end
-
 //--------------------------------------------------------------
 //                    MSHR allow array
 //--------------------------------------------------------------
-
-  genvar i;
-
-  generate
-    for (i = 0; i < DEPTH; i++) begin
-      assign mshr_allow_array_validate[i] = valid_array_Q[i] & (set_way_offset_array_Q[i][6:1] == biu_isu_rid_i[5:0]) & biu_isu_rvalid_i;
-    end
-  endgenerate
+  assign mshr_allow_array_validate[DEPTH-1:0] = valid_array_Q[DEPTH-1:0] & iq_biu_id_match_array[DEPTH-1:0] & {DEPTH{biu_isu_rvalid_i}};
 
   always @(*) begin
     // set mshr allow array valid when receive linefill data
@@ -211,33 +191,25 @@ module bank_isu_iq #(
     end
   end
 
-  generate
-    for (i = 0; i < DEPTH; i++) begin
-      assign entry_is_ch0_array[i] = ch_id_array_Q[i] == 'd0;
-      assign entry_is_ch1_array[i] = ch_id_array_Q[i] == 'd1;
-      assign entry_is_ch2_array[i] = ch_id_array_Q[i] == 'd2;
-    end
-  endgenerate
-
 //--------------------------------------------------------------
 //                    Credit allow array
 //--------------------------------------------------------------
   bank_isu_credit_manage #(
     .PTR_WIDTH(PTR_WIDTH)
   ) u_bank_isu_credit_manage(
-    .clk                    (clk_i                        ),
-    .rst                    (rst_i                        ),
-    .iq_enqueue             (writePtr_kickoff             ),
-    .iq_write_ptr           (writePtr_Q                   ),
-    .htu_op_is_read         (~req_opcode_i[0]             ),
-    .htu_ch_id              (req_ch_id_i[1:0]             ),
-    .iq_bottom_ptr          (bottom_ptr_Q                 ),
-    .iq_valid_array         (valid_array_Q[DEPTH-1:0]     ),
-    .credit_allow_array     (credit_allow_array[DEPTH-1:0]),
-    .entry_is_ch0_array     (entry_is_ch0_array[DEPTH-1:0]),
-    .entry_is_ch1_array     (entry_is_ch1_array[DEPTH-1:0]),
-    .entry_is_ch2_array     (entry_is_ch2_array[DEPTH-1:0]),
-    .channels_credit_release(channel_spw_pop_i[2:0]       )
+    .clk                    (clk_i                           ),
+    .rst                    (rst_i                           ),
+    .iq_enqueue             (writePtr_kickoff                ),
+    .iq_write_ptr           (writePtr_Q                      ),
+    .htu_op_is_read         (~req_opcode_i[0]                ),
+    .htu_ch_id              (req_ch_id_i[1:0]                ),
+    .iq_bottom_ptr          (bottom_ptr_Q                    ),
+    .iq_valid_array         (valid_array_Q[DEPTH-1:0]        ),
+    .credit_allow_array     (credit_allow_array[DEPTH-1:0]   ),
+    .entry_req_from_ch0     (iq_entry_req_from_ch0[DEPTH-1:0]),
+    .entry_req_from_ch1     (iq_entry_req_from_ch1[DEPTH-1:0]),
+    .entry_req_from_ch2     (iq_entry_req_from_ch2[DEPTH-1:0]),
+    .channels_credit_release(channel_spw_pop_i[2:0]          )
   );
 
 //--------------------------------------------------------------
@@ -273,9 +245,9 @@ module bank_isu_iq #(
 // 2: read with linefill
 // 3: write back
 //--------------------------------------------------------
-  assign select_need_linefill = iq_need_linefill_array_Q[select_ptr];
+  assign select_is_write      = iq_array_op_is_write_rdata;
+  assign select_need_linefill = iq_array_op_need_linefill_rdata;
   assign select_need_evit     = iq_need_evit_array_Q[select_ptr];
-  assign select_is_write      = iq_op_is_write_array_Q[select_ptr];
 
   assign iq_sc_opcode_o[1:0] = {2{(~select_need_evit & select_is_write)                         }} & 2'b00
                              | {2{(~select_need_evit & ~select_need_linefill & ~select_is_write)}} & 2'b01
@@ -285,12 +257,5 @@ module bank_isu_iq #(
   assign iq_sc_opcode_o[2] = 1'b0;
 
   assign iq_sc_valid_o               = |execute_array[DEPTH-1:0];
-  assign iq_sc_channel_id_o[1:0]     = ch_id_array_Q[select_ptr];
-
-  assign iq_sc_set_way_offset_o[6:0]     = set_way_offset_array_Q[select_ptr];
-  assign iq_sc_wbuffer_id_o[7:0]         = wbuffer_id_array_Q[select_ptr];
-  assign iq_sc_xbar_rob_num_o[2:0]       = rob_id_array_Q[select_ptr];
-  assign iq_sc_cacheline_state_offset0_o[1:0] = cacheline_state_array_Q[select_ptr][1:0];
-  assign iq_sc_cacheline_state_offset1_o[1:0] = cacheline_state_array_Q[select_ptr][3:2];
 
 endmodule

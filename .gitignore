@@ -6,5 +6,5 @@
 /simulation/sim/*
 !/simulation/Makefile
 /golden/build
-
+simulation/src/gen_verilog/src/__pycache__
 

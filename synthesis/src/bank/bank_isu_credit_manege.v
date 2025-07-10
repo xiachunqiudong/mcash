@@ -11,9 +11,9 @@ module bank_isu_credit_manage #(
   input  wire [1:0]             htu_ch_id,
   input  wire [PTR_WIDTH-1:0]   iq_bottom_ptr,
   input  wire [DEPTH-1:0]       iq_valid_array,
-  input  wire [DEPTH-1:0]       entry_is_ch0_array,
-  input  wire [DEPTH-1:0]       entry_is_ch1_array,
-  input  wire [DEPTH-1:0]       entry_is_ch2_array,
+  input  wire [DEPTH-1:0]       iq_entry_req_from_ch0,
+  input  wire [DEPTH-1:0]       iq_entry_req_from_ch1,
+  input  wire [DEPTH-1:0]       iq_entry_req_from_ch2,
   output wire [DEPTH-1:0]       credit_allow_array,
   input  wire [CHANNEL_NUM-1:0] channels_credit_release
 );
@@ -114,9 +114,9 @@ module bank_isu_credit_manage #(
     end
   endgenerate
 
-  assign channel_no_credit_array[0] = entry_is_ch0_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
-  assign channel_no_credit_array[1] = entry_is_ch1_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
-  assign channel_no_credit_array[2] = entry_is_ch2_array[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+  assign channel_no_credit_array[0] = iq_entry_req_from_ch0[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+  assign channel_no_credit_array[1] = iq_entry_req_from_ch1[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
+  assign channel_no_credit_array[2] = iq_entry_req_from_ch2[DEPTH-1:0] & iq_no_credit_array[DEPTH-1:0];
 
 
 //--------------------------------------------------------------

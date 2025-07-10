@@ -54,6 +54,7 @@ def gen_queue_entry(config_dict):
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
   rtl.add_interface("wen", 1, SignalType.INPUT)
+  rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   # input
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_In", signal_width, SignalType.INPUT)
@@ -61,8 +62,22 @@ def gen_queue_entry(config_dict):
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
+  rtl.add_interface("biu_id_match", 1, SignalType.OUTPUT)
+
+  rtl.add_interface("entry_req_from_ch0", 1, SignalType.OUTPUT)
+  rtl.add_interface("entry_req_from_ch1", 1, SignalType.OUTPUT)
+  rtl.add_interface("entry_req_from_ch2", 1, SignalType.OUTPUT)
+
   logic_codes = []
 
+  logic_codes.append(f"assign biu_id_match = set_way_offset_Q[6:1] == biu_rid_In[5:0];")
+  logic_codes.append("")
+  logic_codes.append(f"assign entry_req_from_ch0 = ch_id_Q[1:0] == 2'd0;")
+  logic_codes.append(f"assign entry_req_from_ch1 = ch_id_Q[1:0] == 2'd1;")
+  logic_codes.append(f"assign entry_req_from_ch2 = ch_id_Q[1:0] == 2'd2;")
+  logic_codes.append("")
+
+  # add instance
   for signal_name, signal_width in config_dict['fields'].items():
     logic_codes += gen_dff_instance(signal_name, signal_width)
     logic_codes.append("")
@@ -84,6 +99,7 @@ def gen_queue(config_dict):
 
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
+  rtl.add_interface("biu_rid_In", 1, SignalType.INPUT)
   rtl.add_interface("read_ptr", ptr_width, SignalType.INPUT)
   rtl.add_interface("wen", 1, SignalType.INPUT)
   rtl.add_interface("write_ptr", ptr_width, SignalType.INPUT)
@@ -92,6 +108,11 @@ def gen_queue(config_dict):
   for signal_name, signal_width in config_dict['fields'].items():
     read_data_signal = module_name + "_" + signal_name
     rtl.add_interface(read_data_signal + "_rdata", signal_width, SignalType.OUTPUT)
+  rtl.add_interface(f"biu_id_match_array", queue_size, SignalType.OUTPUT)
+  rtl.add_interface(f"entry_req_from_ch0_array", queue_size, SignalType.OUTPUT)
+  rtl.add_interface(f"entry_req_from_ch1_array", queue_size, SignalType.OUTPUT)
+  rtl.add_interface(f"entry_req_from_ch2_array", queue_size, SignalType.OUTPUT)
+  
 
   # add declaration
   max_index_width = len(str(queue_size-1))
@@ -154,6 +175,7 @@ def gen_queue(config_dict):
     ports = []
     ports.append(("clk", "clk", 1))
     ports.append(("wen", f"{entry_name}_entry{i:0{max_index_width}d}_wen", 1))
+    ports.append(("biu_rid_In", "biu_rid_In", 6))
     for signal_name, signal_width in config_dict['fields'].items():
       prot_name = signal_name + "_In"
       prot_signal_name = f"{module_name}_" + prot_name
@@ -162,6 +184,10 @@ def gen_queue(config_dict):
       prot_name = signal_name + "_Q"
       prot_signal_name = f"{entry_name}{i:0{max_index_width}d}_" + prot_name
       ports.append((prot_name, prot_signal_name, signal_width))
+    ports.append((f"biu_id_match", f"biu_id_match_array[{i}]", 1))
+    ports.append((f"entry_req_from_ch0", f"entry_req_from_ch0_array[{i}]", 1))
+    ports.append((f"entry_req_from_ch1", f"entry_req_from_ch1_array[{i}]", 1))
+    ports.append((f"entry_req_from_ch2", f"entry_req_from_ch2_array[{i}]", 1))
     rtl.add_instance(entry_name, f"{entry_name}_" + f"entry{i:0{max_index_width}d}", ports)
 
 

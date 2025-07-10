@@ -5,7 +5,6 @@
     "rob_id": 3,
     "ch_id": 2,
     "op_is_write": 1,
-    "op_need_evit": 1,
     "op_need_linefill": 1,
     "set_way_offset": 7,
     "wbuffer_id": 8,
