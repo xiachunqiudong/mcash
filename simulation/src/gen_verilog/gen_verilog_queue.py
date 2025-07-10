@@ -185,14 +185,14 @@ def gen_queue(config_dict):
   ptr_width = int(math.log2(queue_size))
 
   # add interface
-  rtl.add_interface("clk", 1, 0)
-  rtl.add_interface("read_ptr", ptr_width, 0)
-  rtl.add_interface("wen", 1, 0)
-  rtl.add_interface("write_ptr", ptr_width, 0)
+  rtl.add_interface("clk", 1, SignalType.INPUT)
+  rtl.add_interface("read_ptr", ptr_width, SignalType.INPUT)
+  rtl.add_interface("wen", 1, SignalType.INPUT)
+  rtl.add_interface("write_ptr", ptr_width, SignalType.INPUT)
   for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_interface(module_name + signal_name + "_In", signal_width, 0)
+    rtl.add_interface(module_name + signal_name + "_In", signal_width, SignalType.INPUT)
   for signal_name, signal_width in config_dict['fields'].items():
-    rtl.add_interface(module_name + signal_name + "_Q", signal_width, 1)
+    rtl.add_interface(module_name + signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
   max_index_width = len(str(queue_size-1))
 
