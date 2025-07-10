@@ -1134,8 +1134,7 @@ module bank_isu_iq_array (
 //--------------------------------------------------------------------------------
 //                              Module instance
 //--------------------------------------------------------------------------------
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry00 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry00 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry00_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1159,8 +1158,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[0]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry01 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry01 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry01_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1184,8 +1182,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[1]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry02 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry02 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry02_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1209,8 +1206,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[2]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry03 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry03 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry03_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1234,8 +1230,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[3]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry04 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry04 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry04_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1259,8 +1254,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[4]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry05 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry05 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry05_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1284,8 +1278,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[5]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry06 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry06 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry06_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1309,8 +1302,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[6]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry07 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry07 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry07_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1334,8 +1326,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[7]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry08 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry08 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry08_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1359,8 +1350,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[8]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry09 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry09 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry09_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1384,8 +1374,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[9]               )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry10 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry10 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry10_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1409,8 +1398,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[10]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry11 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry11 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry11_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1434,8 +1422,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[11]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry12 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry12 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry12_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1459,8 +1446,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[12]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry13 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry13 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry13_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1484,8 +1470,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[13]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry14 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry14 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry14_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1509,8 +1494,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[14]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry15 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry15 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry15_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1534,8 +1518,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[15]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry16 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry16 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry16_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1559,8 +1542,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[16]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry17 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry17 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry17_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1584,8 +1566,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[17]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry18 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry18 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry18_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1609,8 +1590,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[18]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry19 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry19 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry19_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1634,8 +1614,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[19]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry20 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry20 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry20_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1659,8 +1638,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[20]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry21 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry21 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry21_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1684,8 +1662,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[21]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry22 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry22 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry22_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1709,8 +1686,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[22]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry23 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry23 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry23_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1734,8 +1710,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[23]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry24 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry24 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry24_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1759,8 +1734,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[24]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry25 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry25 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry25_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1784,8 +1758,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[25]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry26 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry26 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry26_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1809,8 +1782,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[26]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry27 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry27 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry27_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1834,8 +1806,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[27]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry28 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry28 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry28_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1859,8 +1830,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[28]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry29 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry29 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry29_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1884,8 +1854,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[29]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry30 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry30 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry30_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1909,8 +1878,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[30]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry31 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry31 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry31_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1934,8 +1902,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[31]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry32 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry32 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry32_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1959,8 +1926,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[32]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry33 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry33 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry33_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -1984,8 +1950,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[33]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry34 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry34 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry34_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2009,8 +1974,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[34]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry35 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry35 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry35_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2034,8 +1998,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[35]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry36 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry36 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry36_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2059,8 +2022,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[36]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry37 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry37 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry37_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2084,8 +2046,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[37]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry38 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry38 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry38_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2109,8 +2070,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[38]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry39 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry39 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry39_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2134,8 +2094,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[39]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry40 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry40 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry40_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2159,8 +2118,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[40]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry41 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry41 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry41_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2184,8 +2142,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[41]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry42 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry42 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry42_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2209,8 +2166,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[42]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry43 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry43 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry43_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2234,8 +2190,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[43]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry44 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry44 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry44_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2259,8 +2214,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[44]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry45 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry45 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry45_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2284,8 +2238,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[45]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry46 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry46 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry46_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2309,8 +2262,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[46]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry47 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry47 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry47_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2334,8 +2286,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[47]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry48 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry48 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry48_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2359,8 +2310,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[48]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry49 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry49 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry49_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2384,8 +2334,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[49]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry50 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry50 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry50_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2409,8 +2358,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[50]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry51 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry51 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry51_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2434,8 +2382,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[51]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry52 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry52 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry52_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2459,8 +2406,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[52]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry53 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry53 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry53_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2484,8 +2430,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[53]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry54 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry54 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry54_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2509,8 +2454,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[54]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry55 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry55 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry55_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2534,8 +2478,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[55]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry56 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry56 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry56_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2559,8 +2502,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[56]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry57 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry57 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry57_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2584,8 +2526,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[57]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry58 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry58 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry58_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2609,8 +2550,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[58]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry59 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry59 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry59_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2634,8 +2574,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[59]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry60 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry60 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry60_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2659,8 +2598,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[60]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry61 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry61 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry61_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2684,8 +2622,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[61]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry62 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry62 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry62_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
@@ -2709,8 +2646,7 @@ module bank_isu_iq_array (
     .entry_req_from_ch2  (entry_req_from_ch2_array[62]              )
   );
 
-  bank_isu_iq_entry
-  bank_isu_iq_entry_entry63 (
+  bank_isu_iq_entry bank_isu_iq_entry_entry63 (
     .clk                 (clk                                       ),
     .wen                 (bank_isu_iq_entry_entry63_wen             ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),

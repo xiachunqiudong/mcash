@@ -65,11 +65,9 @@ class Instance:
     if len(self.parameter_list) != 0:
       module_code += ")"
 
-    module_code += f" {self.instance_name}"
-
+    module_code += f" {self.instance_name} ("
 
     instance_code_list.append(module_code)
-    instance_code_list.append(f"  {self.instance_name} (")
 
     left_align = max(len(port[0]) for port in self.port_list) + 1
 
