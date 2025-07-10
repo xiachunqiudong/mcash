@@ -34,7 +34,7 @@ module bank_isu_iq #(
   wire [PTR_WIDTH:0]   queue_size_In;
   reg  [PTR_WIDTH:0]   queue_size_Q;
   wire                 issue_kickoff;
-  wire                 writePtr_kickoff;
+  wire                 iq_allocate;
   wire [PTR_WIDTH-1:0] writePtr_In;
   reg  [PTR_WIDTH-1:0] writePtr_Q;
   reg  [DEPTH-1:0]     valid_array_In;
@@ -71,7 +71,7 @@ module bank_isu_iq #(
     .clk                                     (clk_i                              ),
     .biu_rid_In                              (biu_isu_rid_i[5:0]                 ),
     .read_ptr                                (select_ptr[PTR_WIDTH-1:0]          ),
-    .wen                                     (writePtr_kickoff                   ),
+    .wen                                     (iq_allocate                   ),
     .write_ptr                               (writePtr_Q[PTR_WIDTH-1:0]          ),
     .bank_isu_iq_array_rob_id_In             (req_rob_id_i[2:0]                  ),
     .bank_isu_iq_array_ch_id_In              (req_ch_id_i[1:0]                   ),
@@ -97,36 +97,38 @@ module bank_isu_iq #(
   assign iq_sc_cacheline_state_offset1_o[1:0] = iq_array_cacheline_state_rdata[3:2];
 
 // queue size
-  assign queue_size_wen = writePtr_kickoff | bottom_ptr_kickoff;
+  assign queue_size_wen = iq_allocate ^ bottom_ptr_kickoff;
 
-  assign queue_size_In[PTR_WIDTH:0] =  writePtr_kickoff & ~bottom_ptr_kickoff ? queue_size_Q[PTR_WIDTH:0] + 'd1
-                                    : ~writePtr_kickoff &  bottom_ptr_kickoff ? queue_size_Q[PTR_WIDTH:0] - 'd1
-                                    :                                           queue_size_Q[PTR_WIDTH:0];
+  assign queue_size_In[PTR_WIDTH:0] = iq_allocate
+                                    ? queue_size_Q[PTR_WIDTH:0] + 'd1
+                                    : queue_size_Q[PTR_WIDTH:0] - 'd1;
 
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      queue_size_Q[PTR_WIDTH:0] <= 'd0;
-    end
-    else if (queue_size_wen) begin
-      queue_size_Q[PTR_WIDTH:0] <= queue_size_In[PTR_WIDTH:0];
-    end
-  end
+  DFF_RST0 #(.WIDTH(PTR_WIDTH+1)) 
+  queue_size_reg (
+    .CLK(clk_i                     ),
+    .RST(rst_i                     ),
+    .WEN(queue_size_wen            ),
+    .D  (queue_size_In[PTR_WIDTH:0]),
+    .Q  (queue_size_Q[PTR_WIDTH:0] )
+  );
 
   assign req_allowIn_o = queue_size_Q[PTR_WIDTH:0] != DEPTH[PTR_WIDTH:0];
 
 //-----------------------------------------------------------------
 //                   issue queue enqueue
 //-----------------------------------------------------------------
-  assign writePtr_kickoff = req_valid_i & req_allowIn_o;
+  assign iq_allocate = req_valid_i & req_allowIn_o;
 
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      writePtr_Q[PTR_WIDTH-1:0] <= 'd0;
-    end
-    else if (writePtr_kickoff) begin
-      writePtr_Q[PTR_WIDTH-1:0] <= writePtr_Q[PTR_WIDTH-1:0] + 'd1;
-    end
-  end
+  assign writePtr_In[PTR_WIDTH-1:0] = writePtr_Q[PTR_WIDTH-1:0] + 'd1;
+
+  DFF_RST0 #(.WIDTH(PTR_WIDTH))
+  write_ptr_reg (
+    .CLK(clk_i                     ),
+    .RST(rst_i                     ),
+    .WEN(iq_allocate               ),
+    .D  (writePtr_In[PTR_WIDTH-1:0]),
+    .Q  (writePtr_Q[PTR_WIDTH-1:0] )
+  );
 
 //--------------------------------------------------------------
 //                    iq valid array
@@ -135,7 +137,7 @@ module bank_isu_iq #(
 
   always @(*) begin
     valid_array_In = valid_array_Q;
-    if (writePtr_kickoff) begin
+    if (iq_allocate) begin
       valid_array_In[writePtr_Q] = 1'b1;
     end
     if (issue_kickoff) begin
@@ -154,7 +156,7 @@ module bank_isu_iq #(
 
   always @(*) begin
     iq_need_evit_array_In = iq_need_evit_array_Q;
-    if (writePtr_kickoff) begin
+    if (iq_allocate) begin
       iq_need_evit_array_In[writePtr_Q] = req_opcode_i[1];
     end
     if (issue_kickoff) begin
@@ -174,7 +176,7 @@ module bank_isu_iq #(
   always @(*) begin
     // set mshr allow array valid when receive linefill data
     mshr_allow_array_In[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0] | mshr_allow_array_validate[DEPTH-1:0];
-    if (writePtr_kickoff) begin
+    if (iq_allocate) begin
       // set mshr allow array invalid when:
       // 1. cacheline miss
       // 2. cacheline hit but inflight
@@ -199,7 +201,7 @@ module bank_isu_iq #(
   ) u_bank_isu_credit_manage(
     .clk                    (clk_i                           ),
     .rst                    (rst_i                           ),
-    .iq_enqueue             (writePtr_kickoff                ),
+    .iq_enqueue             (iq_allocate                ),
     .iq_write_ptr           (writePtr_Q                      ),
     .htu_op_is_read         (~req_opcode_i[0]                ),
     .htu_ch_id              (req_ch_id_i[1:0]                ),

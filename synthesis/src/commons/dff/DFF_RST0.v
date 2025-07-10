@@ -1,9 +1,9 @@
 module DFF_RST0 #(
   parameter WIDTH = 32
 ) (
-  input  wire          CLK,
-  input  wire          RST,
-  input  wire          WEN,
+  input  wire             CLK,
+  input  wire             RST,
+  input  wire             WEN,
   input  wire [WIDTH-1:0] D,
   output reg  [WIDTH-1:0] Q
 );

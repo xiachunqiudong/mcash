@@ -99,7 +99,7 @@ def gen_queue(config_dict):
 
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
-  rtl.add_interface("biu_rid_In", 1, SignalType.INPUT)
+  rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   rtl.add_interface("read_ptr", ptr_width, SignalType.INPUT)
   rtl.add_interface("wen", 1, SignalType.INPUT)
   rtl.add_interface("write_ptr", ptr_width, SignalType.INPUT)
