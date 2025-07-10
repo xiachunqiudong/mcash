@@ -53,7 +53,7 @@ def gen_queue_entry(config_dict):
 
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
-  rtl.add_interface("wen", 1, SignalType.INPUT)
+  rtl.add_interface("allocate", 1, SignalType.INPUT)
   rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   # input
   for signal_name, signal_width in config_dict['fields'].items():
@@ -79,8 +79,15 @@ def gen_queue_entry(config_dict):
 
   # add instance
   for signal_name, signal_width in config_dict['fields'].items():
-    logic_codes += gen_dff_instance(signal_name, signal_width)
-    logic_codes.append("")
+    ports = []
+    ports.append(("CLK", "clk", 1))
+    ports.append(("WEN", "wen", 1))
+    ports.append(("D", f"{signal_name}_In", signal_width))
+    ports.append(("Q", f"{signal_name}_Q", signal_width))
+    parameter_list = []
+    parameter_list.append(("WIDTH", str(signal_width)))
+    rtl.add_instance("DFF", f"{signal_name}_reg", ports, parameter_list)
+
 
   rtl.add_logic_codes(logic_codes)
 

@@ -44,14 +44,31 @@ class Signal:
 
 class Instance:
   
-  def __init__(self, module_name: str, instance_name: str, port_list: List[Tuple[str, str, int]]):
+  def __init__(self, module_name: str, instance_name: str,
+               port_list: List[Tuple[str, str, int]] = None,
+               parameter_list: List[Tuple[str, str]] = None):
+
     self.module_name = module_name
     self.instance_name = instance_name
-    self.port_list = port_list
+    self.port_list = port_list if port_list else []
+    self.parameter_list = parameter_list if parameter_list else []
 
   def gen_instance(self) -> List[str]:
     instance_code_list = []
-    instance_code_list.append(f"  {self.module_name}")
+    module_code = f"  {self.module_name}" if len(self.parameter_list) == 0 else f"  {self.module_name} #("
+
+    for parameter in self.parameter_list:
+      name = parameter[0]
+      parm = parameter[1]
+      module_code += f".{name}({parm})"
+
+    if len(self.parameter_list) != 0:
+      module_code += ")"
+
+    module_code += f" {self.instance_name}"
+
+
+    instance_code_list.append(module_code)
     instance_code_list.append(f"  {self.instance_name} (")
 
     left_align = max(len(port[0]) for port in self.port_list) + 1
@@ -101,8 +118,10 @@ class RTL:
   def add_declaration(self, name, width):
     self.declarations.append(Signal(name, width, SignalType.WIRE))
 
-  def add_instance(self, module_name: str, instance_name: str, port_list: List[Tuple[str, str, int]]):
-    self.instances.append(Instance(module_name, instance_name, port_list))
+  def add_instance(self, module_name: str, instance_name: str,
+                   port_list: List[Tuple[str, str, int]],
+                   parameter_list: List[Tuple[str, str]] = None):
+    self.instances.append(Instance(module_name, instance_name, port_list, parameter_list))
 
   def add_comment(self, comment):
     self.rtl_codes.append("//" + ("-" * 80))
