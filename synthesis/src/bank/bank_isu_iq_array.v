@@ -1,10 +1,13 @@
 // This RTL code is generate by RTL generator, please do not modify!
 module bank_isu_iq_array (
   input  wire                        clk,
+  input  wire                        rst,
   input  wire        [5:0]           biu_rid_In,
   input  wire        [5:0]           read_ptr,
-  input  wire                        wen,
-  input  wire        [5:0]           write_ptr,
+  input  wire                        validate,
+  input  wire        [5:0]           validate_ptr,
+  input  wire                        inValidate,
+  input  wire        [5:0]           inValidate_ptr,
   input  wire        [2:0]           bank_isu_iq_array_rob_id_In,
   input  wire        [1:0]           bank_isu_iq_array_ch_id_In,
   input  wire                        bank_isu_iq_array_op_is_write_In,
@@ -12,6 +15,7 @@ module bank_isu_iq_array (
   input  wire        [6:0]           bank_isu_iq_array_set_way_offset_In,
   input  wire        [7:0]           bank_isu_iq_array_wbuffer_id_In,
   input  wire        [3:0]           bank_isu_iq_array_cacheline_state_In,
+  output wire        [63:0]          iq_valid_array_Q,
   output wire        [2:0]           bank_isu_iq_array_rob_id_rdata,
   output wire        [1:0]           bank_isu_iq_array_ch_id_rdata,
   output wire                        bank_isu_iq_array_op_is_write_rdata,
@@ -477,138 +481,267 @@ module bank_isu_iq_array (
   wire        [3:0]           bank_isu_iq_entry62_cacheline_state_Q;
   wire        [3:0]           bank_isu_iq_entry63_cacheline_state_Q;
   wire        [63:0]          read_ptr_dcd;
-  wire                        bank_isu_iq_entry_entry00_wen;
-  wire                        bank_isu_iq_entry_entry01_wen;
-  wire                        bank_isu_iq_entry_entry02_wen;
-  wire                        bank_isu_iq_entry_entry03_wen;
-  wire                        bank_isu_iq_entry_entry04_wen;
-  wire                        bank_isu_iq_entry_entry05_wen;
-  wire                        bank_isu_iq_entry_entry06_wen;
-  wire                        bank_isu_iq_entry_entry07_wen;
-  wire                        bank_isu_iq_entry_entry08_wen;
-  wire                        bank_isu_iq_entry_entry09_wen;
-  wire                        bank_isu_iq_entry_entry10_wen;
-  wire                        bank_isu_iq_entry_entry11_wen;
-  wire                        bank_isu_iq_entry_entry12_wen;
-  wire                        bank_isu_iq_entry_entry13_wen;
-  wire                        bank_isu_iq_entry_entry14_wen;
-  wire                        bank_isu_iq_entry_entry15_wen;
-  wire                        bank_isu_iq_entry_entry16_wen;
-  wire                        bank_isu_iq_entry_entry17_wen;
-  wire                        bank_isu_iq_entry_entry18_wen;
-  wire                        bank_isu_iq_entry_entry19_wen;
-  wire                        bank_isu_iq_entry_entry20_wen;
-  wire                        bank_isu_iq_entry_entry21_wen;
-  wire                        bank_isu_iq_entry_entry22_wen;
-  wire                        bank_isu_iq_entry_entry23_wen;
-  wire                        bank_isu_iq_entry_entry24_wen;
-  wire                        bank_isu_iq_entry_entry25_wen;
-  wire                        bank_isu_iq_entry_entry26_wen;
-  wire                        bank_isu_iq_entry_entry27_wen;
-  wire                        bank_isu_iq_entry_entry28_wen;
-  wire                        bank_isu_iq_entry_entry29_wen;
-  wire                        bank_isu_iq_entry_entry30_wen;
-  wire                        bank_isu_iq_entry_entry31_wen;
-  wire                        bank_isu_iq_entry_entry32_wen;
-  wire                        bank_isu_iq_entry_entry33_wen;
-  wire                        bank_isu_iq_entry_entry34_wen;
-  wire                        bank_isu_iq_entry_entry35_wen;
-  wire                        bank_isu_iq_entry_entry36_wen;
-  wire                        bank_isu_iq_entry_entry37_wen;
-  wire                        bank_isu_iq_entry_entry38_wen;
-  wire                        bank_isu_iq_entry_entry39_wen;
-  wire                        bank_isu_iq_entry_entry40_wen;
-  wire                        bank_isu_iq_entry_entry41_wen;
-  wire                        bank_isu_iq_entry_entry42_wen;
-  wire                        bank_isu_iq_entry_entry43_wen;
-  wire                        bank_isu_iq_entry_entry44_wen;
-  wire                        bank_isu_iq_entry_entry45_wen;
-  wire                        bank_isu_iq_entry_entry46_wen;
-  wire                        bank_isu_iq_entry_entry47_wen;
-  wire                        bank_isu_iq_entry_entry48_wen;
-  wire                        bank_isu_iq_entry_entry49_wen;
-  wire                        bank_isu_iq_entry_entry50_wen;
-  wire                        bank_isu_iq_entry_entry51_wen;
-  wire                        bank_isu_iq_entry_entry52_wen;
-  wire                        bank_isu_iq_entry_entry53_wen;
-  wire                        bank_isu_iq_entry_entry54_wen;
-  wire                        bank_isu_iq_entry_entry55_wen;
-  wire                        bank_isu_iq_entry_entry56_wen;
-  wire                        bank_isu_iq_entry_entry57_wen;
-  wire                        bank_isu_iq_entry_entry58_wen;
-  wire                        bank_isu_iq_entry_entry59_wen;
-  wire                        bank_isu_iq_entry_entry60_wen;
-  wire                        bank_isu_iq_entry_entry61_wen;
-  wire                        bank_isu_iq_entry_entry62_wen;
-  wire                        bank_isu_iq_entry_entry63_wen;
+  wire                        entry00_validate;
+  wire                        entry01_validate;
+  wire                        entry02_validate;
+  wire                        entry03_validate;
+  wire                        entry04_validate;
+  wire                        entry05_validate;
+  wire                        entry06_validate;
+  wire                        entry07_validate;
+  wire                        entry08_validate;
+  wire                        entry09_validate;
+  wire                        entry10_validate;
+  wire                        entry11_validate;
+  wire                        entry12_validate;
+  wire                        entry13_validate;
+  wire                        entry14_validate;
+  wire                        entry15_validate;
+  wire                        entry16_validate;
+  wire                        entry17_validate;
+  wire                        entry18_validate;
+  wire                        entry19_validate;
+  wire                        entry20_validate;
+  wire                        entry21_validate;
+  wire                        entry22_validate;
+  wire                        entry23_validate;
+  wire                        entry24_validate;
+  wire                        entry25_validate;
+  wire                        entry26_validate;
+  wire                        entry27_validate;
+  wire                        entry28_validate;
+  wire                        entry29_validate;
+  wire                        entry30_validate;
+  wire                        entry31_validate;
+  wire                        entry32_validate;
+  wire                        entry33_validate;
+  wire                        entry34_validate;
+  wire                        entry35_validate;
+  wire                        entry36_validate;
+  wire                        entry37_validate;
+  wire                        entry38_validate;
+  wire                        entry39_validate;
+  wire                        entry40_validate;
+  wire                        entry41_validate;
+  wire                        entry42_validate;
+  wire                        entry43_validate;
+  wire                        entry44_validate;
+  wire                        entry45_validate;
+  wire                        entry46_validate;
+  wire                        entry47_validate;
+  wire                        entry48_validate;
+  wire                        entry49_validate;
+  wire                        entry50_validate;
+  wire                        entry51_validate;
+  wire                        entry52_validate;
+  wire                        entry53_validate;
+  wire                        entry54_validate;
+  wire                        entry55_validate;
+  wire                        entry56_validate;
+  wire                        entry57_validate;
+  wire                        entry58_validate;
+  wire                        entry59_validate;
+  wire                        entry60_validate;
+  wire                        entry61_validate;
+  wire                        entry62_validate;
+  wire                        entry63_validate;
+  wire                        entry00_inValidate;
+  wire                        entry01_inValidate;
+  wire                        entry02_inValidate;
+  wire                        entry03_inValidate;
+  wire                        entry04_inValidate;
+  wire                        entry05_inValidate;
+  wire                        entry06_inValidate;
+  wire                        entry07_inValidate;
+  wire                        entry08_inValidate;
+  wire                        entry09_inValidate;
+  wire                        entry10_inValidate;
+  wire                        entry11_inValidate;
+  wire                        entry12_inValidate;
+  wire                        entry13_inValidate;
+  wire                        entry14_inValidate;
+  wire                        entry15_inValidate;
+  wire                        entry16_inValidate;
+  wire                        entry17_inValidate;
+  wire                        entry18_inValidate;
+  wire                        entry19_inValidate;
+  wire                        entry20_inValidate;
+  wire                        entry21_inValidate;
+  wire                        entry22_inValidate;
+  wire                        entry23_inValidate;
+  wire                        entry24_inValidate;
+  wire                        entry25_inValidate;
+  wire                        entry26_inValidate;
+  wire                        entry27_inValidate;
+  wire                        entry28_inValidate;
+  wire                        entry29_inValidate;
+  wire                        entry30_inValidate;
+  wire                        entry31_inValidate;
+  wire                        entry32_inValidate;
+  wire                        entry33_inValidate;
+  wire                        entry34_inValidate;
+  wire                        entry35_inValidate;
+  wire                        entry36_inValidate;
+  wire                        entry37_inValidate;
+  wire                        entry38_inValidate;
+  wire                        entry39_inValidate;
+  wire                        entry40_inValidate;
+  wire                        entry41_inValidate;
+  wire                        entry42_inValidate;
+  wire                        entry43_inValidate;
+  wire                        entry44_inValidate;
+  wire                        entry45_inValidate;
+  wire                        entry46_inValidate;
+  wire                        entry47_inValidate;
+  wire                        entry48_inValidate;
+  wire                        entry49_inValidate;
+  wire                        entry50_inValidate;
+  wire                        entry51_inValidate;
+  wire                        entry52_inValidate;
+  wire                        entry53_inValidate;
+  wire                        entry54_inValidate;
+  wire                        entry55_inValidate;
+  wire                        entry56_inValidate;
+  wire                        entry57_inValidate;
+  wire                        entry58_inValidate;
+  wire                        entry59_inValidate;
+  wire                        entry60_inValidate;
+  wire                        entry61_inValidate;
+  wire                        entry62_inValidate;
+  wire                        entry63_inValidate;
 
 //--------------------------------------------------------------------------------
 //                              LOGIC START
 //--------------------------------------------------------------------------------
-  assign bank_isu_iq_entry_entry00_wen = write_ptr[5:0] == 6'd0;
-  assign bank_isu_iq_entry_entry01_wen = write_ptr[5:0] == 6'd1;
-  assign bank_isu_iq_entry_entry02_wen = write_ptr[5:0] == 6'd2;
-  assign bank_isu_iq_entry_entry03_wen = write_ptr[5:0] == 6'd3;
-  assign bank_isu_iq_entry_entry04_wen = write_ptr[5:0] == 6'd4;
-  assign bank_isu_iq_entry_entry05_wen = write_ptr[5:0] == 6'd5;
-  assign bank_isu_iq_entry_entry06_wen = write_ptr[5:0] == 6'd6;
-  assign bank_isu_iq_entry_entry07_wen = write_ptr[5:0] == 6'd7;
-  assign bank_isu_iq_entry_entry08_wen = write_ptr[5:0] == 6'd8;
-  assign bank_isu_iq_entry_entry09_wen = write_ptr[5:0] == 6'd9;
-  assign bank_isu_iq_entry_entry10_wen = write_ptr[5:0] == 6'd10;
-  assign bank_isu_iq_entry_entry11_wen = write_ptr[5:0] == 6'd11;
-  assign bank_isu_iq_entry_entry12_wen = write_ptr[5:0] == 6'd12;
-  assign bank_isu_iq_entry_entry13_wen = write_ptr[5:0] == 6'd13;
-  assign bank_isu_iq_entry_entry14_wen = write_ptr[5:0] == 6'd14;
-  assign bank_isu_iq_entry_entry15_wen = write_ptr[5:0] == 6'd15;
-  assign bank_isu_iq_entry_entry16_wen = write_ptr[5:0] == 6'd16;
-  assign bank_isu_iq_entry_entry17_wen = write_ptr[5:0] == 6'd17;
-  assign bank_isu_iq_entry_entry18_wen = write_ptr[5:0] == 6'd18;
-  assign bank_isu_iq_entry_entry19_wen = write_ptr[5:0] == 6'd19;
-  assign bank_isu_iq_entry_entry20_wen = write_ptr[5:0] == 6'd20;
-  assign bank_isu_iq_entry_entry21_wen = write_ptr[5:0] == 6'd21;
-  assign bank_isu_iq_entry_entry22_wen = write_ptr[5:0] == 6'd22;
-  assign bank_isu_iq_entry_entry23_wen = write_ptr[5:0] == 6'd23;
-  assign bank_isu_iq_entry_entry24_wen = write_ptr[5:0] == 6'd24;
-  assign bank_isu_iq_entry_entry25_wen = write_ptr[5:0] == 6'd25;
-  assign bank_isu_iq_entry_entry26_wen = write_ptr[5:0] == 6'd26;
-  assign bank_isu_iq_entry_entry27_wen = write_ptr[5:0] == 6'd27;
-  assign bank_isu_iq_entry_entry28_wen = write_ptr[5:0] == 6'd28;
-  assign bank_isu_iq_entry_entry29_wen = write_ptr[5:0] == 6'd29;
-  assign bank_isu_iq_entry_entry30_wen = write_ptr[5:0] == 6'd30;
-  assign bank_isu_iq_entry_entry31_wen = write_ptr[5:0] == 6'd31;
-  assign bank_isu_iq_entry_entry32_wen = write_ptr[5:0] == 6'd32;
-  assign bank_isu_iq_entry_entry33_wen = write_ptr[5:0] == 6'd33;
-  assign bank_isu_iq_entry_entry34_wen = write_ptr[5:0] == 6'd34;
-  assign bank_isu_iq_entry_entry35_wen = write_ptr[5:0] == 6'd35;
-  assign bank_isu_iq_entry_entry36_wen = write_ptr[5:0] == 6'd36;
-  assign bank_isu_iq_entry_entry37_wen = write_ptr[5:0] == 6'd37;
-  assign bank_isu_iq_entry_entry38_wen = write_ptr[5:0] == 6'd38;
-  assign bank_isu_iq_entry_entry39_wen = write_ptr[5:0] == 6'd39;
-  assign bank_isu_iq_entry_entry40_wen = write_ptr[5:0] == 6'd40;
-  assign bank_isu_iq_entry_entry41_wen = write_ptr[5:0] == 6'd41;
-  assign bank_isu_iq_entry_entry42_wen = write_ptr[5:0] == 6'd42;
-  assign bank_isu_iq_entry_entry43_wen = write_ptr[5:0] == 6'd43;
-  assign bank_isu_iq_entry_entry44_wen = write_ptr[5:0] == 6'd44;
-  assign bank_isu_iq_entry_entry45_wen = write_ptr[5:0] == 6'd45;
-  assign bank_isu_iq_entry_entry46_wen = write_ptr[5:0] == 6'd46;
-  assign bank_isu_iq_entry_entry47_wen = write_ptr[5:0] == 6'd47;
-  assign bank_isu_iq_entry_entry48_wen = write_ptr[5:0] == 6'd48;
-  assign bank_isu_iq_entry_entry49_wen = write_ptr[5:0] == 6'd49;
-  assign bank_isu_iq_entry_entry50_wen = write_ptr[5:0] == 6'd50;
-  assign bank_isu_iq_entry_entry51_wen = write_ptr[5:0] == 6'd51;
-  assign bank_isu_iq_entry_entry52_wen = write_ptr[5:0] == 6'd52;
-  assign bank_isu_iq_entry_entry53_wen = write_ptr[5:0] == 6'd53;
-  assign bank_isu_iq_entry_entry54_wen = write_ptr[5:0] == 6'd54;
-  assign bank_isu_iq_entry_entry55_wen = write_ptr[5:0] == 6'd55;
-  assign bank_isu_iq_entry_entry56_wen = write_ptr[5:0] == 6'd56;
-  assign bank_isu_iq_entry_entry57_wen = write_ptr[5:0] == 6'd57;
-  assign bank_isu_iq_entry_entry58_wen = write_ptr[5:0] == 6'd58;
-  assign bank_isu_iq_entry_entry59_wen = write_ptr[5:0] == 6'd59;
-  assign bank_isu_iq_entry_entry60_wen = write_ptr[5:0] == 6'd60;
-  assign bank_isu_iq_entry_entry61_wen = write_ptr[5:0] == 6'd61;
-  assign bank_isu_iq_entry_entry62_wen = write_ptr[5:0] == 6'd62;
-  assign bank_isu_iq_entry_entry63_wen = write_ptr[5:0] == 6'd63;
+  assign entry00_validate = validate & validate_ptr[5:0] == 6'd0;
+  assign entry01_validate = validate & validate_ptr[5:0] == 6'd1;
+  assign entry02_validate = validate & validate_ptr[5:0] == 6'd2;
+  assign entry03_validate = validate & validate_ptr[5:0] == 6'd3;
+  assign entry04_validate = validate & validate_ptr[5:0] == 6'd4;
+  assign entry05_validate = validate & validate_ptr[5:0] == 6'd5;
+  assign entry06_validate = validate & validate_ptr[5:0] == 6'd6;
+  assign entry07_validate = validate & validate_ptr[5:0] == 6'd7;
+  assign entry08_validate = validate & validate_ptr[5:0] == 6'd8;
+  assign entry09_validate = validate & validate_ptr[5:0] == 6'd9;
+  assign entry10_validate = validate & validate_ptr[5:0] == 6'd10;
+  assign entry11_validate = validate & validate_ptr[5:0] == 6'd11;
+  assign entry12_validate = validate & validate_ptr[5:0] == 6'd12;
+  assign entry13_validate = validate & validate_ptr[5:0] == 6'd13;
+  assign entry14_validate = validate & validate_ptr[5:0] == 6'd14;
+  assign entry15_validate = validate & validate_ptr[5:0] == 6'd15;
+  assign entry16_validate = validate & validate_ptr[5:0] == 6'd16;
+  assign entry17_validate = validate & validate_ptr[5:0] == 6'd17;
+  assign entry18_validate = validate & validate_ptr[5:0] == 6'd18;
+  assign entry19_validate = validate & validate_ptr[5:0] == 6'd19;
+  assign entry20_validate = validate & validate_ptr[5:0] == 6'd20;
+  assign entry21_validate = validate & validate_ptr[5:0] == 6'd21;
+  assign entry22_validate = validate & validate_ptr[5:0] == 6'd22;
+  assign entry23_validate = validate & validate_ptr[5:0] == 6'd23;
+  assign entry24_validate = validate & validate_ptr[5:0] == 6'd24;
+  assign entry25_validate = validate & validate_ptr[5:0] == 6'd25;
+  assign entry26_validate = validate & validate_ptr[5:0] == 6'd26;
+  assign entry27_validate = validate & validate_ptr[5:0] == 6'd27;
+  assign entry28_validate = validate & validate_ptr[5:0] == 6'd28;
+  assign entry29_validate = validate & validate_ptr[5:0] == 6'd29;
+  assign entry30_validate = validate & validate_ptr[5:0] == 6'd30;
+  assign entry31_validate = validate & validate_ptr[5:0] == 6'd31;
+  assign entry32_validate = validate & validate_ptr[5:0] == 6'd32;
+  assign entry33_validate = validate & validate_ptr[5:0] == 6'd33;
+  assign entry34_validate = validate & validate_ptr[5:0] == 6'd34;
+  assign entry35_validate = validate & validate_ptr[5:0] == 6'd35;
+  assign entry36_validate = validate & validate_ptr[5:0] == 6'd36;
+  assign entry37_validate = validate & validate_ptr[5:0] == 6'd37;
+  assign entry38_validate = validate & validate_ptr[5:0] == 6'd38;
+  assign entry39_validate = validate & validate_ptr[5:0] == 6'd39;
+  assign entry40_validate = validate & validate_ptr[5:0] == 6'd40;
+  assign entry41_validate = validate & validate_ptr[5:0] == 6'd41;
+  assign entry42_validate = validate & validate_ptr[5:0] == 6'd42;
+  assign entry43_validate = validate & validate_ptr[5:0] == 6'd43;
+  assign entry44_validate = validate & validate_ptr[5:0] == 6'd44;
+  assign entry45_validate = validate & validate_ptr[5:0] == 6'd45;
+  assign entry46_validate = validate & validate_ptr[5:0] == 6'd46;
+  assign entry47_validate = validate & validate_ptr[5:0] == 6'd47;
+  assign entry48_validate = validate & validate_ptr[5:0] == 6'd48;
+  assign entry49_validate = validate & validate_ptr[5:0] == 6'd49;
+  assign entry50_validate = validate & validate_ptr[5:0] == 6'd50;
+  assign entry51_validate = validate & validate_ptr[5:0] == 6'd51;
+  assign entry52_validate = validate & validate_ptr[5:0] == 6'd52;
+  assign entry53_validate = validate & validate_ptr[5:0] == 6'd53;
+  assign entry54_validate = validate & validate_ptr[5:0] == 6'd54;
+  assign entry55_validate = validate & validate_ptr[5:0] == 6'd55;
+  assign entry56_validate = validate & validate_ptr[5:0] == 6'd56;
+  assign entry57_validate = validate & validate_ptr[5:0] == 6'd57;
+  assign entry58_validate = validate & validate_ptr[5:0] == 6'd58;
+  assign entry59_validate = validate & validate_ptr[5:0] == 6'd59;
+  assign entry60_validate = validate & validate_ptr[5:0] == 6'd60;
+  assign entry61_validate = validate & validate_ptr[5:0] == 6'd61;
+  assign entry62_validate = validate & validate_ptr[5:0] == 6'd62;
+  assign entry63_validate = validate & validate_ptr[5:0] == 6'd63;
+
+  assign entry00_inValidate = inValidate & inValidate_ptr[5:0] == 6'd0;
+  assign entry01_inValidate = inValidate & inValidate_ptr[5:0] == 6'd1;
+  assign entry02_inValidate = inValidate & inValidate_ptr[5:0] == 6'd2;
+  assign entry03_inValidate = inValidate & inValidate_ptr[5:0] == 6'd3;
+  assign entry04_inValidate = inValidate & inValidate_ptr[5:0] == 6'd4;
+  assign entry05_inValidate = inValidate & inValidate_ptr[5:0] == 6'd5;
+  assign entry06_inValidate = inValidate & inValidate_ptr[5:0] == 6'd6;
+  assign entry07_inValidate = inValidate & inValidate_ptr[5:0] == 6'd7;
+  assign entry08_inValidate = inValidate & inValidate_ptr[5:0] == 6'd8;
+  assign entry09_inValidate = inValidate & inValidate_ptr[5:0] == 6'd9;
+  assign entry10_inValidate = inValidate & inValidate_ptr[5:0] == 6'd10;
+  assign entry11_inValidate = inValidate & inValidate_ptr[5:0] == 6'd11;
+  assign entry12_inValidate = inValidate & inValidate_ptr[5:0] == 6'd12;
+  assign entry13_inValidate = inValidate & inValidate_ptr[5:0] == 6'd13;
+  assign entry14_inValidate = inValidate & inValidate_ptr[5:0] == 6'd14;
+  assign entry15_inValidate = inValidate & inValidate_ptr[5:0] == 6'd15;
+  assign entry16_inValidate = inValidate & inValidate_ptr[5:0] == 6'd16;
+  assign entry17_inValidate = inValidate & inValidate_ptr[5:0] == 6'd17;
+  assign entry18_inValidate = inValidate & inValidate_ptr[5:0] == 6'd18;
+  assign entry19_inValidate = inValidate & inValidate_ptr[5:0] == 6'd19;
+  assign entry20_inValidate = inValidate & inValidate_ptr[5:0] == 6'd20;
+  assign entry21_inValidate = inValidate & inValidate_ptr[5:0] == 6'd21;
+  assign entry22_inValidate = inValidate & inValidate_ptr[5:0] == 6'd22;
+  assign entry23_inValidate = inValidate & inValidate_ptr[5:0] == 6'd23;
+  assign entry24_inValidate = inValidate & inValidate_ptr[5:0] == 6'd24;
+  assign entry25_inValidate = inValidate & inValidate_ptr[5:0] == 6'd25;
+  assign entry26_inValidate = inValidate & inValidate_ptr[5:0] == 6'd26;
+  assign entry27_inValidate = inValidate & inValidate_ptr[5:0] == 6'd27;
+  assign entry28_inValidate = inValidate & inValidate_ptr[5:0] == 6'd28;
+  assign entry29_inValidate = inValidate & inValidate_ptr[5:0] == 6'd29;
+  assign entry30_inValidate = inValidate & inValidate_ptr[5:0] == 6'd30;
+  assign entry31_inValidate = inValidate & inValidate_ptr[5:0] == 6'd31;
+  assign entry32_inValidate = inValidate & inValidate_ptr[5:0] == 6'd32;
+  assign entry33_inValidate = inValidate & inValidate_ptr[5:0] == 6'd33;
+  assign entry34_inValidate = inValidate & inValidate_ptr[5:0] == 6'd34;
+  assign entry35_inValidate = inValidate & inValidate_ptr[5:0] == 6'd35;
+  assign entry36_inValidate = inValidate & inValidate_ptr[5:0] == 6'd36;
+  assign entry37_inValidate = inValidate & inValidate_ptr[5:0] == 6'd37;
+  assign entry38_inValidate = inValidate & inValidate_ptr[5:0] == 6'd38;
+  assign entry39_inValidate = inValidate & inValidate_ptr[5:0] == 6'd39;
+  assign entry40_inValidate = inValidate & inValidate_ptr[5:0] == 6'd40;
+  assign entry41_inValidate = inValidate & inValidate_ptr[5:0] == 6'd41;
+  assign entry42_inValidate = inValidate & inValidate_ptr[5:0] == 6'd42;
+  assign entry43_inValidate = inValidate & inValidate_ptr[5:0] == 6'd43;
+  assign entry44_inValidate = inValidate & inValidate_ptr[5:0] == 6'd44;
+  assign entry45_inValidate = inValidate & inValidate_ptr[5:0] == 6'd45;
+  assign entry46_inValidate = inValidate & inValidate_ptr[5:0] == 6'd46;
+  assign entry47_inValidate = inValidate & inValidate_ptr[5:0] == 6'd47;
+  assign entry48_inValidate = inValidate & inValidate_ptr[5:0] == 6'd48;
+  assign entry49_inValidate = inValidate & inValidate_ptr[5:0] == 6'd49;
+  assign entry50_inValidate = inValidate & inValidate_ptr[5:0] == 6'd50;
+  assign entry51_inValidate = inValidate & inValidate_ptr[5:0] == 6'd51;
+  assign entry52_inValidate = inValidate & inValidate_ptr[5:0] == 6'd52;
+  assign entry53_inValidate = inValidate & inValidate_ptr[5:0] == 6'd53;
+  assign entry54_inValidate = inValidate & inValidate_ptr[5:0] == 6'd54;
+  assign entry55_inValidate = inValidate & inValidate_ptr[5:0] == 6'd55;
+  assign entry56_inValidate = inValidate & inValidate_ptr[5:0] == 6'd56;
+  assign entry57_inValidate = inValidate & inValidate_ptr[5:0] == 6'd57;
+  assign entry58_inValidate = inValidate & inValidate_ptr[5:0] == 6'd58;
+  assign entry59_inValidate = inValidate & inValidate_ptr[5:0] == 6'd59;
+  assign entry60_inValidate = inValidate & inValidate_ptr[5:0] == 6'd60;
+  assign entry61_inValidate = inValidate & inValidate_ptr[5:0] == 6'd61;
+  assign entry62_inValidate = inValidate & inValidate_ptr[5:0] == 6'd62;
+  assign entry63_inValidate = inValidate & inValidate_ptr[5:0] == 6'd63;
 
   assign read_ptr_dcd[0] = read_ptr[5:0] == 6'd0;
   assign read_ptr_dcd[1] = read_ptr[5:0] == 6'd1;
@@ -1136,7 +1269,9 @@ module bank_isu_iq_array (
 //--------------------------------------------------------------------------------
   bank_isu_iq_entry bank_isu_iq_entry_entry00 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry00_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry00_validate                          ),
+    .inValidate          (entry00_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1145,6 +1280,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[0]                       ),
     .rob_id_Q            (bank_isu_iq_entry00_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry00_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry00_op_is_write_Q         ),
@@ -1160,7 +1296,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry01 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry01_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry01_validate                          ),
+    .inValidate          (entry01_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1169,6 +1307,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[1]                       ),
     .rob_id_Q            (bank_isu_iq_entry01_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry01_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry01_op_is_write_Q         ),
@@ -1184,7 +1323,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry02 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry02_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry02_validate                          ),
+    .inValidate          (entry02_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1193,6 +1334,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[2]                       ),
     .rob_id_Q            (bank_isu_iq_entry02_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry02_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry02_op_is_write_Q         ),
@@ -1208,7 +1350,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry03 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry03_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry03_validate                          ),
+    .inValidate          (entry03_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1217,6 +1361,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[3]                       ),
     .rob_id_Q            (bank_isu_iq_entry03_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry03_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry03_op_is_write_Q         ),
@@ -1232,7 +1377,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry04 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry04_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry04_validate                          ),
+    .inValidate          (entry04_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1241,6 +1388,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[4]                       ),
     .rob_id_Q            (bank_isu_iq_entry04_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry04_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry04_op_is_write_Q         ),
@@ -1256,7 +1404,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry05 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry05_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry05_validate                          ),
+    .inValidate          (entry05_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1265,6 +1415,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[5]                       ),
     .rob_id_Q            (bank_isu_iq_entry05_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry05_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry05_op_is_write_Q         ),
@@ -1280,7 +1431,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry06 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry06_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry06_validate                          ),
+    .inValidate          (entry06_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1289,6 +1442,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[6]                       ),
     .rob_id_Q            (bank_isu_iq_entry06_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry06_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry06_op_is_write_Q         ),
@@ -1304,7 +1458,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry07 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry07_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry07_validate                          ),
+    .inValidate          (entry07_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1313,6 +1469,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[7]                       ),
     .rob_id_Q            (bank_isu_iq_entry07_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry07_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry07_op_is_write_Q         ),
@@ -1328,7 +1485,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry08 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry08_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry08_validate                          ),
+    .inValidate          (entry08_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1337,6 +1496,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[8]                       ),
     .rob_id_Q            (bank_isu_iq_entry08_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry08_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry08_op_is_write_Q         ),
@@ -1352,7 +1512,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry09 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry09_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry09_validate                          ),
+    .inValidate          (entry09_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1361,6 +1523,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[9]                       ),
     .rob_id_Q            (bank_isu_iq_entry09_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry09_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry09_op_is_write_Q         ),
@@ -1376,7 +1539,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry10 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry10_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry10_validate                          ),
+    .inValidate          (entry10_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1385,6 +1550,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[10]                      ),
     .rob_id_Q            (bank_isu_iq_entry10_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry10_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry10_op_is_write_Q         ),
@@ -1400,7 +1566,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry11 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry11_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry11_validate                          ),
+    .inValidate          (entry11_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1409,6 +1577,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[11]                      ),
     .rob_id_Q            (bank_isu_iq_entry11_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry11_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry11_op_is_write_Q         ),
@@ -1424,7 +1593,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry12 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry12_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry12_validate                          ),
+    .inValidate          (entry12_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1433,6 +1604,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[12]                      ),
     .rob_id_Q            (bank_isu_iq_entry12_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry12_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry12_op_is_write_Q         ),
@@ -1448,7 +1620,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry13 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry13_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry13_validate                          ),
+    .inValidate          (entry13_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1457,6 +1631,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[13]                      ),
     .rob_id_Q            (bank_isu_iq_entry13_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry13_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry13_op_is_write_Q         ),
@@ -1472,7 +1647,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry14 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry14_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry14_validate                          ),
+    .inValidate          (entry14_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1481,6 +1658,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[14]                      ),
     .rob_id_Q            (bank_isu_iq_entry14_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry14_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry14_op_is_write_Q         ),
@@ -1496,7 +1674,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry15 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry15_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry15_validate                          ),
+    .inValidate          (entry15_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1505,6 +1685,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[15]                      ),
     .rob_id_Q            (bank_isu_iq_entry15_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry15_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry15_op_is_write_Q         ),
@@ -1520,7 +1701,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry16 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry16_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry16_validate                          ),
+    .inValidate          (entry16_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1529,6 +1712,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[16]                      ),
     .rob_id_Q            (bank_isu_iq_entry16_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry16_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry16_op_is_write_Q         ),
@@ -1544,7 +1728,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry17 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry17_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry17_validate                          ),
+    .inValidate          (entry17_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1553,6 +1739,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[17]                      ),
     .rob_id_Q            (bank_isu_iq_entry17_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry17_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry17_op_is_write_Q         ),
@@ -1568,7 +1755,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry18 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry18_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry18_validate                          ),
+    .inValidate          (entry18_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1577,6 +1766,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[18]                      ),
     .rob_id_Q            (bank_isu_iq_entry18_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry18_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry18_op_is_write_Q         ),
@@ -1592,7 +1782,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry19 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry19_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry19_validate                          ),
+    .inValidate          (entry19_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1601,6 +1793,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[19]                      ),
     .rob_id_Q            (bank_isu_iq_entry19_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry19_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry19_op_is_write_Q         ),
@@ -1616,7 +1809,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry20 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry20_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry20_validate                          ),
+    .inValidate          (entry20_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1625,6 +1820,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[20]                      ),
     .rob_id_Q            (bank_isu_iq_entry20_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry20_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry20_op_is_write_Q         ),
@@ -1640,7 +1836,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry21 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry21_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry21_validate                          ),
+    .inValidate          (entry21_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1649,6 +1847,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[21]                      ),
     .rob_id_Q            (bank_isu_iq_entry21_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry21_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry21_op_is_write_Q         ),
@@ -1664,7 +1863,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry22 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry22_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry22_validate                          ),
+    .inValidate          (entry22_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1673,6 +1874,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[22]                      ),
     .rob_id_Q            (bank_isu_iq_entry22_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry22_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry22_op_is_write_Q         ),
@@ -1688,7 +1890,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry23 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry23_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry23_validate                          ),
+    .inValidate          (entry23_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1697,6 +1901,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[23]                      ),
     .rob_id_Q            (bank_isu_iq_entry23_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry23_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry23_op_is_write_Q         ),
@@ -1712,7 +1917,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry24 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry24_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry24_validate                          ),
+    .inValidate          (entry24_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1721,6 +1928,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[24]                      ),
     .rob_id_Q            (bank_isu_iq_entry24_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry24_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry24_op_is_write_Q         ),
@@ -1736,7 +1944,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry25 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry25_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry25_validate                          ),
+    .inValidate          (entry25_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1745,6 +1955,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[25]                      ),
     .rob_id_Q            (bank_isu_iq_entry25_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry25_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry25_op_is_write_Q         ),
@@ -1760,7 +1971,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry26 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry26_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry26_validate                          ),
+    .inValidate          (entry26_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1769,6 +1982,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[26]                      ),
     .rob_id_Q            (bank_isu_iq_entry26_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry26_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry26_op_is_write_Q         ),
@@ -1784,7 +1998,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry27 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry27_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry27_validate                          ),
+    .inValidate          (entry27_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1793,6 +2009,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[27]                      ),
     .rob_id_Q            (bank_isu_iq_entry27_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry27_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry27_op_is_write_Q         ),
@@ -1808,7 +2025,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry28 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry28_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry28_validate                          ),
+    .inValidate          (entry28_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1817,6 +2036,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[28]                      ),
     .rob_id_Q            (bank_isu_iq_entry28_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry28_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry28_op_is_write_Q         ),
@@ -1832,7 +2052,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry29 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry29_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry29_validate                          ),
+    .inValidate          (entry29_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1841,6 +2063,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[29]                      ),
     .rob_id_Q            (bank_isu_iq_entry29_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry29_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry29_op_is_write_Q         ),
@@ -1856,7 +2079,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry30 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry30_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry30_validate                          ),
+    .inValidate          (entry30_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1865,6 +2090,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[30]                      ),
     .rob_id_Q            (bank_isu_iq_entry30_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry30_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry30_op_is_write_Q         ),
@@ -1880,7 +2106,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry31 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry31_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry31_validate                          ),
+    .inValidate          (entry31_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1889,6 +2117,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[31]                      ),
     .rob_id_Q            (bank_isu_iq_entry31_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry31_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry31_op_is_write_Q         ),
@@ -1904,7 +2133,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry32 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry32_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry32_validate                          ),
+    .inValidate          (entry32_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1913,6 +2144,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[32]                      ),
     .rob_id_Q            (bank_isu_iq_entry32_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry32_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry32_op_is_write_Q         ),
@@ -1928,7 +2160,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry33 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry33_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry33_validate                          ),
+    .inValidate          (entry33_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1937,6 +2171,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[33]                      ),
     .rob_id_Q            (bank_isu_iq_entry33_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry33_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry33_op_is_write_Q         ),
@@ -1952,7 +2187,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry34 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry34_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry34_validate                          ),
+    .inValidate          (entry34_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1961,6 +2198,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[34]                      ),
     .rob_id_Q            (bank_isu_iq_entry34_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry34_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry34_op_is_write_Q         ),
@@ -1976,7 +2214,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry35 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry35_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry35_validate                          ),
+    .inValidate          (entry35_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -1985,6 +2225,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[35]                      ),
     .rob_id_Q            (bank_isu_iq_entry35_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry35_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry35_op_is_write_Q         ),
@@ -2000,7 +2241,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry36 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry36_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry36_validate                          ),
+    .inValidate          (entry36_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2009,6 +2252,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[36]                      ),
     .rob_id_Q            (bank_isu_iq_entry36_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry36_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry36_op_is_write_Q         ),
@@ -2024,7 +2268,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry37 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry37_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry37_validate                          ),
+    .inValidate          (entry37_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2033,6 +2279,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[37]                      ),
     .rob_id_Q            (bank_isu_iq_entry37_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry37_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry37_op_is_write_Q         ),
@@ -2048,7 +2295,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry38 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry38_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry38_validate                          ),
+    .inValidate          (entry38_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2057,6 +2306,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[38]                      ),
     .rob_id_Q            (bank_isu_iq_entry38_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry38_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry38_op_is_write_Q         ),
@@ -2072,7 +2322,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry39 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry39_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry39_validate                          ),
+    .inValidate          (entry39_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2081,6 +2333,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[39]                      ),
     .rob_id_Q            (bank_isu_iq_entry39_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry39_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry39_op_is_write_Q         ),
@@ -2096,7 +2349,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry40 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry40_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry40_validate                          ),
+    .inValidate          (entry40_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2105,6 +2360,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[40]                      ),
     .rob_id_Q            (bank_isu_iq_entry40_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry40_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry40_op_is_write_Q         ),
@@ -2120,7 +2376,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry41 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry41_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry41_validate                          ),
+    .inValidate          (entry41_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2129,6 +2387,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[41]                      ),
     .rob_id_Q            (bank_isu_iq_entry41_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry41_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry41_op_is_write_Q         ),
@@ -2144,7 +2403,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry42 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry42_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry42_validate                          ),
+    .inValidate          (entry42_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2153,6 +2414,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[42]                      ),
     .rob_id_Q            (bank_isu_iq_entry42_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry42_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry42_op_is_write_Q         ),
@@ -2168,7 +2430,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry43 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry43_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry43_validate                          ),
+    .inValidate          (entry43_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2177,6 +2441,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[43]                      ),
     .rob_id_Q            (bank_isu_iq_entry43_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry43_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry43_op_is_write_Q         ),
@@ -2192,7 +2457,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry44 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry44_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry44_validate                          ),
+    .inValidate          (entry44_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2201,6 +2468,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[44]                      ),
     .rob_id_Q            (bank_isu_iq_entry44_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry44_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry44_op_is_write_Q         ),
@@ -2216,7 +2484,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry45 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry45_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry45_validate                          ),
+    .inValidate          (entry45_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2225,6 +2495,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[45]                      ),
     .rob_id_Q            (bank_isu_iq_entry45_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry45_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry45_op_is_write_Q         ),
@@ -2240,7 +2511,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry46 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry46_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry46_validate                          ),
+    .inValidate          (entry46_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2249,6 +2522,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[46]                      ),
     .rob_id_Q            (bank_isu_iq_entry46_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry46_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry46_op_is_write_Q         ),
@@ -2264,7 +2538,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry47 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry47_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry47_validate                          ),
+    .inValidate          (entry47_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2273,6 +2549,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[47]                      ),
     .rob_id_Q            (bank_isu_iq_entry47_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry47_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry47_op_is_write_Q         ),
@@ -2288,7 +2565,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry48 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry48_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry48_validate                          ),
+    .inValidate          (entry48_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2297,6 +2576,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[48]                      ),
     .rob_id_Q            (bank_isu_iq_entry48_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry48_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry48_op_is_write_Q         ),
@@ -2312,7 +2592,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry49 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry49_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry49_validate                          ),
+    .inValidate          (entry49_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2321,6 +2603,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[49]                      ),
     .rob_id_Q            (bank_isu_iq_entry49_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry49_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry49_op_is_write_Q         ),
@@ -2336,7 +2619,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry50 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry50_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry50_validate                          ),
+    .inValidate          (entry50_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2345,6 +2630,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[50]                      ),
     .rob_id_Q            (bank_isu_iq_entry50_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry50_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry50_op_is_write_Q         ),
@@ -2360,7 +2646,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry51 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry51_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry51_validate                          ),
+    .inValidate          (entry51_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2369,6 +2657,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[51]                      ),
     .rob_id_Q            (bank_isu_iq_entry51_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry51_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry51_op_is_write_Q         ),
@@ -2384,7 +2673,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry52 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry52_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry52_validate                          ),
+    .inValidate          (entry52_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2393,6 +2684,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[52]                      ),
     .rob_id_Q            (bank_isu_iq_entry52_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry52_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry52_op_is_write_Q         ),
@@ -2408,7 +2700,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry53 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry53_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry53_validate                          ),
+    .inValidate          (entry53_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2417,6 +2711,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[53]                      ),
     .rob_id_Q            (bank_isu_iq_entry53_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry53_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry53_op_is_write_Q         ),
@@ -2432,7 +2727,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry54 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry54_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry54_validate                          ),
+    .inValidate          (entry54_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2441,6 +2738,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[54]                      ),
     .rob_id_Q            (bank_isu_iq_entry54_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry54_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry54_op_is_write_Q         ),
@@ -2456,7 +2754,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry55 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry55_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry55_validate                          ),
+    .inValidate          (entry55_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2465,6 +2765,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[55]                      ),
     .rob_id_Q            (bank_isu_iq_entry55_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry55_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry55_op_is_write_Q         ),
@@ -2480,7 +2781,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry56 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry56_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry56_validate                          ),
+    .inValidate          (entry56_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2489,6 +2792,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[56]                      ),
     .rob_id_Q            (bank_isu_iq_entry56_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry56_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry56_op_is_write_Q         ),
@@ -2504,7 +2808,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry57 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry57_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry57_validate                          ),
+    .inValidate          (entry57_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2513,6 +2819,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[57]                      ),
     .rob_id_Q            (bank_isu_iq_entry57_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry57_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry57_op_is_write_Q         ),
@@ -2528,7 +2835,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry58 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry58_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry58_validate                          ),
+    .inValidate          (entry58_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2537,6 +2846,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[58]                      ),
     .rob_id_Q            (bank_isu_iq_entry58_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry58_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry58_op_is_write_Q         ),
@@ -2552,7 +2862,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry59 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry59_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry59_validate                          ),
+    .inValidate          (entry59_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2561,6 +2873,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[59]                      ),
     .rob_id_Q            (bank_isu_iq_entry59_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry59_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry59_op_is_write_Q         ),
@@ -2576,7 +2889,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry60 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry60_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry60_validate                          ),
+    .inValidate          (entry60_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2585,6 +2900,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[60]                      ),
     .rob_id_Q            (bank_isu_iq_entry60_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry60_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry60_op_is_write_Q         ),
@@ -2600,7 +2916,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry61 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry61_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry61_validate                          ),
+    .inValidate          (entry61_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2609,6 +2927,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[61]                      ),
     .rob_id_Q            (bank_isu_iq_entry61_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry61_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry61_op_is_write_Q         ),
@@ -2624,7 +2943,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry62 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry62_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry62_validate                          ),
+    .inValidate          (entry62_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2633,6 +2954,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[62]                      ),
     .rob_id_Q            (bank_isu_iq_entry62_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry62_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry62_op_is_write_Q         ),
@@ -2648,7 +2970,9 @@ module bank_isu_iq_array (
 
   bank_isu_iq_entry bank_isu_iq_entry_entry63 (
     .clk                 (clk                                       ),
-    .wen                 (bank_isu_iq_entry_entry63_wen             ),
+    .rst                 (rst                                       ),
+    .validate            (entry63_validate                          ),
+    .inValidate          (entry63_inValidate                        ),
     .biu_rid_In          (biu_rid_In[5:0]                           ),
     .rob_id_In           (bank_isu_iq_array_rob_id_In[2:0]          ),
     .ch_id_In            (bank_isu_iq_array_ch_id_In[1:0]           ),
@@ -2657,6 +2981,7 @@ module bank_isu_iq_array (
     .set_way_offset_In   (bank_isu_iq_array_set_way_offset_In[6:0]  ),
     .wbuffer_id_In       (bank_isu_iq_array_wbuffer_id_In[7:0]      ),
     .cacheline_state_In  (bank_isu_iq_array_cacheline_state_In[3:0] ),
+    .valid_Q             (iq_valid_array_Q[63]                      ),
     .rob_id_Q            (bank_isu_iq_entry63_rob_id_Q[2:0]         ),
     .ch_id_Q             (bank_isu_iq_entry63_ch_id_Q[1:0]          ),
     .op_is_write_Q       (bank_isu_iq_entry63_op_is_write_Q         ),

@@ -53,12 +53,15 @@ def gen_queue_entry(config_dict):
 
   # add interface
   rtl.add_interface("clk", 1, SignalType.INPUT)
-  rtl.add_interface("allocate", 1, SignalType.INPUT)
+  rtl.add_interface("rst", 1, SignalType.INPUT)
+  rtl.add_interface("validate", 1, SignalType.INPUT)
+  rtl.add_interface("inValidate", 1, SignalType.INPUT)
   rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   # input
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_In", signal_width, SignalType.INPUT)
   # output
+  rtl.add_interface("valid_Q", 1, SignalType.OUTPUT)
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
@@ -70,6 +73,15 @@ def gen_queue_entry(config_dict):
 
   logic_codes = []
 
+  # add declaration
+  rtl.add_declaration("valid_wen", 1)
+  rtl.add_declaration("valid_In", 1)
+
+  # add valid logic
+  logic_codes.append("assign valid_In = (valid_Q & ~inValidate) | validate;")
+  logic_codes.append("assign valid_wen = validate | inValidate;")
+  logic_codes.append("")
+
   logic_codes.append(f"assign biu_id_match = set_way_offset_Q[6:1] == biu_rid_In[5:0];")
   logic_codes.append("")
   logic_codes.append(f"assign entry_req_from_ch0 = ch_id_Q[1:0] == 2'd0;")
@@ -77,11 +89,22 @@ def gen_queue_entry(config_dict):
   logic_codes.append(f"assign entry_req_from_ch2 = ch_id_Q[1:0] == 2'd2;")
   logic_codes.append("")
 
+  # add valid reg
+  ports = []
+  ports.append(("CLK", "clk", 1))
+  ports.append(("RST", "rst", 1))
+  ports.append(("WEN", "valid_wen", 1))
+  ports.append(("D", "valid_In", 1))
+  ports.append(("Q", "valid_Q", 1))
+  parameter_list = []
+  parameter_list.append(("WIDTH", "1"))
+  rtl.add_instance("DFF_RST0", f"valid_reg", ports, parameter_list)
+
   # add instance
   for signal_name, signal_width in config_dict['fields'].items():
     ports = []
     ports.append(("CLK", "clk", 1))
-    ports.append(("WEN", "wen", 1))
+    ports.append(("WEN", "validate", 1))
     ports.append(("D", f"{signal_name}_In", signal_width))
     ports.append(("Q", f"{signal_name}_Q", signal_width))
     parameter_list = []
@@ -105,13 +128,19 @@ def gen_queue(config_dict):
   ptr_width = int(math.log2(queue_size))
 
   # add interface
+  # output
   rtl.add_interface("clk", 1, SignalType.INPUT)
+  rtl.add_interface("rst", 1, SignalType.INPUT)
   rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   rtl.add_interface("read_ptr", ptr_width, SignalType.INPUT)
-  rtl.add_interface("wen", 1, SignalType.INPUT)
-  rtl.add_interface("write_ptr", ptr_width, SignalType.INPUT)
+  rtl.add_interface("validate", 1, SignalType.INPUT)
+  rtl.add_interface("validate_ptr", ptr_width, SignalType.INPUT)
+  rtl.add_interface("inValidate", 1, SignalType.INPUT)
+  rtl.add_interface("inValidate_ptr", ptr_width, SignalType.INPUT)
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(module_name + "_" + signal_name + "_In", signal_width, SignalType.INPUT)
+  # output
+  rtl.add_interface("iq_valid_array_Q", queue_size, SignalType.OUTPUT)
   for signal_name, signal_width in config_dict['fields'].items():
     read_data_signal = module_name + "_" + signal_name
     rtl.add_interface(read_data_signal + "_rdata", signal_width, SignalType.OUTPUT)
@@ -130,18 +159,28 @@ def gen_queue(config_dict):
 
   rtl.add_declaration("read_ptr_dcd", 1 << ptr_width)
 
-  wen_codes = []
+  vlidate_codes = []
+  InVlidate_codes = []
 
   for i in range(queue_size):
-    wen_code = f"{entry_name}_entry{i:0{max_index_width}d}_wen"
-    wen_codes.append(wen_code)
-    rtl.add_declaration(wen_code, 1)
-  
+    vlidate_code = f"entry{i:0{max_index_width}d}_validate"
+    vlidate_codes.append(vlidate_code)
+    rtl.add_declaration(vlidate_code, 1)
+
+  for i in range(queue_size):
+    InVlidate_code = f"entry{i:0{max_index_width}d}_inValidate"
+    InVlidate_codes.append(InVlidate_code)
+    rtl.add_declaration(InVlidate_code, 1)
+
   # add logic
   logic_codes = []
-  # wen array
-  for i, wen in enumerate(wen_codes):
-    logic_codes.append(f"  assign {wen} = write_ptr[{ptr_width-1}:0] == {ptr_width}'d{i};")
+  # validate array
+  for i, vlidate_code in enumerate(vlidate_codes):
+    logic_codes.append(f"  assign {vlidate_code} = validate & validate_ptr[{ptr_width-1}:0] == {ptr_width}'d{i};")
+  logic_codes.append("")
+  # inValidate array
+  for i, InVlidate_code in enumerate(InVlidate_codes):
+    logic_codes.append(f"  assign {InVlidate_code} = inValidate & inValidate_ptr[{ptr_width-1}:0] == {ptr_width}'d{i};")
   logic_codes.append("")
   # read ptr dcd
   for i in range(queue_size):
@@ -181,12 +220,16 @@ def gen_queue(config_dict):
   for i in range(queue_size):
     ports = []
     ports.append(("clk", "clk", 1))
-    ports.append(("wen", f"{entry_name}_entry{i:0{max_index_width}d}_wen", 1))
+    ports.append(("rst", "rst", 1))
+    ports.append(("validate", f"entry{i:0{max_index_width}d}_validate", 1))
+    ports.append(("inValidate", f"entry{i:0{max_index_width}d}_inValidate", 1))
     ports.append(("biu_rid_In", "biu_rid_In", 6))
     for signal_name, signal_width in config_dict['fields'].items():
       prot_name = signal_name + "_In"
       prot_signal_name = f"{module_name}_" + prot_name
       ports.append((prot_name, prot_signal_name, signal_width))
+
+    ports.append((f"valid_Q", f"iq_valid_array_Q[{i}]", 1))
     for signal_name, signal_width in config_dict['fields'].items():
       prot_name = signal_name + "_Q"
       prot_signal_name = f"{entry_name}{i:0{max_index_width}d}_" + prot_name

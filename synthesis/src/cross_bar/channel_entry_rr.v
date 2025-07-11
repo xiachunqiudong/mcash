@@ -7,8 +7,8 @@ module channel_entry_rr(
 
   wire [4:0] shift_array_valid;
   wire [3:0] read_ptr_incr;
-  wire [3:0] select_ptr;
-  wire [3:0] real_select_ptr;
+  wire [3:0] issue_ptr;
+  wire [3:0] real_issue_ptr;
 
   assign shift_array_valid[4:0] = {5{read_ptr_dcd_i[0]}} & channel_array_valid_i[4:0]
                                 | {5{read_ptr_dcd_i[1]}} & {channel_array_valid_i[0],   channel_array_valid_i[4:1]}
@@ -23,12 +23,12 @@ module channel_entry_rr(
                             : shift_array_valid[4] ? 4'd4
                             :                        4'd0;
 
-  assign select_ptr[3:0] = {1'b0, read_ptr_i[2:0]} + read_ptr_incr[3:0];
+  assign issue_ptr[3:0] = {1'b0, read_ptr_i[2:0]} + read_ptr_incr[3:0];
 
-  assign real_select_ptr[3:0] = select_ptr[3:0] < 4'd5
-                              ? select_ptr[3:0]
-                              : select_ptr[3:0] - 4'd5;
+  assign real_issue_ptr[3:0] = issue_ptr[3:0] < 4'd5
+                              ? issue_ptr[3:0]
+                              : issue_ptr[3:0] - 4'd5;
 
-  assign entry_id_o[2:0] = real_select_ptr[2:0];
+  assign entry_id_o[2:0] = real_issue_ptr[2:0];
 
 endmodule

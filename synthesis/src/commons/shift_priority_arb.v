@@ -1,7 +1,7 @@
 module shift_priority_arb (
   input  wire [15:0] valid_array_i,
   input  wire [3:0] bottom_ptr_i,
-  output wire [3:0] select_ptr_o
+  output wire [3:0] issue_ptr_o
 );
 
   wire [15:0] shift_valid_array;
@@ -23,7 +23,7 @@ module shift_priority_arb (
                                  | {16{bottom_ptr_i[3:0] == 4'd14}} & {valid_array_i[13:0], valid_array_i[15:14]}
                                  | {16{bottom_ptr_i[3:0] == 4'd15}} & {valid_array_i[14:0], valid_array_i[15]};
 
-  assign select_ptr_o[3:0] = shift_valid_array[0] ? bottom_ptr_i[3:0]
+  assign issue_ptr_o[3:0] = shift_valid_array[0] ? bottom_ptr_i[3:0]
                            : shift_valid_array[1] ? bottom_ptr_i[3:0] + 16'd1
                            : shift_valid_array[2] ? bottom_ptr_i[3:0] + 16'd2
                            : shift_valid_array[3] ? bottom_ptr_i[3:0] + 16'd3

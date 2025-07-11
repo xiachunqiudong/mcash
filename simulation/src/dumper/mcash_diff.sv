@@ -22,7 +22,7 @@ module mcash_diff(
   import "DPI-C" function int c_isu_iq_enqueue(longint cycle, byte bank, byte cacheline_inflight, byte need_linefill, byte rob_id, byte ch_id,
                                                byte opcode, byte set_way_offset, byte wbuffer_id, byte offset0_state, byte offset1_state,
                                                longint mshr_allow_array_Q, longint mshr_allow_array_In, int write_ptr, int iq_size);
-  import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int select_ptr, byte ch_id, byte opcode,
+  import "DPI-C" function int c_isu_iq_dequeue(longint cycle, byte bank, int issue_ptr, byte ch_id, byte opcode,
                                                byte set_way_offset, byte wbuffer_id, byte rob_id, byte offset0_state, byte offset1_state,
                                                longint mshr_allow_array, longint credit_allow_array);
 
@@ -190,10 +190,10 @@ module mcash_diff(
   logic                    bank3_bottom_ptr_kickoff;
   logic [IQ_PTR_WIDTH-1:0] bank3_bottom_ptr_Q;
 
-  logic [IQ_PTR_WIDTH-1:0] bank0_select_ptr;
-  logic [IQ_PTR_WIDTH-1:0] bank1_select_ptr;
-  logic [IQ_PTR_WIDTH-1:0] bank2_select_ptr;
-  logic [IQ_PTR_WIDTH-1:0] bank3_select_ptr;
+  logic [IQ_PTR_WIDTH-1:0] bank0_issue_ptr;
+  logic [IQ_PTR_WIDTH-1:0] bank1_issue_ptr;
+  logic [IQ_PTR_WIDTH-1:0] bank2_issue_ptr;
+  logic [IQ_PTR_WIDTH-1:0] bank3_issue_ptr;
 
   logic         bank0_isu_sc_valid;
   logic         bank0_isu_sc_ready;
@@ -387,10 +387,10 @@ endtask
   assign bank1_iq_credit_allow_array_Q        = `BANK1_ISU_TOP.u_isu_iq.credit_allow_array;
   assign bank2_iq_credit_allow_array_Q        = `BANK2_ISU_TOP.u_isu_iq.credit_allow_array;
   assign bank3_iq_credit_allow_array_Q        = `BANK3_ISU_TOP.u_isu_iq.credit_allow_array;
-  assign bank0_write_ptr_Q                    = `BANK0_ISU_TOP.u_isu_iq.writePtr_Q;
-  assign bank1_write_ptr_Q                    = `BANK1_ISU_TOP.u_isu_iq.writePtr_Q;
-  assign bank2_write_ptr_Q                    = `BANK2_ISU_TOP.u_isu_iq.writePtr_Q;
-  assign bank3_write_ptr_Q                    = `BANK3_ISU_TOP.u_isu_iq.writePtr_Q;
+  assign bank0_write_ptr_Q                    = `BANK0_ISU_TOP.u_isu_iq.allocate_ptr_Q;
+  assign bank1_write_ptr_Q                    = `BANK1_ISU_TOP.u_isu_iq.allocate_ptr_Q;
+  assign bank2_write_ptr_Q                    = `BANK2_ISU_TOP.u_isu_iq.allocate_ptr_Q;
+  assign bank3_write_ptr_Q                    = `BANK3_ISU_TOP.u_isu_iq.allocate_ptr_Q;
   assign bank0_iq_size_Q                      = `BANK0_ISU_TOP.u_isu_iq.queue_size_Q;
   assign bank1_iq_size_Q                      = `BANK1_ISU_TOP.u_isu_iq.queue_size_Q;
   assign bank2_iq_size_Q                      = `BANK2_ISU_TOP.u_isu_iq.queue_size_Q;
@@ -403,10 +403,10 @@ endtask
   assign bank2_bottom_ptr_Q                   = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_Q;
   assign bank3_bottom_ptr_kickoff             = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
   assign bank3_bottom_ptr_Q                   = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_Q;
-  assign bank0_select_ptr                     = `BANK0_ISU_TOP.u_isu_iq.select_ptr;
-  assign bank1_select_ptr                     = `BANK1_ISU_TOP.u_isu_iq.select_ptr;
-  assign bank2_select_ptr                     = `BANK2_ISU_TOP.u_isu_iq.select_ptr;
-  assign bank3_select_ptr                     = `BANK3_ISU_TOP.u_isu_iq.select_ptr;
+  assign bank0_issue_ptr                      = `BANK0_ISU_TOP.u_isu_iq.issue_ptr;
+  assign bank1_issue_ptr                      = `BANK1_ISU_TOP.u_isu_iq.issue_ptr;
+  assign bank2_issue_ptr                      = `BANK2_ISU_TOP.u_isu_iq.issue_ptr;
+  assign bank3_issue_ptr                      = `BANK3_ISU_TOP.u_isu_iq.issue_ptr;
   assign bank0_isu_sc_valid                   = `BANK0_ISU_TOP.isu_sc_valid_o;
   assign bank0_isu_sc_ready                   = `BANK0_ISU_TOP.isu_sc_ready_i;
   assign bank0_isu_sc_channel_id              = `BANK0_ISU_TOP.isu_sc_channel_id_o; 
@@ -612,7 +612,7 @@ endtask
 
     // ISU iq dequeue
     if (bank0_isu_sc_valid & bank0_isu_sc_ready) begin
-      bank0_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_select_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
+      bank0_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 0, bank0_issue_ptr, bank0_isu_sc_channel_id, bank0_isu_sc_opcode, bank0_isu_sc_set_way_offset, bank0_isu_sc_wbuffer_id, 
                                                   bank0_isu_sc_xbar_rob_num, bank0_isu_sc_cacheline_dirty_offset0, bank0_isu_sc_cacheline_dirty_offset1, 
                                                   bank0_iq_mshr_allow_array_Q, bank0_iq_credit_allow_array_Q);
       if (bank0_isu_iq_dequeue_ret) begin
@@ -621,7 +621,7 @@ endtask
     end
 
     if (bank1_isu_sc_valid & bank1_isu_sc_ready) begin
-      bank1_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 1, bank1_select_ptr, bank1_isu_sc_channel_id, bank1_isu_sc_opcode, bank1_isu_sc_set_way_offset, bank1_isu_sc_wbuffer_id, 
+      bank1_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 1, bank1_issue_ptr, bank1_isu_sc_channel_id, bank1_isu_sc_opcode, bank1_isu_sc_set_way_offset, bank1_isu_sc_wbuffer_id, 
                                                   bank1_isu_sc_xbar_rob_num, bank1_isu_sc_cacheline_dirty_offset0, bank1_isu_sc_cacheline_dirty_offset1, 
                                                   bank1_iq_mshr_allow_array_Q, bank1_iq_credit_allow_array_Q);
       if (bank1_isu_iq_dequeue_ret) begin
@@ -630,7 +630,7 @@ endtask
     end
 
     if (bank2_isu_sc_valid & bank2_isu_sc_ready) begin
-      bank2_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 2, bank2_select_ptr, bank2_isu_sc_channel_id, bank2_isu_sc_opcode, bank2_isu_sc_set_way_offset, bank2_isu_sc_wbuffer_id, 
+      bank2_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 2, bank2_issue_ptr, bank2_isu_sc_channel_id, bank2_isu_sc_opcode, bank2_isu_sc_set_way_offset, bank2_isu_sc_wbuffer_id, 
                                                   bank2_isu_sc_xbar_rob_num, bank2_isu_sc_cacheline_dirty_offset0, bank2_isu_sc_cacheline_dirty_offset1, 
                                                   bank2_iq_mshr_allow_array_Q, bank2_iq_credit_allow_array_Q);
       if (bank2_isu_iq_dequeue_ret) begin
@@ -639,7 +639,7 @@ endtask
     end
 
     if (bank3_isu_sc_valid & bank3_isu_sc_ready) begin
-      bank3_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 3, bank3_select_ptr, bank3_isu_sc_channel_id, bank3_isu_sc_opcode, bank3_isu_sc_set_way_offset, bank3_isu_sc_wbuffer_id, 
+      bank3_isu_iq_dequeue_ret = c_isu_iq_dequeue(cycle_cnt_Q, 3, bank3_issue_ptr, bank3_isu_sc_channel_id, bank3_isu_sc_opcode, bank3_isu_sc_set_way_offset, bank3_isu_sc_wbuffer_id, 
                                                   bank3_isu_sc_xbar_rob_num, bank3_isu_sc_cacheline_dirty_offset0, bank3_isu_sc_cacheline_dirty_offset1, 
                                                   bank3_iq_mshr_allow_array_Q, bank3_iq_credit_allow_array_Q);
       if (bank3_isu_iq_dequeue_ret) begin

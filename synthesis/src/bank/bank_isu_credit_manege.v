@@ -123,7 +123,7 @@ module bank_isu_credit_manage #(
       channel_shift_priority_arb_64(
         .valid_array_i(channel_no_credit_array[CHANNEL]    ),
         .bottom_ptr_i (iq_bottom_ptr                       ),
-        .select_ptr_o (channel_credit_allocate_ptr[CHANNEL])
+        .issue_ptr_o (channel_credit_allocate_ptr[CHANNEL])
       );
     end
   endgenerate
