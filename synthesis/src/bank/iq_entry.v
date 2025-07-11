@@ -1,9 +1,11 @@
 // This RTL code is generate by RTL generator, please do not modify!
-module bank_isu_iq_entry (
+module iq_entry (
   input  wire                        clk,
   input  wire                        rst,
   input  wire                        validate,
   input  wire                        inValidate,
+  input  wire                        cacheline_inflight_In,
+  input  wire                        biu_rvalid_In,
   input  wire        [5:0]           biu_rid_In,
   input  wire        [2:0]           rob_id_In,
   input  wire        [1:0]           ch_id_In,
@@ -13,6 +15,7 @@ module bank_isu_iq_entry (
   input  wire        [7:0]           wbuffer_id_In,
   input  wire        [3:0]           cacheline_state_In,
   output wire                        valid_Q,
+  output wire                        mshr_allow_Q,
   output wire        [2:0]           rob_id_Q,
   output wire        [1:0]           ch_id_Q,
   output wire                        op_is_write_Q,
@@ -20,7 +23,6 @@ module bank_isu_iq_entry (
   output wire        [6:0]           set_way_offset_Q,
   output wire        [7:0]           wbuffer_id_Q,
   output wire        [3:0]           cacheline_state_Q,
-  output wire                        biu_id_match,
   output wire                        entry_req_from_ch0,
   output wire                        entry_req_from_ch1,
   output wire                        entry_req_from_ch2
@@ -29,8 +31,11 @@ module bank_isu_iq_entry (
 //--------------------------------------------------------------------------------
 //                              Wire declaration
 //--------------------------------------------------------------------------------
+  wire                        biu_id_match;
   wire                        valid_wen;
   wire                        valid_In;
+  wire                        mshr_allow_wen;
+  wire                        mshr_allow_In;
 
 //--------------------------------------------------------------------------------
 //                              LOGIC START
@@ -38,7 +43,10 @@ module bank_isu_iq_entry (
 assign valid_In = (valid_Q & ~inValidate) | validate;
 assign valid_wen = validate | inValidate;
 
-assign biu_id_match = set_way_offset_Q[6:1] == biu_rid_In[5:0];
+assign mshr_allow_wen = (valid_Q & biu_id_match) | validate;
+assign mshr_allow_In = (validate & ~(op_need_linefill_In | cacheline_inflight_In)) | (biu_id_match & valid_Q);
+
+assign biu_id_match = biu_rvalid_In & (set_way_offset_Q[6:1] == biu_rid_In[5:0]);
 
 assign entry_req_from_ch0 = ch_id_Q[1:0] == 2'd0;
 assign entry_req_from_ch1 = ch_id_Q[1:0] == 2'd1;
@@ -54,6 +62,13 @@ assign entry_req_from_ch2 = ch_id_Q[1:0] == 2'd2;
     .WEN (valid_wen),
     .D   (valid_In ),
     .Q   (valid_Q  )
+  );
+
+  DFF #(.WIDTH(1)) mshr_allow_reg (
+    .CLK (clk           ),
+    .WEN (mshr_allow_wen),
+    .D   (mshr_allow_In ),
+    .Q   (mshr_allow_Q  )
   );
 
   DFF #(.WIDTH(3)) rob_id_reg (

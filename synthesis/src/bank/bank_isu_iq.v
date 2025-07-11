@@ -43,9 +43,7 @@ module bank_isu_iq #(
   wire [DEPTH-1:0]     iq_entry_req_from_ch2;
   reg  [DEPTH-1:0]     iq_need_evit_array_In;
   reg  [DEPTH-1:0]     iq_need_evit_array_Q;
-  reg  [DEPTH-1:0]     mshr_allow_array_validate;
-  reg  [DEPTH-1:0]     mshr_allow_array_In;
-  reg  [DEPTH-1:0]     mshr_allow_array_Q;
+  wire [DEPTH-1:0]     mshr_allow_array_Q;
   wire [DEPTH-1:0]     credit_allow_array;
   wire [DEPTH-1:0]     execute_array;
   wire                 bottom_ptr_kickoff;
@@ -61,42 +59,43 @@ module bank_isu_iq #(
   wire             iq_array_op_is_write_rdata;
   wire             iq_array_op_need_linefill_rdata;
   wire [3:0]       iq_array_cacheline_state_rdata;
-  wire [DEPTH-1:0] iq_biu_id_match_array;
 
   assign iq_array_inValidate = issue_kickoff & ~iq_need_evit_array_Q[issue_ptr];
 
   assign iq_array_cacheline_state_In[3:0] = {req_cacheline_offset1_state_i[1:0],
                                              req_cacheline_offset0_state_i[1:0]};
 
-  bank_isu_iq_array
-  iq_array(
-    .clk                                     (clk_i                              ),
-    .rst                                     (rst_i                              ),
-    .biu_rid_In                              (biu_isu_rid_i[5:0]                 ),
-    .read_ptr                                (issue_ptr[PTR_WIDTH-1:0]           ),
-    .validate                                (iq_allocate                        ),
-    .validate_ptr                            (allocate_ptr_Q[PTR_WIDTH-1:0]      ),
-    .inValidate                              (iq_array_inValidate                ),
-    .inValidate_ptr                          (issue_ptr[PTR_WIDTH-1:0]           ),
-    .bank_isu_iq_array_rob_id_In             (req_rob_id_i[2:0]                  ),
-    .bank_isu_iq_array_ch_id_In              (req_ch_id_i[1:0]                   ),
-    .bank_isu_iq_array_op_is_write_In        (req_opcode_i[0]                    ),
-    .bank_isu_iq_array_op_need_linefill_In   (req_need_linefill_i                ),
-    .bank_isu_iq_array_set_way_offset_In     (req_set_way_offset_i[6:0]          ),
-    .bank_isu_iq_array_wbuffer_id_In         (req_wbuffer_id_i[7:0]              ),
-    .bank_isu_iq_array_cacheline_state_In    (iq_array_cacheline_state_In[3:0]   ),
-    .iq_valid_array_Q                        (valid_array_Q[DEPTH-1:0]           ),
-    .bank_isu_iq_array_rob_id_rdata          (iq_sc_xbar_rob_num_o[2:0]          ),
-    .bank_isu_iq_array_ch_id_rdata           (iq_sc_channel_id_o[1:0]            ),
-    .bank_isu_iq_array_op_is_write_rdata     (iq_array_op_is_write_rdata         ),
-    .bank_isu_iq_array_op_need_linefill_rdata(iq_array_op_need_linefill_rdata    ),
-    .bank_isu_iq_array_set_way_offset_rdata  (iq_sc_set_way_offset_o[6:0]        ),
-    .bank_isu_iq_array_wbuffer_id_rdata      (iq_sc_wbuffer_id_o[7:0]            ),
-    .bank_isu_iq_array_cacheline_state_rdata (iq_array_cacheline_state_rdata[3:0]),
-    .biu_id_match_array                      (iq_biu_id_match_array[DEPTH-1:0]   ),
-    .entry_req_from_ch0_array                (iq_entry_req_from_ch0[DEPTH-1:0]   ),
-    .entry_req_from_ch1_array                (iq_entry_req_from_ch1[DEPTH-1:0]   ),
-    .entry_req_from_ch2_array                (iq_entry_req_from_ch2[DEPTH-1:0]   )
+  iq_array
+  u_iq_array(
+    .clk                            (clk_i                              ),
+    .rst                            (rst_i                              ),
+    .biu_rvalid_In                  (biu_isu_rvalid_i                   ),
+    .biu_rid_In                     (biu_isu_rid_i[5:0]                 ),
+    .read_ptr                       (issue_ptr[PTR_WIDTH-1:0]           ),
+    .validate                       (iq_allocate                        ),
+    .validate_ptr                   (allocate_ptr_Q[PTR_WIDTH-1:0]      ),
+    .inValidate                     (iq_array_inValidate                ),
+    .inValidate_ptr                 (issue_ptr[PTR_WIDTH-1:0]           ),
+    .cacheline_inflight_In          (req_cacheline_inflight_i           ),
+    .iq_array_rob_id_In             (req_rob_id_i[2:0]                  ),
+    .iq_array_ch_id_In              (req_ch_id_i[1:0]                   ),
+    .iq_array_op_is_write_In        (req_opcode_i[0]                    ),
+    .iq_array_op_need_linefill_In   (req_need_linefill_i                ),
+    .iq_array_set_way_offset_In     (req_set_way_offset_i[6:0]          ),
+    .iq_array_wbuffer_id_In         (req_wbuffer_id_i[7:0]              ),
+    .iq_array_cacheline_state_In    (iq_array_cacheline_state_In[3:0]   ),
+    .iq_valid_array_Q               (valid_array_Q[DEPTH-1:0]           ),
+    .iq_array_rob_id_rdata          (iq_sc_xbar_rob_num_o[2:0]          ),
+    .iq_array_ch_id_rdata           (iq_sc_channel_id_o[1:0]            ),
+    .iq_array_op_is_write_rdata     (iq_array_op_is_write_rdata         ),
+    .iq_array_op_need_linefill_rdata(iq_array_op_need_linefill_rdata    ),
+    .iq_array_set_way_offset_rdata  (iq_sc_set_way_offset_o[6:0]        ),
+    .iq_array_wbuffer_id_rdata      (iq_sc_wbuffer_id_o[7:0]            ),
+    .iq_array_cacheline_state_rdata (iq_array_cacheline_state_rdata[3:0]),
+    .mshr_allow_array_Q             (mshr_allow_array_Q[DEPTH-1:0]      ),
+    .entry_req_from_ch0_array       (iq_entry_req_from_ch0[DEPTH-1:0]   ),
+    .entry_req_from_ch1_array       (iq_entry_req_from_ch1[DEPTH-1:0]   ),
+    .entry_req_from_ch2_array       (iq_entry_req_from_ch2[DEPTH-1:0]   )
   );
 
   assign iq_sc_cacheline_state_offset0_o[1:0] = iq_array_cacheline_state_rdata[1:0];
@@ -153,31 +152,6 @@ module bank_isu_iq #(
 
   always @(posedge clk_i) begin
     iq_need_evit_array_Q <= iq_need_evit_array_In;
-  end
-
-//--------------------------------------------------------------
-//                    MSHR allow array
-//--------------------------------------------------------------
-  assign mshr_allow_array_validate[DEPTH-1:0] = valid_array_Q[DEPTH-1:0] & iq_biu_id_match_array[DEPTH-1:0] & {DEPTH{biu_isu_rvalid_i}};
-
-  always @(*) begin
-    // set mshr allow array valid when receive linefill data
-    mshr_allow_array_In[DEPTH-1:0] = mshr_allow_array_Q[DEPTH-1:0] | mshr_allow_array_validate[DEPTH-1:0];
-    if (iq_allocate) begin
-      // set mshr allow array invalid when:
-      // 1. cacheline miss
-      // 2. cacheline hit but inflight
-      mshr_allow_array_In[allocate_ptr_Q] = ~(req_need_linefill_i | req_cacheline_inflight_i);
-    end
-  end
-
-  always @(posedge clk_i or posedge rst_i) begin
-    if (rst_i) begin
-      mshr_allow_array_Q[DEPTH-1:0] <= 'd0;
-    end
-    else begin
-      mshr_allow_array_Q[DEPTH-1:0] <= mshr_allow_array_In[DEPTH-1:0];
-    end
   end
 
 //--------------------------------------------------------------

@@ -1,5 +1,5 @@
 {
-  "design": "bank_isu_iq",
+  "design": "iq",
   "size": 64,
   "fields": {
     "rob_id": 3,

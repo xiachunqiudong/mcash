@@ -90,7 +90,7 @@ bool iq_array_check(uint64_t cycle, uint8_t bank, uint8_t check_type, uint64_t r
 
 int isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
                    uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state,
-                   uint64_t mshr_allow_array_Q, uint64_t mshr_allow_array_In, uint16_t write_ptr, uint16_t iq_size) {
+                   uint64_t mshr_allow_array_Q, uint16_t write_ptr, uint16_t iq_size) {
 
   uint16_t golden_iq_size = banks_iq_size[bank];
 
@@ -301,9 +301,9 @@ int isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_
 extern "C" {
   int c_isu_iq_enqueue(uint64_t cycle, uint8_t bank, uint8_t cacheline_inflight, uint8_t need_linefill, uint8_t rob_id, uint8_t ch_id,
                        uint8_t opcode, uint8_t set_way_offset, uint8_t wbuffer_id, uint8_t offset0_state, uint8_t offset1_state, 
-                       uint64_t mshr_allow_array_Q, uint64_t mshr_allow_array_In, uint16_t write_ptr, uint16_t iq_size) {
+                       uint64_t mshr_allow_array_Q, uint16_t write_ptr, uint16_t iq_size) {
     return isu_iq_enqueue(cycle, bank, cacheline_inflight, need_linefill, rob_id, ch_id, opcode, set_way_offset,
-                          wbuffer_id, offset0_state, offset1_state, mshr_allow_array_Q, mshr_allow_array_In, write_ptr, iq_size);
+                          wbuffer_id, offset0_state, offset1_state, mshr_allow_array_Q, write_ptr, iq_size);
   }
 
   int c_isu_iq_dequeue(uint64_t cycle, uint8_t bank, uint16_t issue_ptr, uint8_t ch_id, uint8_t opcode,
