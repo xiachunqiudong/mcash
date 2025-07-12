@@ -6,6 +6,33 @@ class SignalType(Enum):
   OUTPUT = 1
   WIRE = 2
 
+def gen_paraller_mux(target_signal: str, src_signal_list: List[str], signal_width: int, select_one_hot: str):
+  mux_codes = []
+
+  src_signal_num = len(src_signal_list)
+
+  for i in range(src_signal_num):
+    if signal_width == 1:
+      assign_expr = f"assign {target_signal}"
+      select_ptr_expr = f"{select_one_hot}[{i}]"
+      entry_expr = f"{src_signal_list[i]}"
+    else:
+      assign_expr = f"assign {target_signal}[{signal_width-1}:0]"
+      select_ptr_expr = f"{{{signal_width}{{{select_one_hot}[{i}]}}}}"
+      entry_expr = f"{src_signal_list[i]}[{signal_width-1}:0]"
+    
+    left_space = len(assign_expr) * " "
+
+    if i == 0:
+      mux_codes.append(f"{assign_expr} = {select_ptr_expr} & {entry_expr}")
+    elif i != src_signal_num - 1:
+      mux_codes.append(f"{left_space} | {select_ptr_expr} & {entry_expr}")
+    else:
+      mux_codes.append(f"{left_space} | {select_ptr_expr} & {entry_expr};")
+  
+  return mux_codes
+
+
 class Signal:
 
   LEFT_ALIGN = 8

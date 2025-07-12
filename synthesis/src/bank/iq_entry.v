@@ -5,6 +5,7 @@ module iq_entry (
   input  wire                        validate,
   input  wire                        inValidate,
   input  wire                        cacheline_inflight_In,
+  input  wire                        op_need_evit_In,
   input  wire                        biu_rvalid_In,
   input  wire        [5:0]           biu_rid_In,
   input  wire        [2:0]           rob_id_In,
@@ -16,6 +17,7 @@ module iq_entry (
   input  wire        [3:0]           cacheline_state_In,
   output wire                        valid_Q,
   output wire                        mshr_allow_Q,
+  output wire                        need_evit_Q,
   output wire        [2:0]           rob_id_Q,
   output wire        [1:0]           ch_id_Q,
   output wire                        op_is_write_Q,
@@ -36,15 +38,20 @@ module iq_entry (
   wire                        valid_In;
   wire                        mshr_allow_wen;
   wire                        mshr_allow_In;
+  wire                        need_evit_wen;
+  wire                        need_evit_In;
 
 //--------------------------------------------------------------------------------
 //                              LOGIC START
 //--------------------------------------------------------------------------------
-assign valid_In = (valid_Q & ~inValidate) | validate;
+assign valid_In = (valid_Q & ~inValidate) | validate | need_evit_Q;
 assign valid_wen = validate | inValidate;
 
 assign mshr_allow_wen = (valid_Q & biu_id_match) | validate;
-assign mshr_allow_In = (validate & ~(op_need_linefill_In | cacheline_inflight_In)) | (biu_id_match & valid_Q);
+assign mshr_allow_In = (validate & ~(op_need_linefill_In | cacheline_inflight_In)) | (valid_Q & biu_id_match);
+
+assign need_evit_wen = validate | inValidate;
+assign need_evit_In = (validate & op_need_evit_In) & ~inValidate;
 
 assign biu_id_match = biu_rvalid_In & (set_way_offset_Q[6:1] == biu_rid_In[5:0]);
 
@@ -69,6 +76,13 @@ assign entry_req_from_ch2 = ch_id_Q[1:0] == 2'd2;
     .WEN (mshr_allow_wen),
     .D   (mshr_allow_In ),
     .Q   (mshr_allow_Q  )
+  );
+
+  DFF #(.WIDTH(1)) need_evit_reg (
+    .CLK (clk          ),
+    .WEN (need_evit_wen),
+    .D   (need_evit_In ),
+    .Q   (need_evit_Q  )
   );
 
   DFF #(.WIDTH(3)) rob_id_reg (

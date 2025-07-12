@@ -181,13 +181,13 @@ module mcash_diff(
   logic [IQ_PTR_WIDTH:0]   bank1_iq_size_Q;
   logic [IQ_PTR_WIDTH:0]   bank2_iq_size_Q;
   logic [IQ_PTR_WIDTH:0]   bank3_iq_size_Q;
-  logic                    bank0_bottom_ptr_kickoff;
+  logic                    bank0_bottom_ptr_wen;
   logic [IQ_PTR_WIDTH-1:0] bank0_bottom_ptr_Q;
-  logic                    bank1_bottom_ptr_kickoff;
+  logic                    bank1_bottom_ptr_wen;
   logic [IQ_PTR_WIDTH-1:0] bank1_bottom_ptr_Q;
-  logic                    bank2_bottom_ptr_kickoff;
+  logic                    bank2_bottom_ptr_wen;
   logic [IQ_PTR_WIDTH-1:0] bank2_bottom_ptr_Q;
-  logic                    bank3_bottom_ptr_kickoff;
+  logic                    bank3_bottom_ptr_wen;
   logic [IQ_PTR_WIDTH-1:0] bank3_bottom_ptr_Q;
 
   logic [IQ_PTR_WIDTH-1:0] bank0_issue_ptr;
@@ -391,13 +391,13 @@ endtask
   assign bank1_iq_size_Q                      = `BANK1_ISU_TOP.u_isu_iq.queue_size_Q;
   assign bank2_iq_size_Q                      = `BANK2_ISU_TOP.u_isu_iq.queue_size_Q;
   assign bank3_iq_size_Q                      = `BANK3_ISU_TOP.u_isu_iq.queue_size_Q;
-  assign bank0_bottom_ptr_kickoff             = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank0_bottom_ptr_wen             = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_wen;
   assign bank0_bottom_ptr_Q                   = `BANK0_ISU_TOP.u_isu_iq.bottom_ptr_Q;
-  assign bank1_bottom_ptr_kickoff             = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank1_bottom_ptr_wen             = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_wen;
   assign bank1_bottom_ptr_Q                   = `BANK1_ISU_TOP.u_isu_iq.bottom_ptr_Q;
-  assign bank2_bottom_ptr_kickoff             = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank2_bottom_ptr_wen             = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_wen;
   assign bank2_bottom_ptr_Q                   = `BANK2_ISU_TOP.u_isu_iq.bottom_ptr_Q;
-  assign bank3_bottom_ptr_kickoff             = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_kickoff;
+  assign bank3_bottom_ptr_wen             = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_wen;
   assign bank3_bottom_ptr_Q                   = `BANK3_ISU_TOP.u_isu_iq.bottom_ptr_Q;
   assign bank0_issue_ptr                      = `BANK0_ISU_TOP.u_isu_iq.issue_ptr;
   assign bank1_issue_ptr                      = `BANK1_ISU_TOP.u_isu_iq.issue_ptr;
@@ -585,22 +585,22 @@ endtask
 
   always_ff @(posedge clk) begin
 
-    if (bank0_bottom_ptr_kickoff) begin
+    if (bank0_bottom_ptr_wen) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 0, bank0_bottom_ptr_Q)) begin
         end_simulation();
       end
     end
-    if (bank1_bottom_ptr_kickoff) begin
+    if (bank1_bottom_ptr_wen) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 1, bank1_bottom_ptr_Q)) begin
         end_simulation();
       end
     end
-    if (bank2_bottom_ptr_kickoff) begin
+    if (bank2_bottom_ptr_wen) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 2, bank2_bottom_ptr_Q)) begin
         end_simulation();
       end
     end
-    if (bank3_bottom_ptr_kickoff) begin
+    if (bank3_bottom_ptr_wen) begin
       if(c_iq_bottom_ptr_update(cycle_cnt_Q, 3, bank3_bottom_ptr_Q)) begin
         end_simulation();
       end
@@ -689,25 +689,25 @@ endtask
       c_update_inflight_array(cycle_cnt_Q, 3, bank3_biu_isu_rid, bank3_biu_isu_rdata[63:0], bank3_biu_isu_rdata[127:64], bank3_biu_isu_rdata[191:128], bank3_biu_isu_rdata[255:192]);
     end
 
-    if (bank0_bottom_ptr_kickoff) begin
+    if (bank0_bottom_ptr_wen) begin
       if(c_iq_size_update(cycle_cnt_Q, 0, bank0_iq_size_Q)) begin
         end_simulation();
       end
     end
 
-    if (bank1_bottom_ptr_kickoff) begin
+    if (bank1_bottom_ptr_wen) begin
       if(c_iq_size_update(cycle_cnt_Q, 1, bank1_iq_size_Q)) begin
         end_simulation();
       end
     end
 
-    if (bank2_bottom_ptr_kickoff) begin
+    if (bank2_bottom_ptr_wen) begin
       if(c_iq_size_update(cycle_cnt_Q, 2, bank2_iq_size_Q)) begin
         end_simulation();
       end
     end
 
-    if (bank3_bottom_ptr_kickoff) begin
+    if (bank3_bottom_ptr_wen) begin
       if(c_iq_size_update(cycle_cnt_Q, 3, bank3_iq_size_Q)) begin
         end_simulation();
       end

@@ -18,6 +18,9 @@ def parse_config_file(config_file: str) -> dict:
 
   return config_dict
 
+
+
+
 def gen_dff_instance(signal_name, signal_width):
   code_list = []
   space_num = len(str(signal_name))
@@ -57,6 +60,7 @@ def gen_queue_entry(config_dict):
   rtl.add_interface("validate", 1, SignalType.INPUT)
   rtl.add_interface("inValidate", 1, SignalType.INPUT)
   rtl.add_interface("cacheline_inflight_In", 1, SignalType.INPUT)
+  rtl.add_interface("op_need_evit_In", 1, SignalType.INPUT)
   rtl.add_interface("biu_rvalid_In", 1, SignalType.INPUT)
   rtl.add_interface("biu_rid_In", 6, SignalType.INPUT)
   # input
@@ -65,6 +69,7 @@ def gen_queue_entry(config_dict):
   # output
   rtl.add_interface("valid_Q", 1, SignalType.OUTPUT)
   rtl.add_interface("mshr_allow_Q", 1, SignalType.OUTPUT)
+  rtl.add_interface("need_evit_Q", 1, SignalType.OUTPUT)
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(signal_name + "_Q", signal_width, SignalType.OUTPUT)
 
@@ -80,14 +85,22 @@ def gen_queue_entry(config_dict):
   rtl.add_declaration("valid_In", 1)
   rtl.add_declaration("mshr_allow_wen", 1)
   rtl.add_declaration("mshr_allow_In", 1)
+  rtl.add_declaration("need_evit_wen", 1)
+  rtl.add_declaration("need_evit_In", 1)
 
   # add valid logic
-  logic_codes.append("assign valid_In = (valid_Q & ~inValidate) | validate;")
+  logic_codes.append("assign valid_In = (valid_Q & ~inValidate) | validate | need_evit_Q;")
   logic_codes.append("assign valid_wen = validate | inValidate;")
   logic_codes.append("")
+
   # add mshr logic
   logic_codes.append("assign mshr_allow_wen = (valid_Q & biu_id_match) | validate;")
-  logic_codes.append("assign mshr_allow_In = (validate & ~(op_need_linefill_In | cacheline_inflight_In)) | (biu_id_match & valid_Q);")
+  logic_codes.append("assign mshr_allow_In = (validate & ~(op_need_linefill_In | cacheline_inflight_In)) | (valid_Q & biu_id_match);")
+  logic_codes.append("")
+
+  # add need logic
+  logic_codes.append("assign need_evit_wen = validate | inValidate;")
+  logic_codes.append("assign need_evit_In = (validate & op_need_evit_In) & ~inValidate;")
   logic_codes.append("")
 
   logic_codes.append(f"assign biu_id_match = biu_rvalid_In & (set_way_offset_Q[6:1] == biu_rid_In[5:0]);")
@@ -108,7 +121,7 @@ def gen_queue_entry(config_dict):
   parameter_list.append(("WIDTH", "1"))
   rtl.add_instance("DFF_RST0", f"valid_reg", ports, parameter_list)
 
-  # add mshr allow array
+  # add mshr allow reg
   ports = []
   ports.append(("CLK", "clk", 1))
   ports.append(("WEN", "mshr_allow_wen", 1))
@@ -117,6 +130,16 @@ def gen_queue_entry(config_dict):
   parameter_list = []
   parameter_list.append(("WIDTH", "1"))
   rtl.add_instance("DFF", f"mshr_allow_reg", ports, parameter_list)
+
+  # add inst need evit reg
+  ports = []
+  ports.append(("CLK", "clk", 1))
+  ports.append(("WEN", "need_evit_wen", 1))
+  ports.append(("D", "need_evit_In", 1))
+  ports.append(("Q", "need_evit_Q", 1))
+  parameter_list = []
+  parameter_list.append(("WIDTH", "1"))
+  rtl.add_instance("DFF", f"need_evit_reg", ports, parameter_list)
 
   # add instance
   for signal_name, signal_width in config_dict['fields'].items():
@@ -157,6 +180,8 @@ def gen_queue(config_dict):
   rtl.add_interface("inValidate", 1, SignalType.INPUT)
   rtl.add_interface("inValidate_ptr", ptr_width, SignalType.INPUT)
   rtl.add_interface("cacheline_inflight_In", 1, SignalType.INPUT)
+  rtl.add_interface("iq_array_op_need_evit_In", 1, SignalType.INPUT)
+  
   for signal_name, signal_width in config_dict['fields'].items():
     rtl.add_interface(module_name + "_" + signal_name + "_In", signal_width, SignalType.INPUT)
   # output
@@ -164,16 +189,19 @@ def gen_queue(config_dict):
   for signal_name, signal_width in config_dict['fields'].items():
     read_data_signal = module_name + "_" + signal_name
     rtl.add_interface(read_data_signal + "_rdata", signal_width, SignalType.OUTPUT)
+  rtl.add_interface(f"iq_array_need_evit_rdata", 1, SignalType.OUTPUT)
   rtl.add_interface(f"mshr_allow_array_Q", queue_size, SignalType.OUTPUT)
+  rtl.add_interface(f"iq_need_evit_array_Q", queue_size, SignalType.OUTPUT)
   rtl.add_interface(f"entry_req_from_ch0_array", queue_size, SignalType.OUTPUT)
   rtl.add_interface(f"entry_req_from_ch1_array", queue_size, SignalType.OUTPUT)
   rtl.add_interface(f"entry_req_from_ch2_array", queue_size, SignalType.OUTPUT)
   
+  mux_rdata_signal_list = list(config_dict['fields'].items())
 
   # add declaration
   max_index_width = len(str(queue_size-1))
 
-  for signal_name, signal_width in config_dict['fields'].items():
+  for signal_name, signal_width in mux_rdata_signal_list:
     for i in range(queue_size):
       rtl.add_declaration(f"{entry_name}{i:0{max_index_width}d}_" + signal_name + "_Q", signal_width)
 
@@ -210,29 +238,27 @@ def gen_queue(config_dict):
   # read data select
   read_data_logic = []
 
-  for signal_name, signal_width in config_dict['fields'].items():
+
+  for signal_name, signal_width in mux_rdata_signal_list:
     left_space = ""
+    src_signal_list = []
+
     for i in range(queue_size):
-      if signal_width == 1:
-        assign_expr = f"  assign {module_name}_{signal_name}_rdata "
-        read_ptr_expr = f"read_ptr_dcd[{i}]"
-        entry_expr = f"{entry_name}{i:0{max_index_width}d}_{signal_name}_Q"
-      else:
-        assign_expr = f"  assign {module_name}_{signal_name}_rdata[{signal_width-1}:0] "
-        read_ptr_expr = f"{{{signal_width}{{read_ptr_dcd[{i}]}}}}"
-        entry_expr = f"{entry_name}{i:0{max_index_width}d}_{signal_name}_Q[{signal_width-1}:0]"
-      left_space = len(assign_expr) * " "
+      src_signal_list.append(f"{entry_name}{i:0{max_index_width}d}_{signal_name}_Q")
+    
+    
+    target_signal = f"{module_name}_{signal_name}_rdata"
+    select_one_hot = "read_ptr_dcd"
+    
+    mux_codes = gen_paraller_mux(target_signal, src_signal_list, signal_width, select_one_hot)
+    logic_codes += mux_codes
+    logic_codes.append("")
 
-      if i == 0:        
-        read_data_logic.append(assign_expr + f"= {read_ptr_expr} & {entry_expr}")
-      elif i != queue_size - 1:
-        read_data_logic.append(left_space + f"| {read_ptr_expr} & {entry_expr}")
-      else:
-        read_data_logic.append(left_space + f"| {read_ptr_expr} & {entry_expr};")
-        read_data_logic.append("")
-
-  logic_codes += read_data_logic
-  
+  src_signal_list = []
+  for i in range(queue_size):
+    src_signal_list.append(f"iq_need_evit_array_Q[{i}]")
+  mux_codes = gen_paraller_mux("iq_array_need_evit_rdata", src_signal_list, 1, "read_ptr_dcd")
+  logic_codes += mux_codes
 
   rtl.add_logic_codes(logic_codes)
 
@@ -244,6 +270,7 @@ def gen_queue(config_dict):
     ports.append(("validate", f"entry{i:0{max_index_width}d}_validate", 1))
     ports.append(("inValidate", f"entry{i:0{max_index_width}d}_inValidate", 1))
     ports.append(("cacheline_inflight_In", "cacheline_inflight_In", 1))
+    ports.append(("op_need_evit_In", "iq_array_op_need_evit_In", 1))
     ports.append(("biu_rvalid_In", "biu_rvalid_In", 1))
     ports.append(("biu_rid_In", "biu_rid_In", 6))
     for signal_name, signal_width in config_dict['fields'].items():
@@ -257,6 +284,7 @@ def gen_queue(config_dict):
       prot_signal_name = f"{entry_name}{i:0{max_index_width}d}_" + prot_name
       ports.append((prot_name, prot_signal_name, signal_width))
     ports.append((f"mshr_allow_Q", f"mshr_allow_array_Q[{i}]", 1))
+    ports.append((f"need_evit_Q", f"iq_need_evit_array_Q[{i}]", 1))
     ports.append((f"entry_req_from_ch0", f"entry_req_from_ch0_array[{i}]", 1))
     ports.append((f"entry_req_from_ch1", f"entry_req_from_ch1_array[{i}]", 1))
     ports.append((f"entry_req_from_ch2", f"entry_req_from_ch2_array[{i}]", 1))

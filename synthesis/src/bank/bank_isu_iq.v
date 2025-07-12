@@ -32,35 +32,35 @@ module bank_isu_iq #(
 
   wire                 queue_size_wen;
   wire [PTR_WIDTH:0]   queue_size_In;
-  reg  [PTR_WIDTH:0]   queue_size_Q;
+  wire [PTR_WIDTH:0]   queue_size_Q;
+  wire [PTR_WIDTH-1:0] allocate_ptr_In;
+  wire [PTR_WIDTH-1:0] allocate_ptr_Q;
+  wire                 bottom_ptr_wen;
+  wire [PTR_WIDTH-1:0] bottom_ptr_In;
+  wire [PTR_WIDTH-1:0] bottom_ptr_Q;
+  wire [DEPTH-1:0]     valid_array_Q;
+
   wire                 issue_kickoff;
   wire                 iq_allocate;
-  wire [PTR_WIDTH-1:0] allocate_ptr_In;
-  reg  [PTR_WIDTH-1:0] allocate_ptr_Q;
-  wire [DEPTH-1:0]     valid_array_Q;
+
   wire [DEPTH-1:0]     iq_entry_req_from_ch0;
   wire [DEPTH-1:0]     iq_entry_req_from_ch1;
   wire [DEPTH-1:0]     iq_entry_req_from_ch2;
-  reg  [DEPTH-1:0]     iq_need_evit_array_In;
-  reg  [DEPTH-1:0]     iq_need_evit_array_Q;
   wire [DEPTH-1:0]     mshr_allow_array_Q;
+  wire [DEPTH-1:0]     iq_need_evit_array_Q;
   wire [DEPTH-1:0]     credit_allow_array;
   wire [DEPTH-1:0]     execute_array;
-  wire                 bottom_ptr_kickoff;
-  reg  [PTR_WIDTH-1:0] bottom_ptr_In;
-  reg  [PTR_WIDTH-1:0] bottom_ptr_Q;
+
   wire [PTR_WIDTH-1:0] issue_ptr;
-  wire                 select_need_linefill;
-  wire                 select_need_evit;
-  wire                 select_is_write;
 
   wire             iq_array_inValidate;
   wire [3:0]       iq_array_cacheline_state_In;
   wire             iq_array_op_is_write_rdata;
   wire             iq_array_op_need_linefill_rdata;
   wire [3:0]       iq_array_cacheline_state_rdata;
+  wire             iq_array_need_evit_rdata;
 
-  assign iq_array_inValidate = issue_kickoff & ~iq_need_evit_array_Q[issue_ptr];
+  assign iq_array_inValidate = issue_kickoff;
 
   assign iq_array_cacheline_state_In[3:0] = {req_cacheline_offset1_state_i[1:0],
                                              req_cacheline_offset0_state_i[1:0]};
@@ -81,6 +81,7 @@ module bank_isu_iq #(
     .iq_array_ch_id_In              (req_ch_id_i[1:0]                   ),
     .iq_array_op_is_write_In        (req_opcode_i[0]                    ),
     .iq_array_op_need_linefill_In   (req_need_linefill_i                ),
+    .iq_array_op_need_evit_In       (req_opcode_i[1]                    ),
     .iq_array_set_way_offset_In     (req_set_way_offset_i[6:0]          ),
     .iq_array_wbuffer_id_In         (req_wbuffer_id_i[7:0]              ),
     .iq_array_cacheline_state_In    (iq_array_cacheline_state_In[3:0]   ),
@@ -92,7 +93,9 @@ module bank_isu_iq #(
     .iq_array_set_way_offset_rdata  (iq_sc_set_way_offset_o[6:0]        ),
     .iq_array_wbuffer_id_rdata      (iq_sc_wbuffer_id_o[7:0]            ),
     .iq_array_cacheline_state_rdata (iq_array_cacheline_state_rdata[3:0]),
+    .iq_array_need_evit_rdata       (iq_array_need_evit_rdata           ),
     .mshr_allow_array_Q             (mshr_allow_array_Q[DEPTH-1:0]      ),
+    .iq_need_evit_array_Q           (iq_need_evit_array_Q[DEPTH-1:0]    ),
     .entry_req_from_ch0_array       (iq_entry_req_from_ch0[DEPTH-1:0]   ),
     .entry_req_from_ch1_array       (iq_entry_req_from_ch1[DEPTH-1:0]   ),
     .entry_req_from_ch2_array       (iq_entry_req_from_ch2[DEPTH-1:0]   )
@@ -102,7 +105,7 @@ module bank_isu_iq #(
   assign iq_sc_cacheline_state_offset1_o[1:0] = iq_array_cacheline_state_rdata[3:2];
 
 // queue size
-  assign queue_size_wen = iq_allocate ^ bottom_ptr_kickoff;
+  assign queue_size_wen = iq_allocate ^ bottom_ptr_wen;
 
   assign queue_size_In[PTR_WIDTH:0] = iq_allocate
                                     ? queue_size_Q[PTR_WIDTH:0] + 'd1
@@ -140,20 +143,6 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
   assign issue_kickoff = iq_sc_valid_o & iq_sc_ready_i;
 
-  always @(*) begin
-    iq_need_evit_array_In = iq_need_evit_array_Q;
-    if (iq_allocate) begin
-      iq_need_evit_array_In[allocate_ptr_Q] = req_opcode_i[1];
-    end
-    if (issue_kickoff) begin
-      iq_need_evit_array_In[issue_ptr] = 1'b0;
-    end
-  end
-
-  always @(posedge clk_i) begin
-    iq_need_evit_array_Q <= iq_need_evit_array_In;
-  end
-
 //--------------------------------------------------------------
 //                    Credit allow array
 //--------------------------------------------------------------
@@ -178,17 +167,19 @@ module bank_isu_iq #(
 //--------------------------------------------------------------
 //                     Dequeue
 //--------------------------------------------------------------
-  assign bottom_ptr_kickoff = queue_size_Q != 'd0
-                            & ~valid_array_Q[bottom_ptr_Q];
+  assign bottom_ptr_wen = queue_size_Q != 'd0
+                        & ~valid_array_Q[bottom_ptr_Q];
 
-  always @(posedge clk_i or rst_i) begin
-    if (rst_i) begin
-      bottom_ptr_Q[PTR_WIDTH-1:0] <= 'd0;
-    end
-    else if (bottom_ptr_kickoff) begin
-      bottom_ptr_Q[PTR_WIDTH-1:0] <= bottom_ptr_Q[PTR_WIDTH-1:0] + 'd1;
-    end
-  end
+  assign bottom_ptr_In[PTR_WIDTH-1:0] = bottom_ptr_Q[PTR_WIDTH-1:0] + 'd1;
+
+  DFF_RST0 #(.WIDTH(PTR_WIDTH))
+  bottom_ptr_reg (
+    .CLK(clk_i                       ),
+    .RST(rst_i                       ),
+    .WEN(bottom_ptr_wen              ),
+    .D  (bottom_ptr_In[PTR_WIDTH-1:0]),
+    .Q  (bottom_ptr_Q[PTR_WIDTH-1:0] )
+  );
 
   assign execute_array[DEPTH-1:0] = valid_array_Q[DEPTH-1:0]
                                   & (  (mshr_allow_array_Q[DEPTH-1:0] & credit_allow_array[DEPTH-1:0])
@@ -208,17 +199,13 @@ module bank_isu_iq #(
 // 2: read with linefill
 // 3: write back
 //--------------------------------------------------------
-  assign select_is_write      = iq_array_op_is_write_rdata;
-  assign select_need_linefill = iq_array_op_need_linefill_rdata;
-  assign select_need_evit     = iq_need_evit_array_Q[issue_ptr];
-
-  assign iq_sc_opcode_o[1:0] = {2{(~select_need_evit & select_is_write)                         }} & 2'b00
-                             | {2{(~select_need_evit & ~select_need_linefill & ~select_is_write)}} & 2'b01
-                             | {2{(~select_need_evit &  select_need_linefill)                   }} & 2'b10
-                             | {2{ select_need_evit                                             }} & 2'b11;
+  assign iq_sc_opcode_o[1:0] = {2{(~iq_array_need_evit_rdata & iq_array_op_is_write_rdata)                         }} & 2'b00
+                             | {2{(~iq_array_need_evit_rdata & ~iq_array_op_need_linefill_rdata & ~iq_array_op_is_write_rdata)}} & 2'b01
+                             | {2{(~iq_array_need_evit_rdata &  iq_array_op_need_linefill_rdata)                   }} & 2'b10
+                             | {2{ iq_array_need_evit_rdata                                                        }} & 2'b11;
 
   assign iq_sc_opcode_o[2] = 1'b0;
 
-  assign iq_sc_valid_o               = |execute_array[DEPTH-1:0];
+  assign iq_sc_valid_o = |execute_array[DEPTH-1:0];
 
 endmodule
