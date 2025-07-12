@@ -1,9 +1,3 @@
-+incdir+$MCASH_HOME/simulation/src/assert/include
-$MCASH_HOME/simulation/src/assert/cross_bar_assert.sv
-$MCASH_HOME/simulation/src/assert/cross_bar_rob_assert.sv
-$MCASH_HOME/simulation/src/assert/spw_buffer_assert.sv
-$MCASH_HOME/simulation/src/assert/assert_binder.sv
-
 $MCASH_HOME/simulation/src/dumper/mcash_dumper.sv
 $MCASH_HOME/simulation/src/dumper/mcash_diff.sv
 

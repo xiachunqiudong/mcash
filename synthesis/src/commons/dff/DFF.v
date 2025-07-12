@@ -13,4 +13,12 @@ module DFF #(
     end
   end
 
+  `ifndef SYNTHESIS //{
+    dff_xchecker #(.WIDTH(WIDTH)) xchecker(
+      .CLK(CLK         ),
+      .WEN(WEN         ),
+      .D  (D[WIDTH-1:0])
+    );
+  `endif //}
+
 endmodule

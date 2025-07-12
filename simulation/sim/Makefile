@@ -7,6 +7,7 @@ export MCASH_HOME
 
 FILELIST += -file $(MCASH_HOME)/synthesis/filelist.f
 FILELIST += -file $(MCASH_HOME)/simulation/filelist.f
+FILELIST += -file $(MCASH_HOME)/simulation/assert/filelist.f
 
 BUILD_DIR = ./build
 
